@@ -99,7 +99,9 @@ Point your Diction app's endpoint setting to your server's address and you're do
 | large-v3 | ~3.5 GB | ~20-30s | Best accuracy, difficult audio |
 | distil-large-v3 | ~2 GB | ~4-6s | Near large-v3 accuracy at 6x speed |
 
-See the [Self-Hosting Guide](docs/self-hosting.md) for detailed setup instructions, GPU support, reverse proxy configuration, and more.
+**No public IP?** No problem — use [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) or [Tailscale](https://tailscale.com/) to reach your server from anywhere without port forwarding.
+
+See the [Self-Hosting Guide](docs/self-hosting.md) for detailed setup instructions, GPU support, remote access, and more.
 
 ## Requirements
 
