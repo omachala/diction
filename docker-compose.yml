@@ -1,49 +1,40 @@
 # Diction — Self-Hosted Whisper Transcription
 #
-# Quick start:
-#   cp .env.example .env
-#   docker compose up -d whisper-small gateway   # single model
-#   docker compose up -d                          # all models
+# Pick one model and start it:
 #
-# Then point the Diction app endpoint to: http://<your-server>:9000
+#   docker compose up -d whisper-small        # recommended default
+#   docker compose up -d whisper-tiny         # fastest, lowest RAM
+#   docker compose up -d whisper-medium       # better with accents/noise
+#   docker compose up -d whisper-large        # best accuracy
+#   docker compose up -d whisper-distil-large # near-best accuracy, 6x faster
 #
-# Models and memory requirements:
-#   tiny         ~350 MB RAM    ~1-2s latency
-#   small        ~800 MB RAM    ~3-4s latency
-#   medium       ~1.8 GB RAM    ~8-12s latency
-#   large-v3     ~3.5 GB RAM    ~20-30s latency
-#   distil-large ~2.0 GB RAM    ~4-6s latency
+# Or run multiple models at once:
+#   docker compose up -d whisper-small whisper-medium
+#
+# Then point the Diction app endpoint to:
+#   http://<your-server-ip>:9002   (port depends on model, see below)
+#
+# Models, ports, and memory requirements:
+#
+#   Model          Port   RAM        Latency (CPU)
+#   ─────────────────────────────────────────────────
+#   tiny           9001   ~350 MB    ~1-2s
+#   small          9002   ~800 MB    ~3-4s
+#   medium         9003   ~1.8 GB    ~8-12s
+#   large-v3       9004   ~3.5 GB    ~20-30s
+#   distil-large   9005   ~2.0 GB    ~4-6s
 #
 # Models are downloaded on first start and cached in a shared volume.
 # Subsequent starts are instant.
 
 services:
 
-  gateway:
-    image: ghcr.io/omachala/diction-gateway:latest
-    container_name: diction-gateway
-    restart: unless-stopped
-    ports:
-      - "9000:8080"
-    environment:
-      DEFAULT_MODEL: ${DEFAULT_MODEL:-small}
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
-    depends_on:
-      - whisper-tiny
-      - whisper-small
-      - whisper-medium
-      - whisper-large
-      - whisper-distil-large
-
   whisper-tiny:
     image: fedirz/faster-whisper-server:latest-cpu
     container_name: diction-whisper-tiny
     restart: unless-stopped
+    ports:
+      - "9001:8000"
     volumes:
       - whisper-models:/root/.cache/huggingface
     environment:
@@ -60,6 +51,8 @@ services:
     image: fedirz/faster-whisper-server:latest-cpu
     container_name: diction-whisper-small
     restart: unless-stopped
+    ports:
+      - "9002:8000"
     volumes:
       - whisper-models:/root/.cache/huggingface
     environment:
@@ -76,6 +69,8 @@ services:
     image: fedirz/faster-whisper-server:latest-cpu
     container_name: diction-whisper-medium
     restart: unless-stopped
+    ports:
+      - "9003:8000"
     volumes:
       - whisper-models:/root/.cache/huggingface
     environment:
@@ -92,6 +87,8 @@ services:
     image: fedirz/faster-whisper-server:latest-cpu
     container_name: diction-whisper-large
     restart: unless-stopped
+    ports:
+      - "9004:8000"
     volumes:
       - whisper-models:/root/.cache/huggingface
     environment:
@@ -108,6 +105,8 @@ services:
     image: fedirz/faster-whisper-server:latest-cpu
     container_name: diction-whisper-distil-large
     restart: unless-stopped
+    ports:
+      - "9005:8000"
     volumes:
       - whisper-models:/root/.cache/huggingface
     environment:
@@ -122,4 +121,5 @@ services:
 
 volumes:
   whisper-models:
+    # Shared across all models — downloaded once, reused by all
     name: diction-whisper-models

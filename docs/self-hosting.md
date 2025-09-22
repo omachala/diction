@@ -13,39 +13,36 @@ Run your own Whisper transcription server for Diction. Your audio stays on your 
 ```bash
 git clone https://github.com/omachala/diction.git
 cd diction
-cp .env.example .env
 
-# Start with just one model (recommended)
-docker compose up -d whisper-small gateway
+# Start one model
+docker compose up -d whisper-small
 ```
 
-The gateway will be available at `http://localhost:9000`.
+Done. The Whisper API is now running at `http://localhost:9002`.
 
 ## Choosing a Model
 
-You don't need to run all models. Pick one based on your needs:
+Pick one model based on your hardware and needs. Each runs on its own port:
 
-| Model | RAM | Latency (CPU) | Quality | Recommendation |
-|-------|-----|---------------|---------|----------------|
-| tiny | ~350 MB | ~1-2s | Good | Low-power devices, quick notes |
-| **small** | **~800 MB** | **~3-4s** | **Great** | **Best default for most users** |
-| medium | ~1.8 GB | ~8-12s | Very good | Better accent/noise handling |
-| large-v3 | ~3.5 GB | ~20-30s | Best | Maximum accuracy |
-| distil-large-v3 | ~2 GB | ~4-6s | Near-best | Best speed/accuracy trade-off |
+| Model | Port | RAM | Latency (CPU) | Quality | Recommendation |
+|-------|------|-----|---------------|---------|----------------|
+| tiny | 9001 | ~350 MB | ~1-2s | Good | Low-power devices, quick notes |
+| **small** | **9002** | **~800 MB** | **~3-4s** | **Great** | **Best default for most users** |
+| medium | 9003 | ~1.8 GB | ~8-12s | Very good | Better accent/noise handling |
+| large-v3 | 9004 | ~3.5 GB | ~20-30s | Best | Maximum accuracy |
+| distil-large-v3 | 9005 | ~2 GB | ~4-6s | Near-best | Best speed/accuracy trade-off |
 
 To run a single model:
 
 ```bash
-docker compose up -d whisper-small gateway
+docker compose up -d whisper-small
 ```
 
-To run multiple models:
+To run multiple models simultaneously:
 
 ```bash
-docker compose up -d whisper-small whisper-medium gateway
+docker compose up -d whisper-small whisper-medium
 ```
-
-The gateway automatically detects which models are running and routes requests accordingly.
 
 ## GPU Support
 
@@ -71,19 +68,18 @@ Requirements: NVIDIA GPU with CUDA support, [NVIDIA Container Toolkit](https://d
 
 1. Open the **Diction** app on your iPhone
 2. Go to **Settings**
-3. Set the **Endpoint URL** to your server address: `http://<your-server-ip>:9000`
-4. Select your preferred model
-5. Test with the built-in test button
+3. Set the **Endpoint URL** to your server address (e.g. `http://192.168.1.100:9002`)
+4. Test with the built-in test button
 
-> **Note:** If your server is on a local network, make sure your iPhone is on the same network. For access outside your LAN, set up a reverse proxy with HTTPS.
+> **Note:** Your iPhone must be on the same network as your server, or the server must be reachable from the internet (see [Remote Access](#no-public-ip) below).
 
 ## Reverse Proxy (HTTPS)
 
-For production or remote access, put the gateway behind a reverse proxy. Example with [Caddy](https://caddyserver.com):
+For remote access, put the server behind a reverse proxy. Example with [Caddy](https://caddyserver.com):
 
 ```
 whisper.yourdomain.com {
-    reverse_proxy localhost:9000
+    reverse_proxy localhost:9002
 }
 ```
 
@@ -91,7 +87,7 @@ Caddy automatically handles SSL certificates via Let's Encrypt.
 
 ## No Public IP?
 
-If your home network doesn't have a public IP (CGNAT, double NAT, etc.), you can still expose your Whisper server securely:
+If your home network doesn't have a public IP (CGNAT, double NAT, etc.), you can still access your Whisper server from anywhere:
 
 ### Cloudflare Tunnel (recommended)
 
@@ -111,8 +107,8 @@ cloudflared tunnel create diction
 # Route your domain to the tunnel
 cloudflared tunnel route dns diction whisper.yourdomain.com
 
-# Run (points to your local gateway)
-cloudflared tunnel run --url http://localhost:9000 diction
+# Run (points to your local whisper server)
+cloudflared tunnel run --url http://localhost:9002 diction
 ```
 
 You can also run `cloudflared` as a Docker service alongside your Whisper stack.
@@ -131,29 +127,25 @@ tailscale ip -4
 # → 100.x.y.z
 ```
 
-Set the Diction endpoint to `http://100.x.y.z:9000`. Works from anywhere, no domain or SSL needed (traffic is encrypted by WireGuard).
+Set the Diction endpoint to `http://100.x.y.z:9002`. Works from anywhere, no domain or SSL needed (traffic is encrypted by WireGuard).
 
 ### Other options
 
-- **[ngrok](https://ngrok.com/)** — instant public URL, good for testing (`ngrok http 9000`)
+- **[ngrok](https://ngrok.com/)** — instant public URL, good for testing (`ngrok http 9002`)
 - **WireGuard** — manual VPN setup, same idea as Tailscale but self-managed
-- **Port forwarding** — if your ISP gives you a public IP, forward port 9000 on your router and use a DDNS service
+- **Port forwarding** — if your ISP gives you a public IP, forward the port on your router and use a DDNS service
 
 ## API
 
-The gateway exposes an OpenAI-compatible transcription API:
+The server exposes an [OpenAI-compatible](https://platform.openai.com/docs/api-reference/audio/createTranscription) transcription API:
 
 ```bash
 # Transcribe audio
-curl -X POST http://localhost:9000/v1/audio/transcriptions \
-  -F file=@audio.m4a \
-  -F model=small
-
-# Check available models
-curl http://localhost:9000/v1/models
+curl -X POST http://localhost:9002/v1/audio/transcriptions \
+  -F file=@recording.m4a
 
 # Health check
-curl http://localhost:9000/health
+curl http://localhost:9002/health
 ```
 
 ## Updating
@@ -165,11 +157,11 @@ docker compose up -d
 
 ## Troubleshooting
 
-**Models take a long time to start the first time**
-This is normal. The model weights are downloaded on first launch (~75 MB for tiny, ~500 MB for small, ~1.5 GB for medium, ~3 GB for large-v3). They're cached in a Docker volume, so subsequent starts are instant.
+**Model takes a long time to start the first time**
+This is normal. Model weights are downloaded on first launch (~75 MB for tiny, ~500 MB for small, ~1.5 GB for medium, ~3 GB for large-v3). They're cached in a Docker volume, so subsequent starts are instant.
 
-**Gateway shows models as unavailable**
-The gateway health-checks each model every 30 seconds. If a model just started, wait for it to finish loading. Check logs: `docker compose logs -f whisper-small`
+**Health check failing**
+Models need 1-2 minutes to load on first start. Check logs: `docker compose logs -f whisper-small`
 
 **Out of memory**
-Reduce the number of running models. One model at a time is fine — the gateway routes all requests to whatever's available.
+Run fewer models, or pick a smaller one. One model is all you need.

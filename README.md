@@ -71,23 +71,24 @@ Run your own Whisper transcription server with Docker. Your audio stays on your 
 ### Quick Start
 
 ```bash
-# Clone and start
 git clone https://github.com/omachala/diction.git
 cd diction
 
-# Copy and edit environment variables
-cp .env.example .env
-
-# Start with a single model (recommended to start)
-docker compose up -d whisper-small gateway
-
-# Or start all models
-docker compose up -d
+# Start one model (small is a good default)
+docker compose up -d whisper-small
 ```
 
-The gateway will be available at `http://localhost:9000`.
+That's it. Point your Diction app's endpoint to `http://<your-server-ip>:9002` and you're done.
 
-Point your Diction app's endpoint setting to your server's address and you're done.
+Each model runs on its own port — pick the one that fits your hardware:
+
+```
+docker compose up -d whisper-tiny          # port 9001
+docker compose up -d whisper-small         # port 9002
+docker compose up -d whisper-medium        # port 9003
+docker compose up -d whisper-large         # port 9004
+docker compose up -d whisper-distil-large  # port 9005
+```
 
 ### Models
 
