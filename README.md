@@ -51,18 +51,12 @@ Diction is also **self-hosted-first**. Your audio can go to a Whisper server you
 
 ## How It Works
 
-```
-┌─────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│  iOS Device  │────▶│  Diction Gateway  │────▶│  Whisper Model   │
-│  (keyboard)  │◀────│  (Go, routes by   │◀────│  (faster-whisper) │
-│              │     │   model field)    │     │                  │
-└─────────────┘     └──────────────────┘     └─────────────────┘
-```
+1. Tap the mic in any app
+2. Speak
+3. Diction sends the audio to a Whisper server — yours or ours
+4. Transcribed text is inserted into the text field
 
-1. You tap the mic in any app
-2. Diction records audio (m4a, 16kHz mono)
-3. Audio is sent to a Whisper-compatible endpoint (self-hosted or cloud)
-4. Transcribed text is inserted into the active text field
+**Self-hosted:** run a Whisper container on your machine, make it reachable (local IP, reverse proxy, or tunnel), and paste the URL into the Diction app. That's it.
 
 ## Self-Hosting
 
