@@ -26,7 +26,7 @@
 
 ## Why Diction?
 
-Voice-to-text keyboards like [Wispr Flow](https://wisprflow.ai) cost **$15/month** and send your audio to their cloud. [Spokenly](https://spokenly.app), [Superwhisper](https://superwhisper.com), and others charge $8-10/month. Apple's built-in dictation is free but unreliable.
+Voice-to-text keyboards like [Wispr Flow](https://wisprflow.ai) cost **$15/month** and send your audio to their cloud. Apple's built-in dictation is free but unreliable.
 
 **Diction is different:**
 
@@ -58,17 +58,15 @@ Whisper API is now running at `http://<your-server-ip>:9002`. Done.
 
 ## How is this different from...
 
-| | Diction | Wispr Flow | Spokenly | Apple Dictation |
-|---|---|---|---|---|
-| **Price** | Free (self-hosted) | $15/month | $8/month or BYOK | Free |
-| **Audio stays on your network** | ✅ | ❌ Cloud | ⚠️ Localhost only | ✅ |
-| **Open source server** | ✅ | ❌ | ❌ | ❌ |
-| **iOS keyboard** | ✅ | ✅ | ⚠️ Unstable | ✅ Built-in |
-| **Custom Whisper endpoint** | ✅ Any URL | ❌ | ⚠️ Localhost only | ❌ |
-| **Accuracy** | ✅ Whisper | ✅ Whisper + AI | ⚠️ Varies | ❌ Poor |
-| **Zero third-party SDKs** | ✅ | ❌ | ❌ | N/A |
-
-**Spokenly** supports local Whisper models and localhost servers -but it's a proprietary app, its iOS keyboard has [documented stability issues](https://apps.apple.com/us/app/spokenly-voice-to-text-ai-app/id6740315592), and self-hosting is limited to localhost (no remote servers). Diction connects to any reachable endpoint -your home server, a cloud VM, anywhere.
+| | Diction | Wispr Flow | Apple Dictation |
+|---|---|---|---|
+| **Price** | Free (self-hosted) | $15/month | Free |
+| **Audio stays on your network** | ✅ | ❌ Cloud | ✅ |
+| **Open source server** | ✅ | ❌ | ❌ |
+| **iOS keyboard** | ✅ | ✅ | ✅ Built-in |
+| **Custom Whisper endpoint** | ✅ Any URL | ❌ | ❌ |
+| **Accuracy** | ✅ Whisper | ✅ Whisper + AI | ❌ Poor |
+| **Zero third-party SDKs** | ✅ | ❌ | N/A |
 
 **Wispr Flow** is a polished product with AI editing features. If you want filler word removal, grammar correction, and context-aware tone -Wispr Flow does that. Diction is pure transcription: what you say is what you get. The trade-off is freedom, privacy, and cost.
 
