@@ -30,14 +30,14 @@ Voice-to-text keyboards like [Wispr Flow](https://wisprflow.ai) cost **$15/month
 
 **Diction is different:**
 
-- **Free forever** for self-hosted — no subscription, no word limits, no trial that expires
-- **Your server, your data** — audio goes to a Whisper server you run. Not our cloud. Not anyone's cloud. Your network.
-- **Open source infrastructure** — the server setup is right here. Inspect it, modify it, contribute to it.
-- **Zero-dependency iOS app** — pure Swift, no third-party SDKs, no analytics, no tracking. Fully auditable.
+- **Free forever** for self-hosted -no subscription, no word limits, no trial that expires
+- **Your server, your data** -audio goes to a Whisper server you run. Not our cloud. Not anyone's cloud. Your network.
+- **Open source infrastructure** -the server setup is right here. Inspect it, modify it, contribute to it.
+- **Zero-dependency iOS app** -pure Swift, no third-party SDKs, no analytics, no tracking. Fully auditable.
 
 Don't want to self-host? **Diction Cloud** provides the same experience with zero setup.
 
-> **Think of it like [Bitwarden](https://bitwarden.com)** — free and self-hosted for those who want control, with a hosted cloud option for convenience.
+> **Think of it like [Bitwarden](https://bitwarden.com)** -free and self-hosted for those who want control, with a hosted cloud option for convenience.
 
 ## How It Works
 
@@ -61,40 +61,40 @@ Whisper API is now running at `http://<your-server-ip>:9002`. Done.
 | | Diction | Wispr Flow | Spokenly | Apple Dictation |
 |---|---|---|---|---|
 | **Price** | Free (self-hosted) | $15/month | $8/month or BYOK | Free |
-| **Audio stays on your network** | Yes | No (cloud) | Partial (localhost only) | Yes |
-| **Open source server** | Yes | No | No | No |
-| **iOS keyboard** | Yes | Yes | Yes (unstable) | Built-in |
-| **Custom Whisper endpoint** | Any reachable URL | No | Localhost only | No |
-| **Accuracy** | Whisper (excellent) | Whisper + AI edits | Varies by model | Poor |
-| **Third-party SDKs in app** | Zero | Yes | Yes | N/A |
+| **Audio stays on your network** | ✅ | ❌ Cloud | ⚠️ Localhost only | ✅ |
+| **Open source server** | ✅ | ❌ | ❌ | ❌ |
+| **iOS keyboard** | ✅ | ✅ | ⚠️ Unstable | ✅ Built-in |
+| **Custom Whisper endpoint** | ✅ Any URL | ❌ | ⚠️ Localhost only | ❌ |
+| **Accuracy** | ✅ Whisper | ✅ Whisper + AI | ⚠️ Varies | ❌ Poor |
+| **Zero third-party SDKs** | ✅ | ❌ | ❌ | N/A |
 
-**Spokenly** supports local Whisper models and localhost servers — but it's a proprietary app, its iOS keyboard has [documented stability issues](https://apps.apple.com/us/app/spokenly-voice-to-text-ai-app/id6740315592), and self-hosting is limited to localhost (no remote servers). Diction connects to any reachable endpoint — your home server, a cloud VM, anywhere.
+**Spokenly** supports local Whisper models and localhost servers -but it's a proprietary app, its iOS keyboard has [documented stability issues](https://apps.apple.com/us/app/spokenly-voice-to-text-ai-app/id6740315592), and self-hosting is limited to localhost (no remote servers). Diction connects to any reachable endpoint -your home server, a cloud VM, anywhere.
 
-**Wispr Flow** is a polished product with AI editing features. If you want filler word removal, grammar correction, and context-aware tone — Wispr Flow does that. Diction is pure transcription: what you say is what you get. The trade-off is freedom, privacy, and cost.
+**Wispr Flow** is a polished product with AI editing features. If you want filler word removal, grammar correction, and context-aware tone -Wispr Flow does that. Diction is pure transcription: what you say is what you get. The trade-off is freedom, privacy, and cost.
 
 ## Models
 
 Pick the model that fits your hardware. Each runs on its own port:
 
 ```
-docker compose up -d whisper-tiny          # port 9001 — ~350 MB RAM, ~1-2s
-docker compose up -d whisper-small         # port 9002 — ~800 MB RAM, ~3-4s  ← recommended
-docker compose up -d whisper-medium        # port 9003 — ~1.8 GB RAM, ~8-12s
-docker compose up -d whisper-large         # port 9004 — ~3.5 GB RAM, ~20-30s
-docker compose up -d whisper-distil-large  # port 9005 — ~2 GB RAM, ~4-6s
+docker compose up -d whisper-tiny          # port 9001 -~350 MB RAM, ~1-2s
+docker compose up -d whisper-small         # port 9002 -~800 MB RAM, ~3-4s  ← recommended
+docker compose up -d whisper-medium        # port 9003 -~1.8 GB RAM, ~8-12s
+docker compose up -d whisper-large         # port 9004 -~3.5 GB RAM, ~20-30s
+docker compose up -d whisper-distil-large  # port 9005 -~2 GB RAM, ~4-6s
 ```
 
 Models are downloaded automatically on first start and cached. Subsequent starts are instant.
 
-Works with any [OpenAI-compatible](https://platform.openai.com/docs/api-reference/audio/createTranscription) Whisper endpoint — [faster-whisper-server](https://github.com/fedirz/faster-whisper-server), [whisper.cpp](https://github.com/ggerganov/whisper.cpp), or OpenAI's own API.
+Works with any [OpenAI-compatible](https://platform.openai.com/docs/api-reference/audio/createTranscription) Whisper endpoint -[faster-whisper-server](https://github.com/fedirz/faster-whisper-server), [whisper.cpp](https://github.com/ggerganov/whisper.cpp), or OpenAI's own API.
 
 ## No Public IP?
 
 No problem. You don't need to open ports on your router:
 
-- **[Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)** — free, outbound-only connection to Cloudflare's edge. No port forwarding needed.
-- **[Tailscale](https://tailscale.com/)** — free WireGuard mesh VPN. Install on server + phone, connect from anywhere.
-- **[ngrok](https://ngrok.com/)** — instant public URL, great for testing.
+- **[Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)** -free, outbound-only connection to Cloudflare's edge. No port forwarding needed.
+- **[Tailscale](https://tailscale.com/)** -free WireGuard mesh VPN. Install on server + phone, connect from anywhere.
+- **[ngrok](https://ngrok.com/)** -instant public URL, great for testing.
 
 See the [Self-Hosting Guide](docs/self-hosting.md) for detailed instructions.
 
@@ -105,7 +105,7 @@ This is a keyboard extension. We take privacy seriously:
 - **Self-hosted**: Audio goes only to your server. Full stop.
 - **Cloud mode**: Audio is processed and immediately discarded. Not stored, not used for training.
 - **No analytics, no tracking, no telemetry.** The app contains zero third-party SDKs.
-- **Full Access** is required by iOS for network — the keyboard needs to reach the Whisper endpoint. No keylogging, no clipboard access.
+- **Full Access** is required by iOS for network -the keyboard needs to reach the Whisper endpoint. No keylogging, no clipboard access.
 
 Read the full [Privacy Policy](docs/privacy.md).
 
@@ -120,6 +120,6 @@ We welcome contributions to the self-hosting infrastructure, documentation, and 
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT -see [LICENSE](LICENSE).
 
 The iOS app is distributed via the App Store. This repository contains the self-hosting infrastructure and documentation.
