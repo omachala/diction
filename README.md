@@ -33,6 +33,7 @@ Voice-to-text keyboards like [Wispr Flow](https://wisprflow.ai) cost **$15/month
 - **Free forever** for self-hosted -no subscription, no word limits, no trial that expires
 - **Your server, your data** -audio goes to a Whisper server you run. Not our cloud. Not anyone's cloud. Your network.
 - **Open source infrastructure** -the server setup is right here. Inspect it, modify it, contribute to it.
+- **Model agnostic** -point it at any OpenAI-compatible endpoint. Whisper tiny, large-v3, distil, fine-tuned models, future models. You choose.
 - **Zero-dependency iOS app** -pure Swift, no third-party SDKs, no analytics, no tracking. Fully auditable.
 
 Don't want to self-host? **Diction Cloud** provides the same experience with zero setup.
@@ -64,8 +65,7 @@ Whisper API is now running at `http://<your-server-ip>:9002`. Done.
 | **Audio stays on your network** | ✅ | ❌ Cloud | ✅ |
 | **Open source server** | ✅ | ❌ | ❌ |
 | **iOS keyboard** | ✅ | ✅ | ✅ Built-in |
-| **Custom Whisper endpoint** | ✅ Any URL | ❌ | ❌ |
-| **Accuracy** | ✅ Any Whisper model | ✅ Whisper + AI | ❌ Poor |
+| **Model agnostic** | ✅ Any model, any URL | ❌ Locked in | ❌ Locked in |
 | **Zero third-party SDKs** | ✅ | ❌ | N/A |
 
 **Wispr Flow** is a polished product with AI editing features. If you want filler word removal, grammar correction, and context-aware tone -Wispr Flow does that. Diction is pure transcription: what you say is what you get. The trade-off is freedom, privacy, and cost.
