@@ -72,7 +72,9 @@ Diction is pure transcription: what you say is what you get. No AI rewriting, no
 
 ## Models
 
-Pick the model that fits your hardware. Each runs on its own port:
+Diction is model agnostic. It works with **any [OpenAI-compatible](https://platform.openai.com/docs/api-reference/audio/createTranscription) speech-to-text endpoint** - public models, private models, fine-tuned models, future models. You're not locked into anything.
+
+This repo includes a Docker Compose setup with popular [faster-whisper](https://github.com/fedirz/faster-whisper-server) models to get you started:
 
 ```
 docker compose up -d whisper-tiny          # port 9001 -~350 MB RAM, ~1-2s
@@ -82,9 +84,7 @@ docker compose up -d whisper-large         # port 9004 -~3.5 GB RAM, ~20-30s
 docker compose up -d whisper-distil-large  # port 9005 -~2 GB RAM, ~4-6s
 ```
 
-Models are downloaded automatically on first start and cached. Subsequent starts are instant.
-
-Diction works with **any [OpenAI-compatible](https://platform.openai.com/docs/api-reference/audio/createTranscription) speech-to-text endpoint**. You're not locked into one model or provider. Use [faster-whisper-server](https://github.com/fedirz/faster-whisper-server), [whisper.cpp](https://github.com/ggerganov/whisper.cpp), OpenAI's API, or any future model that speaks the same protocol.
+But you can point Diction at anything: [whisper.cpp](https://github.com/ggerganov/whisper.cpp), OpenAI's API, a custom fine-tuned model for your language or domain, or any future model that speaks the same protocol. If it has an `/v1/audio/transcriptions` endpoint, Diction works with it.
 
 ## No Public IP?
 
