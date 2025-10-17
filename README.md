@@ -112,6 +112,10 @@ Read the full [Privacy Policy](docs/privacy.md).
 - **iOS 17.0+** (iPhone)
 - For self-hosting: any machine that can run Docker
 
+## Diction Cloud
+
+Don't want to self-host? **Diction Cloud** is a hosted alternative - same accuracy, zero setup, no server to maintain. Priced to be cheaper than running your own VPS. See [diction.one](https://diction.one) for details.
+
 ## Contributing
 
 We welcome contributions to the self-hosting infrastructure, documentation, and Docker setup. See [CONTRIBUTING.md](CONTRIBUTING.md).
