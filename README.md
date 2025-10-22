@@ -1,7 +1,11 @@
 <p align="center">
-  <!-- <img src="assets/icon.png" width="128" height="128" alt="Diction app icon"> -->
-  <h1 align="center">Diction</h1>
-  <p align="center"><strong>The free, open-source alternative to <a href="https://wisprflow.ai">Wispr Flow</a>.</strong><br>Self-hosted speech-to-text keyboard for iOS.</p>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo-light.png">
+    <source media="(prefers-color-scheme: light)" srcset="assets/logo-dark.png">
+    <img src="assets/logo-dark.png" alt="Diction" height="80">
+  </picture>
+  <br><br>
+  <strong>The free, open-source alternative to <a href="https://wisprflow.ai">Wispr Flow</a>.</strong><br>Self-hosted speech-to-text keyboard for iOS.
 </p>
 
 <p align="center">
