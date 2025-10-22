@@ -30,15 +30,15 @@ Voice-to-text keyboards like [Wispr Flow](https://wisprflow.ai) cost **$15/month
 
 **Diction is different:**
 
-- **Free forever** for self-hosted -no subscription, no word limits, no trial that expires
-- **Your server, your data** -audio goes to a Whisper server you run. Not our cloud. Not anyone's cloud. Your network.
-- **Open source infrastructure** -the server setup is right here. Inspect it, modify it, contribute to it.
-- **Model agnostic** -point it at any OpenAI-compatible endpoint. Whisper tiny, large-v3, distil, fine-tuned models, future models. You choose.
-- **Zero-dependency iOS app** -pure Swift, no third-party SDKs, no analytics, no tracking. Fully auditable.
+- **Free forever** for self-hosted - no subscription, no word limits, no trial that expires
+- **Your server, your data** - audio goes to a Whisper server you run. Not our cloud. Not anyone's cloud. Your network.
+- **Open source infrastructure** - the server setup is right here. Inspect it, modify it, contribute to it.
+- **Model agnostic** - point it at any OpenAI-compatible endpoint. Whisper tiny, large-v3, distil, fine-tuned models, future models. You choose.
+- **Zero-dependency iOS app** - pure Swift, no third-party SDKs, no analytics, no tracking. Fully auditable.
 
 Don't want to self-host? **Diction Cloud** provides the same experience with zero setup.
 
-> **Think of it like [Bitwarden](https://bitwarden.com)** -free and self-hosted for those who want control, with a hosted cloud option for convenience.
+> **Think of it like [Bitwarden](https://bitwarden.com)** - free and self-hosted for those who want control, with a hosted cloud option for convenience.
 
 ## How It Works
 
@@ -52,21 +52,22 @@ That's the entire setup. Three commands to start the server:
 ```bash
 git clone https://github.com/omachala/diction.git
 cd diction
-docker compose up -d whisper-small
+docker compose up - d whisper-small
 ```
 
 Whisper API is now running at `http://<your-server-ip>:9002`. Done.
 
 ## How is this different from...
 
-| | Diction | Wispr Flow | Apple Dictation |
-|---|---|---|---|
-| **Price** | Free (self-hosted) | $15/month | Free |
-| **Audio stays on your network** | ✅ | ❌ Cloud | ✅ |
-| **Open source server** | ✅ | ❌ | ❌ |
-| **iOS keyboard** | ✅ | ✅ | ✅ Built-in |
-| **Model agnostic** | ✅ Any model, any URL | ❌ Locked in | ❌ Locked in |
-| **Zero third-party SDKs** | ✅ | ❌ | N/A |
+<table width="100%">
+<tr><th></th><th>Diction</th><th>Wispr Flow</th><th>Apple Dictation</th></tr>
+<tr><td><strong>Price</strong></td><td>Free (self-hosted)</td><td>$15/month</td><td>Free</td></tr>
+<tr><td><strong>Audio stays on your network</strong></td><td>✅</td><td>❌ Cloud</td><td>✅</td></tr>
+<tr><td><strong>Open source server</strong></td><td>✅</td><td>❌</td><td>❌</td></tr>
+<tr><td><strong>iOS keyboard</strong></td><td>✅</td><td>✅</td><td>✅ Built-in</td></tr>
+<tr><td><strong>Model agnostic</strong></td><td>✅ Any model, any URL</td><td>❌ Locked in</td><td>❌ Locked in</td></tr>
+<tr><td><strong>Zero third-party SDKs</strong></td><td>✅</td><td>❌</td><td>N/A</td></tr>
+</table>
 
 Diction is pure transcription: what you say is what you get. No AI rewriting, no filler word removal. If you want that, paid alternatives exist. Diction's trade-off is freedom, privacy, and cost.
 
@@ -77,11 +78,11 @@ Diction is model agnostic. It works with **any [OpenAI-compatible](https://platf
 This repo includes a Docker Compose setup with popular [faster-whisper](https://github.com/fedirz/faster-whisper-server) models to get you started:
 
 ```
-docker compose up -d whisper-tiny          # port 9001 -~350 MB RAM, ~1-2s
-docker compose up -d whisper-small         # port 9002 -~800 MB RAM, ~3-4s  ← recommended
-docker compose up -d whisper-medium        # port 9003 -~1.8 GB RAM, ~8-12s
-docker compose up -d whisper-large         # port 9004 -~3.5 GB RAM, ~20-30s
-docker compose up -d whisper-distil-large  # port 9005 -~2 GB RAM, ~4-6s
+docker compose up - d whisper-tiny          # port 9001 - ~350 MB RAM, ~1-2s
+docker compose up - d whisper-small         # port 9002 - ~800 MB RAM, ~3-4s  ← recommended
+docker compose up - d whisper-medium        # port 9003 - ~1.8 GB RAM, ~8-12s
+docker compose up - d whisper-large         # port 9004 - ~3.5 GB RAM, ~20-30s
+docker compose up - d whisper-distil-large  # port 9005 - ~2 GB RAM, ~4-6s
 ```
 
 But you can point Diction at anything: [whisper.cpp](https://github.com/ggerganov/whisper.cpp), OpenAI's API, a custom fine-tuned model for your language or domain, or any future model that speaks the same protocol. If it has an `/v1/audio/transcriptions` endpoint, Diction works with it.
@@ -90,9 +91,9 @@ But you can point Diction at anything: [whisper.cpp](https://github.com/ggergano
 
 No problem. You don't need to open ports on your router:
 
-- **[Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)** -free, outbound-only connection to Cloudflare's edge. No port forwarding needed.
-- **[Tailscale](https://tailscale.com/)** -free WireGuard mesh VPN. Install on server + phone, connect from anywhere.
-- **[ngrok](https://ngrok.com/)** -instant public URL, great for testing.
+- **[Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)** - free, outbound-only connection to Cloudflare's edge. No port forwarding needed.
+- **[Tailscale](https://tailscale.com/)** - free WireGuard mesh VPN. Install on server + phone, connect from anywhere.
+- **[ngrok](https://ngrok.com/)** - instant public URL, great for testing.
 
 See the [Self-Hosting Guide](docs/self-hosting.md) for detailed instructions.
 
@@ -103,7 +104,7 @@ This is a keyboard extension. We take privacy seriously:
 - **Self-hosted**: Audio goes only to your server. Full stop.
 - **Cloud mode**: Audio is processed and immediately discarded. Not stored, not used for training.
 - **No analytics, no tracking, no telemetry.** The app contains zero third-party SDKs.
-- **Full Access** is required by iOS for network -the keyboard needs to reach the Whisper endpoint. No keylogging, no clipboard access.
+- **Full Access** is required by iOS for network - the keyboard needs to reach the Whisper endpoint. No keylogging, no clipboard access.
 
 Read the full [Privacy Policy](docs/privacy.md).
 
@@ -122,6 +123,6 @@ We welcome contributions to the self-hosting infrastructure, documentation, and 
 
 ## License
 
-MIT -see [LICENSE](LICENSE).
+MIT - see [LICENSE](LICENSE).
 
 The iOS app is distributed via the App Store. This repository contains the self-hosting infrastructure and documentation.
