@@ -34,7 +34,7 @@ Voice-to-text keyboards like [Wispr Flow](https://wisprflow.ai) cost **$15/month
 
 **Diction is different:**
 
-- **Free forever** for self-hosted - no subscription, no word limits, no trial that expires
+- **Self-hosted is free** - no subscription, no word limits, no trial that expires. Bring your own server.
 - **Your server, your data** - audio goes to a Whisper server you run. Not our cloud. Not anyone's cloud. Your network.
 - **Open source infrastructure** - the server setup is right here. Inspect it, modify it, contribute to it.
 - **Model agnostic** - point it at any OpenAI-compatible endpoint. Whisper tiny, large-v3, distil, fine-tuned models, future models. You choose.
