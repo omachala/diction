@@ -1,15 +1,20 @@
 # Diction — Self-Hosted Whisper Transcription
 #
-# Pick one model and start it:
+# Quick start with gateway (recommended):
 #
-#   docker compose up -d whisper-small        # recommended default
-#   docker compose up -d whisper-tiny         # fastest, lowest RAM
-#   docker compose up -d whisper-medium       # better with accents/noise
-#   docker compose up -d whisper-large        # best accuracy
-#   docker compose up -d whisper-distil-large # near-best accuracy, 6x faster
+#   docker compose up -d gateway whisper-small
 #
-# Or run multiple models at once:
-#   docker compose up -d whisper-small whisper-medium
+# The gateway runs on port 9000 and provides:
+#   - Model routing: POST /v1/audio/transcriptions with model=small|medium|etc
+#   - WebSocket streaming: WS /v1/audio/stream?model=small (stream audio during
+#     recording — transcription starts instantly when you stop)
+#   - Health checks: GET /health, GET /v1/models
+#
+# Point the Diction app to: http://<your-server-ip>:9000
+#
+# Or connect directly to a model (no gateway needed):
+#
+#   docker compose up -d whisper-small
 #
 # Then point the Diction app endpoint to:
 #   http://<your-server-ip>:9002   (port depends on model, see below)
@@ -18,6 +23,7 @@
 #
 #   Model          Port   RAM        Latency (CPU)
 #   ─────────────────────────────────────────────────
+#   gateway        9000   ~15 MB     —
 #   tiny           9001   ~350 MB    ~1-2s
 #   small          9002   ~800 MB    ~3-4s
 #   medium         9003   ~1.8 GB    ~8-12s
@@ -28,6 +34,22 @@
 # Subsequent starts are instant.
 
 services:
+
+  gateway:
+    build: ./gateway
+    container_name: diction-gateway
+    restart: unless-stopped
+    ports:
+      - "9000:8080"
+    environment:
+      DEFAULT_MODEL: small
+    depends_on:
+      - whisper-small
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   whisper-tiny:
     image: fedirz/faster-whisper-server:latest-cpu
