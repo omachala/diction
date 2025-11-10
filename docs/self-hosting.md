@@ -14,34 +14,39 @@ Run your own Whisper transcription server for Diction. Your audio stays on your 
 git clone https://github.com/omachala/diction.git
 cd diction
 
-# Start one model
-docker compose up -d whisper-small
+# Start the gateway + one model
+docker compose up -d gateway whisper-small
 ```
 
-Done. The Whisper API is now running at `http://localhost:9002`.
+Done. The gateway is now running at `http://localhost:9000`.
+
+The gateway handles model routing, health checks, and WebSocket streaming (audio streams during recording so transcription starts instantly when you stop).
+
+> **Direct connection:** You can also skip the gateway and point the app directly at a model (e.g. `http://localhost:9002` for small). The gateway is optional but recommended.
 
 ## Choosing a Model
 
-Pick one model based on your hardware and needs. Each runs on its own port:
+Pick one model based on your hardware and needs:
 
-| Model | Port | RAM | Latency (CPU) | Quality | Recommendation |
-|-------|------|-----|---------------|---------|----------------|
+| Service | Port | RAM | Latency (CPU) | Quality | Recommendation |
+|---------|------|-----|---------------|---------|----------------|
+| **gateway** | **9000** | **~15 MB** | **—** | **—** | **Recommended entry point** |
 | tiny | 9001 | ~350 MB | ~1-2s | Good | Low-power devices, quick notes |
 | **small** | **9002** | **~800 MB** | **~3-4s** | **Great** | **Best default for most users** |
 | medium | 9003 | ~1.8 GB | ~8-12s | Very good | Better accent/noise handling |
 | large-v3 | 9004 | ~3.5 GB | ~20-30s | Best | Maximum accuracy |
 | distil-large-v3 | 9005 | ~2 GB | ~4-6s | Near-best | Best speed/accuracy trade-off |
 
-To run a single model:
+To run the gateway with one model:
 
 ```bash
-docker compose up -d whisper-small
+docker compose up -d gateway whisper-small
 ```
 
-To run multiple models simultaneously:
+To run multiple models (switch between them in the app):
 
 ```bash
-docker compose up -d whisper-small whisper-medium
+docker compose up -d gateway whisper-small whisper-medium whisper-large
 ```
 
 ## GPU Support
@@ -67,23 +72,24 @@ Requirements: NVIDIA GPU with CUDA support, [NVIDIA Container Toolkit](https://d
 ## Connecting the App
 
 1. Open the **Diction** app on your iPhone
-2. Go to **Settings**
-3. Set the **Endpoint URL** to your server address (e.g. `http://192.168.1.100:9002`)
-4. Test with the built-in test button
+2. Go to **Settings** → switch to **Self-Hosted** mode
+3. Set the **Endpoint URL** to your gateway address (e.g. `http://192.168.1.100:9000`)
+4. Pick a model and language
+5. Toggle **Stream Audio** on for real-time streaming (audio streams during recording, transcription starts instantly on stop)
 
 > **Note:** Your iPhone must be on the same network as your server, or the server must be reachable from the internet (see [Remote Access](#no-public-ip) below).
 
 ## Reverse Proxy (HTTPS)
 
-For remote access, put the server behind a reverse proxy. Example with [Caddy](https://caddyserver.com):
+For remote access, put the gateway behind a reverse proxy. Example with [Caddy](https://caddyserver.com):
 
 ```
-whisper.yourdomain.com {
-    reverse_proxy localhost:9002
+diction.yourdomain.com {
+    reverse_proxy localhost:9000
 }
 ```
 
-Caddy automatically handles SSL certificates via Let's Encrypt.
+Caddy automatically handles SSL certificates via Let's Encrypt. WebSocket streaming (`/v1/audio/stream`) works through Caddy out of the box — no extra config needed.
 
 ## No Public IP?
 
@@ -107,8 +113,8 @@ cloudflared tunnel create diction
 # Route your domain to the tunnel
 cloudflared tunnel route dns diction whisper.yourdomain.com
 
-# Run (points to your local whisper server)
-cloudflared tunnel run --url http://localhost:9002 diction
+# Run (points to your local gateway)
+cloudflared tunnel run --url http://localhost:9000 diction
 ```
 
 You can also run `cloudflared` as a Docker service alongside your Whisper stack.
@@ -127,25 +133,37 @@ tailscale ip -4
 # → 100.x.y.z
 ```
 
-Set the Diction endpoint to `http://100.x.y.z:9002`. Works from anywhere, no domain or SSL needed (traffic is encrypted by WireGuard).
+Set the Diction endpoint to `http://100.x.y.z:9000`. Works from anywhere, no domain or SSL needed (traffic is encrypted by WireGuard).
 
 ### Other options
 
-- **[ngrok](https://ngrok.com/)** — instant public URL, good for testing (`ngrok http 9002`)
+- **[ngrok](https://ngrok.com/)** — instant public URL, good for testing (`ngrok http 9000`)
 - **WireGuard** — manual VPN setup, same idea as Tailscale but self-managed
 - **Port forwarding** — if your ISP gives you a public IP, forward the port on your router and use a DDNS service
 
 ## API
 
-The server exposes an [OpenAI-compatible](https://platform.openai.com/docs/api-reference/audio/createTranscription) transcription API:
+The gateway exposes an [OpenAI-compatible](https://platform.openai.com/docs/api-reference/audio/createTranscription) transcription API plus WebSocket streaming:
 
 ```bash
-# Transcribe audio
-curl -X POST http://localhost:9002/v1/audio/transcriptions \
-  -F file=@recording.m4a
-
 # Health check
-curl http://localhost:9002/health
+curl http://localhost:9000/health
+
+# List available models
+curl http://localhost:9000/v1/models
+
+# Transcribe audio (HTTP POST)
+curl -X POST http://localhost:9000/v1/audio/transcriptions \
+  -F file=@recording.wav \
+  -F model=small
+
+# WebSocket streaming (connect, send PCM chunks, get transcription)
+# ws://localhost:9000/v1/audio/stream?model=small&language=en
+#
+# Protocol:
+#   1. Client sends binary frames: raw PCM audio (16-bit LE, mono, 16kHz)
+#   2. Client sends text frame: {"action":"done"}
+#   3. Server replies with text frame: {"text":"transcribed text"}
 ```
 
 ## Updating

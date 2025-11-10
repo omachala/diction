@@ -45,7 +45,7 @@ Don't want to self-host? **Diction Cloud** provides the same experience with zer
 
 ## How It Works
 
-1. Run a Whisper container on any machine (home server, NAS, cloud VM, Raspberry Pi)
+1. Run the gateway + a Whisper model on any machine (home server, NAS, cloud VM, Raspberry Pi)
 2. Make it reachable from your phone (local IP, reverse proxy, or [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/))
 3. Paste the URL into the Diction app
 4. Switch to the Diction keyboard in any app → tap mic → speak → text appears
@@ -55,10 +55,10 @@ That's the entire setup. Three commands to start the server:
 ```bash
 git clone https://github.com/omachala/diction.git
 cd diction
-docker compose up - d whisper-small
+docker compose up -d gateway whisper-small
 ```
 
-Whisper API is now running at `http://<your-server-ip>:9002`. Done.
+Gateway is now running at `http://<your-server-ip>:9000`. Done.
 
 ## How is this different from...
 
@@ -74,6 +74,22 @@ Whisper API is now running at `http://<your-server-ip>:9002`. Done.
 
 Diction is pure transcription: what you say is what you get. No AI rewriting, no filler word removal. If you want that, paid alternatives exist. Diction's trade-off is freedom, privacy, and cost.
 
+## Gateway
+
+The gateway sits in front of your Whisper models and provides:
+
+- **Model routing** — switch models from the app without changing your server URL
+- **WebSocket streaming** — audio streams to the server during recording, so transcription starts instantly when you stop (no upload wait)
+- **Health checks** — `GET /health` and `GET /v1/models` report which backends are up
+
+```bash
+docker compose up -d gateway whisper-small
+```
+
+Point the Diction app to `http://<your-server-ip>:9000`. The gateway routes requests to the right model backend automatically.
+
+You can also skip the gateway and connect directly to a model (e.g. `http://<ip>:9002` for small). The gateway is optional but recommended.
+
 ## Models
 
 Diction is model agnostic. It works with **any [OpenAI-compatible](https://platform.openai.com/docs/api-reference/audio/createTranscription) speech-to-text endpoint** - public models, private models, fine-tuned models, future models. You're not locked into anything.
@@ -81,11 +97,17 @@ Diction is model agnostic. It works with **any [OpenAI-compatible](https://platf
 This repo includes a Docker Compose setup with popular [faster-whisper](https://github.com/fedirz/faster-whisper-server) models to get you started:
 
 ```
-docker compose up - d whisper-tiny          # port 9001 - ~350 MB RAM, ~1-2s
-docker compose up - d whisper-small         # port 9002 - ~800 MB RAM, ~3-4s  ← recommended
-docker compose up - d whisper-medium        # port 9003 - ~1.8 GB RAM, ~8-12s
-docker compose up - d whisper-large         # port 9004 - ~3.5 GB RAM, ~20-30s
-docker compose up - d whisper-distil-large  # port 9005 - ~2 GB RAM, ~4-6s
+docker compose up -d whisper-tiny          # ~350 MB RAM, ~1-2s
+docker compose up -d whisper-small         # ~800 MB RAM, ~3-4s  ← recommended
+docker compose up -d whisper-medium        # ~1.8 GB RAM, ~8-12s
+docker compose up -d whisper-large         # ~3.5 GB RAM, ~20-30s
+docker compose up -d whisper-distil-large  # ~2 GB RAM, ~4-6s
+```
+
+Run multiple models at once and switch between them in the app:
+
+```bash
+docker compose up -d gateway whisper-small whisper-medium whisper-large
 ```
 
 But you can point Diction at anything: [whisper.cpp](https://github.com/ggerganov/whisper.cpp), OpenAI's API, a custom fine-tuned model for your language or domain, or any future model that speaks the same protocol. If it has an `/v1/audio/transcriptions` endpoint, Diction works with it.
@@ -113,8 +135,8 @@ Read the full [Privacy Policy](docs/privacy.md).
 
 ## Requirements
 
-- **iOS 17.0+** (iPhone)
-- For self-hosting: any machine that can run Docker
+- **iOS 16.0+** (iPhone)
+- For self-hosting: any machine that can run Docker (the gateway itself uses ~15 MB RAM)
 
 ## Diction Cloud
 
