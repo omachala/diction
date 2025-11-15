@@ -50,8 +50,8 @@ func (g *Gateway) StreamingHandler() http.HandlerFunc {
 		if model == "" {
 			model = g.defaultModel
 		}
-		target, ok := g.resolveBackend(model)
-		if !ok {
+		target, _ := g.resolveBackend(model)
+		if target == nil {
 			http.Error(w, fmt.Sprintf(`{"error":"unknown model: %s"}`, model), http.StatusBadRequest)
 			return
 		}

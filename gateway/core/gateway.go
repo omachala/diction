@@ -35,21 +35,21 @@ func NewGateway(cfg Config) *Gateway {
 	return g
 }
 
-// resolveBackend maps a model name/alias to a backend URL.
-func (g *Gateway) resolveBackend(model string) (*url.URL, bool) {
+// resolveBackend maps a model name/alias to a backend URL and its config.
+func (g *Gateway) resolveBackend(model string) (*url.URL, *Backend) {
 	model = strings.TrimSpace(model)
-	for _, b := range g.backends {
-		for _, alias := range b.Aliases {
+	for i := range g.backends {
+		for _, alias := range g.backends[i].Aliases {
 			if strings.EqualFold(model, alias) {
-				u, err := url.Parse(b.URL)
+				u, err := url.Parse(g.backends[i].URL)
 				if err != nil {
-					return nil, false
+					return nil, nil
 				}
-				return u, true
+				return u, &g.backends[i]
 			}
 		}
 	}
-	return nil, false
+	return nil, nil
 }
 
 // HealthHandler returns the handler for GET /health.
