@@ -1,0 +1,386 @@
+package core
+
+import (
+	"bytes"
+	"fmt"
+	"io"
+	"mime/multipart"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+)
+
+// buildMultipart builds a multipart/form-data body with the given fields and an
+// optional file part. Returns the body bytes and the content-type header value.
+func buildMultipart(t *testing.T, fields map[string]string, fileName, fileContent string) ([]byte, string) {
+	t.Helper()
+	var buf bytes.Buffer
+	w := multipart.NewWriter(&buf)
+	for k, v := range fields {
+		if err := w.WriteField(k, v); err != nil {
+			t.Fatalf("WriteField %s: %v", k, err)
+		}
+	}
+	if fileName != "" {
+		fw, err := w.CreateFormFile("file", fileName)
+		if err != nil {
+			t.Fatalf("CreateFormFile: %v", err)
+		}
+		fw.Write([]byte(fileContent))
+	}
+	w.Close()
+	return buf.Bytes(), w.FormDataContentType()
+}
+
+// --- parseMultipart ---
+
+func TestParseMultipart_ExtractsModel(t *testing.T) {
+	body, ct := buildMultipart(t, map[string]string{"model": "medium"}, "audio.m4a", "fake-audio")
+	model, boundary := parseMultipart(body, ct, "small")
+	if model != "medium" {
+		t.Errorf("model: want medium, got %s", model)
+	}
+	if boundary == "" {
+		t.Error("expected non-empty boundary")
+	}
+}
+
+func TestParseMultipart_FallsBackToDefault(t *testing.T) {
+	// No model field in the form
+	body, ct := buildMultipart(t, map[string]string{}, "audio.m4a", "fake-audio")
+	model, _ := parseMultipart(body, ct, "small")
+	if model != "small" {
+		t.Errorf("model: want small (default), got %s", model)
+	}
+}
+
+func TestParseMultipart_InvalidContentType(t *testing.T) {
+	model, boundary := parseMultipart([]byte("anything"), "application/json", "small")
+	if model != "small" {
+		t.Errorf("model: want small, got %s", model)
+	}
+	if boundary != "" {
+		t.Errorf("boundary: want empty for non-multipart, got %s", boundary)
+	}
+}
+
+func TestParseMultipart_EmptyBody(t *testing.T) {
+	model, _ := parseMultipart([]byte{}, "multipart/form-data; boundary=xxx", "small")
+	if model != "small" {
+		t.Errorf("model: want small, got %s", model)
+	}
+}
+
+// --- rewriteMultipart ---
+
+func TestRewriteMultipart_StripsModelField(t *testing.T) {
+	body, ct := buildMultipart(t, map[string]string{"model": "medium", "language": "en"}, "audio.m4a", "fake-audio-data")
+	_, boundary := parseMultipart(body, ct, "small")
+
+	rewritten, newCT, err := rewriteMultipart(body, boundary, false)
+	if err != nil {
+		t.Fatalf("rewriteMultipart error: %v", err)
+	}
+
+	// Parse the rewritten body and verify no model field
+	_, params, _ := parseMediaType(newCT)
+	newBoundary := params["boundary"]
+	reader := multipart.NewReader(bytes.NewReader(rewritten), newBoundary)
+	foundModel := false
+	foundLanguage := false
+	foundFile := false
+	for {
+		part, err := reader.NextPart()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			t.Fatalf("read rewritten part: %v", err)
+		}
+		switch part.FormName() {
+		case "model":
+			foundModel = true
+		case "language":
+			foundLanguage = true
+		case "file":
+			foundFile = true
+		}
+		part.Close()
+	}
+
+	if foundModel {
+		t.Error("model field should have been stripped")
+	}
+	if !foundLanguage {
+		t.Error("language field should be preserved")
+	}
+	if !foundFile {
+		t.Error("file part should be preserved")
+	}
+}
+
+func TestRewriteMultipart_PreservesFileContent(t *testing.T) {
+	const audioContent = "this-is-fake-audio-bytes"
+	body, ct := buildMultipart(t, map[string]string{"model": "small"}, "audio.m4a", audioContent)
+	_, boundary := parseMultipart(body, ct, "small")
+
+	rewritten, newCT, err := rewriteMultipart(body, boundary, false)
+	if err != nil {
+		t.Fatalf("rewriteMultipart error: %v", err)
+	}
+
+	_, params, _ := parseMediaType(newCT)
+	reader := multipart.NewReader(bytes.NewReader(rewritten), params["boundary"])
+	for {
+		part, err := reader.NextPart()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			t.Fatalf("read rewritten part: %v", err)
+		}
+		if part.FormName() == "file" {
+			data, _ := io.ReadAll(part)
+			if string(data) != audioContent {
+				t.Errorf("file content: want %q, got %q", audioContent, string(data))
+			}
+		}
+		part.Close()
+	}
+}
+
+func TestRewriteMultipart_NoModelField(t *testing.T) {
+	// No model field — rewrite should still work cleanly
+	body, ct := buildMultipart(t, map[string]string{}, "audio.m4a", "audio")
+	_, boundary := parseMultipart(body, ct, "small")
+
+	_, _, err := rewriteMultipart(body, boundary, false)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestRewriteMultipart_ConvertToWAV(t *testing.T) {
+	// When convertToWAV=true with already-WAV input (RIFF passthrough), the file
+	// part is re-emitted with Content-Type: audio/wav and filename "audio.wav".
+	wavData := []byte("RIFF\x00\x00\x00\x00WAVEfmt ")
+	body, ct := buildMultipart(t, map[string]string{"language": "en"}, "audio.m4a", string(wavData))
+	_, boundary := parseMultipart(body, ct, "small")
+
+	rewritten, newCT, err := rewriteMultipart(body, boundary, true)
+	if err != nil {
+		t.Fatalf("rewriteMultipart error: %v", err)
+	}
+
+	_, params, _ := parseMediaType(newCT)
+	reader := multipart.NewReader(bytes.NewReader(rewritten), params["boundary"])
+	for {
+		part, err := reader.NextPart()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			t.Fatalf("read part: %v", err)
+		}
+		if part.FormName() == "file" {
+			if part.Header.Get("Content-Type") != "audio/wav" {
+				t.Errorf("Content-Type: want audio/wav, got %s", part.Header.Get("Content-Type"))
+			}
+			if part.FileName() != "audio.wav" {
+				t.Errorf("filename: want audio.wav, got %s", part.FileName())
+			}
+		}
+		part.Close()
+	}
+}
+
+// --- convertToWAVBytes ---
+
+func TestConvertToWAVBytes_PassthroughWhenAlreadyWAV(t *testing.T) {
+	// WAV files start with RIFF magic — should be returned unchanged.
+	wavData := []byte("RIFF\x00\x00\x00\x00WAVEfmt ")
+	result, err := convertToWAVBytes(wavData, "audio.wav")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !bytes.Equal(result, wavData) {
+		t.Error("expected WAV data to be passed through unchanged")
+	}
+}
+
+func TestConvertToWAVBytes_FFmpegErrorOnGarbage(t *testing.T) {
+	// Non-RIFF garbage — exercises temp dir creation, file write, ffmpeg exec,
+	// and the error-return path (ffmpeg can't decode random bytes as .m4a).
+	garbage := bytes.Repeat([]byte{0xDE, 0xAD, 0xBE, 0xEF}, 64)
+	_, err := convertToWAVBytes(garbage, "audio.m4a")
+	if err == nil {
+		t.Fatal("expected error when ffmpeg cannot decode garbage audio")
+	}
+}
+
+func TestConvertToWAVBytes_EmptyFilename(t *testing.T) {
+	// Empty filename → falls back to .m4a extension; ffmpeg still fails on garbage.
+	garbage := bytes.Repeat([]byte{0xFF, 0xFE}, 32)
+	_, err := convertToWAVBytes(garbage, "")
+	if err == nil {
+		t.Fatal("expected error for undecipherable audio without filename")
+	}
+}
+
+// --- parseMediaType is a helper to avoid importing mime at the test level.
+func parseMediaType(ct string) (string, map[string]string, error) {
+	// simple parsing: split on ;
+	parts := strings.SplitN(ct, ";", 2)
+	params := make(map[string]string)
+	if len(parts) == 2 {
+		for _, p := range strings.Split(parts[1], ";") {
+			p = strings.TrimSpace(p)
+			kv := strings.SplitN(p, "=", 2)
+			if len(kv) == 2 {
+				params[strings.TrimSpace(kv[0])] = strings.Trim(strings.TrimSpace(kv[1]), `"`)
+			}
+		}
+	}
+	return strings.TrimSpace(parts[0]), params, nil
+}
+
+// --- TranscriptionHandler ---
+
+func TestTranscriptionHandler_MethodNotAllowed(t *testing.T) {
+	g := testGateway()
+	req := httptest.NewRequest(http.MethodGet, "/v1/audio/transcriptions", nil)
+	rr := httptest.NewRecorder()
+	g.TranscriptionHandler()(rr, req)
+
+	if rr.Code != http.StatusMethodNotAllowed {
+		t.Errorf("status: want 405, got %d", rr.Code)
+	}
+}
+
+func TestTranscriptionHandler_UnknownModel(t *testing.T) {
+	g := testGateway()
+	body, ct := buildMultipart(t, map[string]string{"model": "gpt-4o"}, "audio.m4a", "data")
+	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions", bytes.NewReader(body))
+	req.Header.Set("Content-Type", ct)
+	rr := httptest.NewRecorder()
+	g.TranscriptionHandler()(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Errorf("status: want 400, got %d", rr.Code)
+	}
+}
+
+func TestTranscriptionHandler_BodyTooLarge(t *testing.T) {
+	g := &Gateway{
+		backends:     testGateway().backends,
+		health:       newHealthState(),
+		defaultModel: "small",
+		maxBodySize:  10, // tiny limit
+	}
+
+	body, ct := buildMultipart(t, map[string]string{"model": "small"}, "audio.m4a", "this-is-way-too-long")
+	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions", bytes.NewReader(body))
+	req.Header.Set("Content-Type", ct)
+	rr := httptest.NewRecorder()
+	g.TranscriptionHandler()(rr, req)
+
+	if rr.Code != http.StatusRequestEntityTooLarge {
+		t.Errorf("status: want 413, got %d", rr.Code)
+	}
+}
+
+func TestTranscriptionHandler_ProxiesToBackend(t *testing.T) {
+	// Start a fake whisper backend
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/audio/transcriptions" {
+			http.Error(w, "wrong path", http.StatusNotFound)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"text":"hello world"}`)
+	}))
+	defer backend.Close()
+
+	g := &Gateway{
+		backends: []Backend{
+			{Name: "small", URL: backend.URL, Aliases: []string{"small"}},
+		},
+		health:       newHealthState(),
+		defaultModel: "small",
+		maxBodySize:  10 * 1024 * 1024,
+	}
+
+	body, ct := buildMultipart(t, map[string]string{"model": "small"}, "audio.m4a", "fake-audio")
+	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions", bytes.NewReader(body))
+	req.Header.Set("Content-Type", ct)
+	rr := httptest.NewRecorder()
+	g.TranscriptionHandler()(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("status: want 200, got %d (body: %s)", rr.Code, rr.Body.String())
+	}
+	if !strings.Contains(rr.Body.String(), "hello world") {
+		t.Errorf("expected transcription in body, got: %s", rr.Body.String())
+	}
+}
+
+func TestTranscriptionHandler_WAVConversionFails(t *testing.T) {
+	// Backend with NeedsWAV=true: gateway runs ffmpeg on the audio; garbage input
+	// makes ffmpeg fail → rewriteMultipart returns error → handler returns 500.
+	g := &Gateway{
+		backends: []Backend{
+			{Name: "parakeet-v3", URL: "http://parakeet:5092", Aliases: []string{"parakeet-v3"}, NeedsWAV: true},
+		},
+		health:       newHealthState(),
+		defaultModel: "parakeet-v3",
+		maxBodySize:  10 * 1024 * 1024,
+	}
+
+	garbage := bytes.Repeat([]byte{0xDE, 0xAD, 0xBE, 0xEF}, 64)
+	body, ct := buildMultipart(t, map[string]string{"model": "parakeet-v3"}, "audio.m4a", string(garbage))
+	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions", bytes.NewReader(body))
+	req.Header.Set("Content-Type", ct)
+	rr := httptest.NewRecorder()
+	g.TranscriptionHandler()(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("status: want 500, got %d (body: %s)", rr.Code, rr.Body.String())
+	}
+}
+
+func TestTranscriptionHandler_ModelStrippedBeforeProxy(t *testing.T) {
+	// Verify model field is not forwarded to backend
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseMultipartForm(10 << 20); err != nil {
+			http.Error(w, "parse failed", 400)
+			return
+		}
+		if r.FormValue("model") != "" {
+			http.Error(w, "model field should not be present", 400)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"text":"ok"}`)
+	}))
+	defer backend.Close()
+
+	g := &Gateway{
+		backends: []Backend{
+			{Name: "small", URL: backend.URL, Aliases: []string{"small"}},
+		},
+		health:       newHealthState(),
+		defaultModel: "small",
+		maxBodySize:  10 * 1024 * 1024,
+	}
+
+	body, ct := buildMultipart(t, map[string]string{"model": "small", "language": "en"}, "audio.m4a", "audio")
+	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions", bytes.NewReader(body))
+	req.Header.Set("Content-Type", ct)
+	rr := httptest.NewRecorder()
+	g.TranscriptionHandler()(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("status: want 200, got %d (body: %s)", rr.Code, rr.Body.String())
+	}
+}
