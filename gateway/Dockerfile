@@ -10,7 +10,7 @@ RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o gateway .
 
 FROM alpine:latest
 
-RUN apk add --no-cache ca-certificates
+RUN apk add --no-cache ca-certificates ffmpeg
 COPY --from=builder /build/gateway /usr/local/bin/gateway
 
 EXPOSE 8080

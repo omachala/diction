@@ -1,4 +1,4 @@
-# Diction — Self-Hosted Whisper Transcription
+# Diction — Self-Hosted Speech-to-Text
 #
 # Quick start with gateway (recommended):
 #
@@ -9,6 +9,7 @@
 #   - WebSocket streaming: WS /v1/audio/stream?model=small (stream audio during
 #     recording — transcription starts instantly when you stop)
 #   - Health checks: GET /health, GET /v1/models
+#   - Auto format conversion: audio is converted to WAV for backends that need it
 #
 # Point the Diction app to: http://<your-server-ip>:9000
 #
@@ -21,17 +22,18 @@
 #
 # Models, ports, and memory requirements:
 #
-#   Model          Port   RAM        Latency (CPU)
-#   ─────────────────────────────────────────────────
-#   gateway        9000   ~15 MB     —
-#   tiny           9001   ~350 MB    ~1-2s
-#   small          9002   ~800 MB    ~3-4s
-#   medium         9003   ~1.8 GB    ~8-12s
-#   large-v3       9004   ~3.5 GB    ~20-30s
-#   distil-large   9005   ~2.0 GB    ~4-6s
+#   Model          Port   RAM        Latency (CPU)   Provider
+#   ──────────────────────────────────────────────────────────────
+#   gateway        9000   ~15 MB     —               —
+#   tiny           9001   ~350 MB    ~1-2s           Whisper
+#   small          9002   ~800 MB    ~3-4s           Whisper
+#   medium         9003   ~1.8 GB    ~8-12s          Whisper
+#   large-v3       9004   ~3.5 GB    ~20-30s         Whisper
+#   distil-large   9005   ~2.0 GB    ~4-6s           Whisper
+#   parakeet       9006   ~2.0 GB    ~1-2s           NVIDIA Parakeet
 #
 # Models are downloaded on first start and cached in a shared volume.
-# Subsequent starts are instant.
+# Subsequent starts are instant (Parakeet models baked into image).
 
 services:
 
@@ -141,7 +143,20 @@ services:
       retries: 3
       start_period: 120s
 
+  parakeet:
+    image: ghcr.io/achetronic/parakeet:latest-int8
+    container_name: diction-parakeet
+    restart: unless-stopped
+    ports:
+      - "9006:5092"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:5092/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
 volumes:
   whisper-models:
-    # Shared across all models — downloaded once, reused by all
+    # Shared across all Whisper models — downloaded once, reused by all
     name: diction-whisper-models
