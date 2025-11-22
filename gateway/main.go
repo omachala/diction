@@ -17,7 +17,7 @@ import (
 	"github.com/omachala/diction/gateway/core"
 )
 
-func main() {
+func buildMux() (http.Handler, string) {
 	port := core.EnvOrDefault("GATEWAY_PORT", "8080")
 	defaultModel := core.EnvOrDefault("DEFAULT_MODEL", "small")
 	maxBodySize := int64(core.EnvIntOrDefault("MAX_BODY_SIZE", 10485760))
@@ -35,7 +35,12 @@ func main() {
 	mux.HandleFunc("/v1/audio/stream", gw.StreamingHandler())
 	mux.HandleFunc("/", gw.CatchAllHandler())
 
-	log.Printf("Diction Gateway starting on :%s (default_model=%s)", port, defaultModel)
+	return mux, port
+}
+
+func main() {
+	mux, port := buildMux()
+	log.Printf("Diction Gateway starting on :%s", port)
 	if err := http.ListenAndServe(":"+port, mux); err != nil {
 		log.Fatal(err)
 	}
