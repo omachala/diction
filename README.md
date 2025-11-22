@@ -5,7 +5,7 @@
     <img src="assets/logo-dark.png" alt="Diction" height="80">
   </picture>
   <br><br>
-  <strong>Speech-to-text keyboard for iOS.</strong><br>Self-hosted or cloud. Open source gateway. No lock-in.
+  <strong>Speech-to-text keyboard for iOS.</strong><br>On-device, self-hosted, or cloud. Your choice.
 </p>
 
 <p align="center">
@@ -29,31 +29,31 @@
 
 ## What is Diction
 
-An iOS keyboard that transcribes speech to text. Switch to it in any app, tap the mic, speak, and the text is inserted. No QWERTY — dictation only.
+An iOS keyboard for speech-to-text. Switch to it in any app, tap the mic, speak, and the text is inserted. No QWERTY — dictation only.
 
-It works in two modes:
+Three ways to transcribe:
 
-- **Diction Cloud** — zero setup. Download the app, start dictating. Powered by a hosted API.
-- **Self-Hosted** — run your own transcription server. Free, forever. Your audio never leaves your network.
+- **On-Device** — runs directly on your iPhone. No network, no server, completely offline. Free.
+- **Self-Hosted** — run your own transcription server. Audio stays on your network. Free, forever.
+- **Cloud** — zero setup, fast transcription via Diction's hosted API. Free trial, then $3.99/mo.
 
-> **Think of it like [Bitwarden](https://bitwarden.com)** — free and self-hosted for those who want control, with a cloud option for convenience.
-
-The iOS app is pure Swift with zero third-party SDKs. No analytics, no tracking, no telemetry. The self-hosting infrastructure — a Go gateway and Docker Compose setup — is open source and lives in this repo.
+The app is pure Swift with zero third-party SDKs — no analytics, no tracking, no telemetry. The self-hosting infrastructure (a Go gateway and Docker Compose setup) is open source and lives in this repo.
 
 ## Getting Started
 
-### Diction Cloud
+### 1. Install the keyboard
 
 1. Download Diction from the App Store
-2. Go to **Settings → General → Keyboard → Keyboards → Add New Keyboard → Diction**
+2. **Settings → General → Keyboard → Keyboards → Add New Keyboard → Diction**
 3. Enable **Allow Full Access** (required by iOS for network access — [why?](docs/privacy.md#keyboard-extension--full-access))
-4. Open any app, tap 🌐 to switch to Diction, tap the mic, speak
 
-That's it. No server, no configuration.
+### 2. Pick a mode
 
-### Self-Hosted
+**On-Device** — open the app, select On-Device mode, download a model, done. Works offline, audio never leaves your phone.
 
-Run a Whisper-compatible transcription server on any machine with Docker:
+**Cloud** — select Cloud mode, pick a model. Works immediately. Free trial included.
+
+**Self-Hosted** — run a transcription server on your own machine:
 
 ```bash
 git clone https://github.com/omachala/diction.git
@@ -61,55 +61,66 @@ cd diction
 docker compose up -d gateway whisper-small
 ```
 
-Your gateway is now running at `http://<your-server-ip>:9000`.
+Then in the app: **Settings → Self-Hosted** → set the endpoint to `http://<your-server-ip>:9000`.
 
-Then in the Diction app: **Settings → Self-Hosted** → set the endpoint URL to your gateway address (e.g. `http://192.168.1.100:9000`). Pick a model and language, and you're done.
+### 3. Dictate
+
+Open any app, tap 🌐 to switch to Diction, tap the mic, speak. Text appears.
 
 ## Models
 
-Diction is model-agnostic. It works with **any [OpenAI-compatible](https://platform.openai.com/docs/api-reference/audio/createTranscription) speech-to-text endpoint**. This repo includes a Docker Compose setup with popular models to get you started:
+Diction is model-agnostic. The app, the gateway, and the Docker setup all let you choose which model to run. Different models have different trade-offs between speed, accuracy, size, and language support.
+
+### On-device models
+
+Downloaded and run directly on your iPhone. No network needed.
+
+| Model | Size | Best for |
+|-------|------|----------|
+| Whisper Tiny | ~75 MB | Fastest, any iPhone |
+| **Whisper Base** | **~142 MB** | **Recommended — good balance of speed and accuracy** |
+| Whisper Small | ~466 MB | Better accuracy, newer iPhones |
+| Whisper Large Turbo | ~1.6 GB | Best on-device accuracy, latest iPhones |
+
+### Server models (self-hosted & cloud)
+
+Run on your server or via Diction Cloud. Faster and more accurate than on-device.
 
 | Service | Model | Port | RAM | Latency (CPU) | Best for |
 |---------|-------|------|-----|---------------|----------|
-| `whisper-tiny` | [Whisper Tiny](https://huggingface.co/Systran/faster-whisper-tiny) | 9001 | ~350 MB | ~1-2s | Low-power devices, quick notes |
-| **`whisper-small`** | **[Whisper Small](https://huggingface.co/Systran/faster-whisper-small)** | **9002** | **~800 MB** | **~3-4s** | **Best starting point for most users** |
-| `whisper-medium` | [Whisper Medium](https://huggingface.co/Systran/faster-whisper-medium) | 9003 | ~1.8 GB | ~8-12s | Accents, background noise |
-| `whisper-large` | [Whisper Large V3](https://huggingface.co/Systran/faster-whisper-large-v3) | 9004 | ~3.5 GB | ~20-30s | Maximum Whisper accuracy |
-| `whisper-distil-large` | [Distil Whisper Large V3](https://huggingface.co/Systran/faster-distil-whisper-large-v3) | 9005 | ~2 GB | ~4-6s | Near-best quality, much faster (English only) |
-| `parakeet` | [NVIDIA Parakeet TDT 0.6B](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v2) | 9006 | ~2 GB | ~1-2s | Best speed + accuracy, 25 European languages |
+| `whisper-tiny` | Whisper Tiny | 9001 | ~350 MB | ~1-2s | Low-power devices |
+| **`whisper-small`** | **Whisper Small** | **9002** | **~800 MB** | **~3-4s** | **Best starting point** |
+| `whisper-medium` | Whisper Medium | 9003 | ~1.8 GB | ~8-12s | Accents, background noise |
+| `whisper-large` | Whisper Large V3 | 9004 | ~3.5 GB | ~20-30s | Maximum Whisper accuracy |
+| `whisper-distil-large` | Distil Whisper Large V3 | 9005 | ~2 GB | ~4-6s | Near-best quality, English only |
+| `parakeet` | NVIDIA Parakeet TDT 0.6B | 9006 | ~2 GB | ~1-2s | Best speed + accuracy, 25 European languages |
 
 Start any combination:
 
 ```bash
-# Just one model (gateway optional but recommended)
 docker compose up -d gateway whisper-small
-
-# Multiple models — switch between them in the app
 docker compose up -d gateway whisper-small parakeet
-
-# Skip the gateway — connect directly to a model
-docker compose up -d whisper-small
-# Then use http://<ip>:9002 as your endpoint
+docker compose up -d gateway whisper-small whisper-medium
 ```
 
-Models download on first start and are cached in a shared Docker volume — subsequent starts are instant. Parakeet models are baked into the image.
+Models download on first start and are cached — subsequent starts are instant.
 
-You can also point Diction at anything else: [whisper.cpp](https://github.com/ggerganov/whisper.cpp), [OpenAI's API](https://platform.openai.com/docs/api-reference/audio), a custom fine-tuned model, or any future model. If it has a `/v1/audio/transcriptions` endpoint, Diction works with it.
+You can also point Diction at anything else: [whisper.cpp](https://github.com/ggerganov/whisper.cpp), [OpenAI's API](https://platform.openai.com/docs/api-reference/audio), a fine-tuned model, or any future model. If it has a `/v1/audio/transcriptions` endpoint, Diction works with it.
 
 ## Gateway
 
 The gateway is a lightweight Go service (~15 MB Docker image) that sits in front of your model backends:
 
 - **Model routing** — one URL, multiple models. Switch from the app without reconfiguring your server.
-- **WebSocket streaming** — audio streams to the server during recording. Transcription starts instantly when you stop — no upload wait.
-- **Format conversion** — automatically converts audio to the format each backend needs (e.g. WAV for Parakeet). You don't need to think about it.
+- **WebSocket streaming** — audio streams to the server during recording. Transcription starts the moment you stop — no upload wait.
+- **Format conversion** — automatically converts audio to the format each backend needs.
 - **Health monitoring** — checks each backend every 30s. `GET /v1/models` shows which are online.
 
-The gateway is optional. You can always point the app directly at a model backend. But it's recommended — especially if you run multiple models.
+The gateway is optional. You can point the app directly at a model backend. But if you run multiple models, the gateway lets you switch between them from the app.
 
 ### API
 
-The gateway exposes an [OpenAI-compatible](https://platform.openai.com/docs/api-reference/audio/createTranscription) API:
+[OpenAI-compatible](https://platform.openai.com/docs/api-reference/audio/createTranscription) transcription API:
 
 ```bash
 # Health check
@@ -124,7 +135,7 @@ curl -X POST http://localhost:9000/v1/audio/transcriptions \
   -F model=small
 ```
 
-WebSocket streaming for real-time transcription:
+WebSocket streaming:
 
 ```
 WS /v1/audio/stream?model=small&language=en
@@ -144,7 +155,7 @@ WS /v1/audio/stream?model=small&language=en
 
 ## Remote Access
 
-Your phone needs to reach the server. On the same Wi-Fi network, use the local IP directly. For access from anywhere:
+Your phone needs to reach the server. On the same Wi-Fi, use the local IP directly. For access from anywhere:
 
 **[Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)** (recommended) — free, outbound-only. No port forwarding, no public IP needed.
 
@@ -189,53 +200,49 @@ Requires an NVIDIA GPU and the [NVIDIA Container Toolkit](https://docs.nvidia.co
 ## How is Diction different?
 
 <table width="100%">
-<tr><th></th><th>Diction (self-hosted)</th><th>Diction Cloud</th><th>Wispr Flow</th><th>Apple Dictation</th></tr>
-<tr><td><strong>Price</strong></td><td>Free</td><td>$3.99/mo</td><td>$15/month</td><td>Free</td></tr>
-<tr><td><strong>Audio stays on your network</strong></td><td>✅</td><td>❌</td><td>❌</td><td>✅</td></tr>
-<tr><td><strong>Choose your model</strong></td><td>✅ Any model, any URL</td><td>✅ Multiple models</td><td>❌ Locked in</td><td>❌ Locked in</td></tr>
-<tr><td><strong>Open source</strong></td><td>✅ Gateway + infra</td><td>✅ Same gateway</td><td>❌</td><td>❌</td></tr>
-<tr><td><strong>WebSocket streaming</strong></td><td>✅</td><td>✅</td><td>❌</td><td>N/A</td></tr>
-<tr><td><strong>Third-party SDKs in app</strong></td><td>None</td><td>None</td><td>Unknown</td><td>N/A</td></tr>
+<tr><th></th><th>Diction</th><th>Wispr Flow</th><th>Apple Dictation</th></tr>
+<tr><td><strong>Price</strong></td><td>Free (on-device & self-hosted)<br>$3.99/mo (cloud)</td><td>$15/month</td><td>Free</td></tr>
+<tr><td><strong>On-device transcription</strong></td><td>✅</td><td>❌</td><td>✅</td></tr>
+<tr><td><strong>Self-hosted option</strong></td><td>✅</td><td>❌</td><td>❌</td></tr>
+<tr><td><strong>Choose your model</strong></td><td>✅</td><td>❌</td><td>❌</td></tr>
+<tr><td><strong>Open source</strong></td><td>✅ Gateway + server</td><td>❌</td><td>❌</td></tr>
+<tr><td><strong>WebSocket streaming</strong></td><td>✅</td><td>❌</td><td>N/A</td></tr>
+<tr><td><strong>Third-party SDKs in app</strong></td><td>None</td><td>Unknown</td><td>N/A</td></tr>
 </table>
 
-Diction is pure transcription — what you say is what you get. No AI rewriting, no "smart" corrections, no filler word removal.
+Diction is pure transcription — what you say is what you get. No AI rewriting, no "smart" corrections.
 
 ## Privacy
 
 This is a keyboard extension. We take it seriously:
 
+- **On-device**: Audio never leaves your phone.
 - **Self-hosted**: Audio goes only to your server. Full stop.
 - **Cloud**: Audio is processed and immediately discarded. Not stored, not used for training.
-- **No analytics, no tracking, no telemetry.** Zero third-party SDKs.
+- **No analytics, no tracking, no telemetry.** Zero third-party SDKs in the app.
 - **Full Access** is required by iOS for network access — the keyboard needs to reach the transcription endpoint. There is no QWERTY keyboard to log, no clipboard access.
 
 Read the full [Privacy Policy](docs/privacy.md).
 
 ## Troubleshooting
 
-### App issues
+### App
 
-**Diction keyboard doesn't appear**
-Settings → General → Keyboard → Keyboards → Add New Keyboard → Diction. Make sure **Allow Full Access** is enabled.
+**Diction keyboard doesn't appear** — Settings → General → Keyboard → Keyboards → Add New Keyboard → Diction. Make sure **Allow Full Access** is enabled.
 
-**No transcription / timeout**
-Check that your endpoint URL is correct and reachable from your phone. In Self-Hosted mode, your phone must be on the same network as your server (or use [remote access](#remote-access)).
+**No transcription / timeout** — check that your endpoint URL is correct and reachable from your phone. In Self-Hosted mode, your phone must be on the same network as your server (or use [remote access](#remote-access)).
 
-**Transcription is slow**
-Try a smaller model (Small instead of Large) or enable **Stream Audio** in settings — audio uploads during recording so transcription starts instantly when you stop.
+**Transcription is slow** — try a smaller model or enable **Stream Audio** in settings. Streaming uploads audio during recording so transcription starts the moment you stop.
 
-### Self-hosting issues
+### Self-hosting
 
-**Model takes a long time on first start**
-Normal. Model weights are downloaded on first launch (~500 MB for Small, ~3 GB for Large V3). They're cached in a Docker volume — subsequent starts are instant.
+**Model takes a long time on first start** — normal. Weights download on first launch (~500 MB for Small, ~3 GB for Large V3). Cached in a Docker volume — subsequent starts are instant.
 
-**Health check failing**
-Models need 1-2 minutes to load. Check logs: `docker compose logs -f whisper-small`
+**Health check failing** — models need 1-2 minutes to load. Check logs: `docker compose logs -f whisper-small`
 
-**Out of memory**
-Run fewer models or pick a smaller one. One model is all you need.
+**Out of memory** — run fewer models or pick a smaller one. One model is all you need.
 
-**Updating**
+**Updating:**
 
 ```bash
 docker compose pull
@@ -245,7 +252,7 @@ docker compose up -d
 ### Report a bug
 
 [Open an issue](https://github.com/omachala/diction/issues/new?template=bug_report.md) with:
-- Whether you're using Cloud or Self-Hosted mode
+- Which mode you're using (On-Device, Self-Hosted, or Cloud)
 - Your model and language settings
 - Steps to reproduce
 - For self-hosting: Docker version, OS, and logs (`docker compose logs`)
@@ -262,4 +269,3 @@ Contributions to the gateway, Docker setup, and documentation are welcome. See [
 ## License
 
 MIT — see [LICENSE](LICENSE).
-</p>
