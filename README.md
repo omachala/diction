@@ -22,11 +22,9 @@
 
 ---
 
-<!-- TODO: Add screenshot or demo GIF
 <p align="center">
-  <img src="assets/demo.gif" width="300" alt="Diction demo">
+  <img src="assets/simulator-screenshot.png" width="300" alt="Diction app screenshot">
 </p>
--->
 
 ## Why Diction?
 
