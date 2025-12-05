@@ -215,9 +215,10 @@ func (g *Gateway) TranscriptionHandler() http.HandlerFunc {
 				req.ContentLength = int64(len(proxyBody))
 			},
 			Transport: &http.Transport{
-				MaxIdleConns:        20,
-				MaxIdleConnsPerHost: 5,
-				IdleConnTimeout:     90 * time.Second,
+				MaxIdleConns:          20,
+				MaxIdleConnsPerHost:   5,
+				IdleConnTimeout:       90 * time.Second,
+				ResponseHeaderTimeout: 10 * time.Minute,
 			},
 		}
 
