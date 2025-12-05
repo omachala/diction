@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	streamTimeout   = 5 * time.Minute
+	streamTimeout   = 90 * time.Minute
 	wsCloseUnknown  = 4000
 	wsCloseDown     = 4001
 	wsCloseFailed   = 4002
@@ -182,7 +182,7 @@ func (g *Gateway) proxyToBackend(ctx context.Context, target *url.URL, pcm []byt
 	}
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
-	client := &http.Client{Timeout: 2 * time.Minute}
+	client := &http.Client{Timeout: 10 * time.Minute}
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("backend request: %w", err)
