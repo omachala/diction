@@ -25,17 +25,9 @@
 ---
 
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/on-device-dark.png">
-    <source media="(prefers-color-scheme: light)" srcset="assets/on-device-light.png">
-    <img src="assets/on-device-light.png" width="260" alt="Diction on-device screen">
-  </picture>
-  &nbsp;&nbsp;
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/keyboard-dark.png">
-    <source media="(prefers-color-scheme: light)" srcset="assets/keyboard-light.png">
-    <img src="assets/keyboard-light.png" width="260" alt="Diction keyboard">
-  </picture>
+  <img src="assets/slide-01.png" width="200" alt="Diction — free on-device dictation">&nbsp;&nbsp;
+  <img src="assets/slide-02.png" width="200" alt="Diction — tap mic, speak, done">&nbsp;&nbsp;
+  <img src="assets/slide-03.png" width="200" alt="Diction — self-hosted mode">
 </p>
 
 ## Why Diction?
