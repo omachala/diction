@@ -25,7 +25,17 @@
 ---
 
 <p align="center">
-  <img src="assets/screenshot-settings.png" width="280" alt="Diction settings screen">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/on-device-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="assets/on-device-light.png">
+    <img src="assets/on-device-light.png" width="260" alt="Diction on-device screen">
+  </picture>
+  &nbsp;&nbsp;
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/keyboard-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="assets/keyboard-light.png">
+    <img src="assets/keyboard-light.png" width="260" alt="Diction keyboard">
+  </picture>
 </p>
 
 ## Why Diction?
