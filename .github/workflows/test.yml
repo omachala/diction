@@ -30,3 +30,9 @@ jobs:
           COVERAGE=$(awk '/^total:/{gsub(/%/,"",$NF); printf "%.1f", $NF}' coverage.txt)
           echo "Coverage: ${COVERAGE}%"
           awk -v cov="$COVERAGE" 'BEGIN{if(cov < 90){print "Coverage " cov "% < 90% — failing"; exit 1}}'
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: gateway/cover.out
+          flags: gateway

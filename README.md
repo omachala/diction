@@ -20,6 +20,8 @@
 
 <p align="center">
   <img src="https://img.shields.io/github/license/omachala/diction" alt="License">
+  &nbsp;
+  <a href="https://codecov.io/gh/omachala/diction"><img src="https://codecov.io/gh/omachala/diction/branch/master/graph/badge.svg" alt="Coverage"></a>
 </p>
 
 ---
