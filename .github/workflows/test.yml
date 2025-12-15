@@ -25,14 +25,15 @@ jobs:
       - name: Run tests with coverage
         working-directory: gateway
         run: |
-          go test ./... -coverprofile=cover.out -timeout 120s
-          go tool cover -func=cover.out | tee coverage.txt
-          COVERAGE=$(awk '/^total:/{gsub(/%/,"",$NF); printf "%.1f", $NF}' coverage.txt)
+          go test ./... -coverprofile=coverage.txt -timeout 120s
+          go tool cover -func=coverage.txt | tee coverage_func.txt
+          COVERAGE=$(awk '/^total:/{gsub(/%/,"",$NF); printf "%.1f", $NF}' coverage_func.txt)
           echo "Coverage: ${COVERAGE}%"
           awk -v cov="$COVERAGE" 'BEGIN{if(cov < 90){print "Coverage " cov "% < 90% — failing"; exit 1}}'
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
         with:
-          files: gateway/cover.out
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: gateway/coverage.txt
           flags: gateway
