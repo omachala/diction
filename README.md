@@ -26,9 +26,9 @@
 ---
 
 <p align="center">
-  <img src="assets/slide-01.png" width="200" alt="Diction — free on-device dictation">&nbsp;&nbsp;
-  <img src="assets/slide-02.png" width="200" alt="Diction — tap mic, speak, done">&nbsp;&nbsp;
-  <img src="assets/slide-03.png" width="200" alt="Diction — self-hosted mode">
+  <img src="assets/slide-02.png" width="200" alt="Free. No word limits. No catch.">&nbsp;&nbsp;
+  <img src="assets/slide-03.png" width="200" alt="What you say stays with you.">&nbsp;&nbsp;
+  <img src="assets/slide-04.png" width="200" alt="Self-host. Your server, your rules.">
 </p>
 
 ## Why Diction?
