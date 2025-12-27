@@ -33,14 +33,14 @@
 
 ## Why Diction?
 
-- **Free and unlimited on-device mode** — no subscription, no word limits, no catch. Works offline.
-- **Self-hosted mode** — point Diction at your own Whisper server. Your audio stays on your network.
-- **Privacy first** — no analytics, no tracking, no telemetry. Zero third-party SDKs. Nothing is stored or shared.
-- **Model agnostic** — works with any OpenAI-compatible endpoint. Whisper tiny, large-v3, distil, fine-tuned models. You choose.
-- **Open source infrastructure** — the server setup is right here. Inspect it, modify it, contribute to it.
-- **99 languages** — powered by Whisper's multilingual models.
+- **Self-host in three commands** — clone, `docker compose up`, done. Runs on any machine with Docker: home server, NAS, cloud VM.
+- **Any OpenAI-compatible endpoint** — bring your own model. Fine-tuned, domain-specific, local. You choose what runs.
+- **What you say stays with you** — audio goes to your server and nowhere else. No third-party routing. Full stop.
+- **Free. No word limits. No catch.** — self-hosted mode is free forever. No trial, no cap, no subscription.
+- **Open source** — server setup, gateway, and docs are all here. Inspect it, fork it, contribute.
+- **99 languages** — multilingual transcription out of the box.
 
-Want cloud accuracy without self-hosting? **Diction One** ($5.99/month) provides the same experience with zero setup.
+Want zero setup? **Diction One** ($5.99/month) — our cloud, built for accuracy and speed.
 
 ## How It Works
 
