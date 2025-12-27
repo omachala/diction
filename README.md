@@ -2,10 +2,10 @@
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/logo-light.png">
     <source media="(prefers-color-scheme: light)" srcset="assets/logo-dark.png">
-    <img src="assets/logo-dark.png" alt="Diction" height="80">
+    <img src="assets/logo-dark.png" alt="Diction" height="50">
   </picture>
   <br><br>
-  <strong>Voice keyboard for iPhone. You talk. We type.</strong><br>Free and open-source speech-to-text keyboard for iOS.
+  <strong>Voice keyboard for iPhone.<br>You talk. We type.</strong><br>Free and open-source speech-to-text keyboard for iOS.
 </p>
 
 <p align="center">
