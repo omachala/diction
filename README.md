@@ -37,7 +37,7 @@
 - **Any OpenAI-compatible endpoint** — bring your own model. Fine-tuned, domain-specific, local. You choose what runs.
 - **What you say stays with you** — audio goes to your server and nowhere else. No third-party routing. Full stop.
 - **Free. No word limits. No catch.** — self-hosted mode is free forever. No trial, no cap, no subscription.
-- **Open source** — server setup, gateway, and docs are all here. Inspect it, fork it, contribute.
+- **Open-source self-hosted** — server setup, gateway, and docs are all here. Inspect it, fork it, contribute.
 - **99 languages** — multilingual transcription out of the box.
 
 Want zero setup? **Diction One** ($5.99/month) — our cloud, built for accuracy and speed.
