@@ -40,8 +40,6 @@
 - **Open-source self-hosted** — server setup, gateway, and docs are all here. Inspect it, fork it, contribute.
 - **99 languages** — multilingual transcription out of the box.
 
-Want zero setup? **Diction One** ($5.99/month) — our cloud, built for accuracy and speed.
-
 ## How It Works
 
 ### On-Device (Free, No Setup)
