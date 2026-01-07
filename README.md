@@ -34,7 +34,7 @@
 ## Why Diction?
 
 - **Self-host in three commands** — clone, `docker compose up`, done. Runs on any machine with Docker: home server, NAS, cloud VM.
-- **Any OpenAI-compatible endpoint** — bring your own model. Fine-tuned, domain-specific, local. You choose what runs.
+- **Any model, any server** — point Diction at your own endpoint. Fine-tuned, domain-specific, local. You choose what runs.
 - **What you say stays with you** — audio goes to your server and nowhere else. No third-party routing. Full stop.
 - **Free. No word limits. No catch.** — self-hosted mode is free forever. No trial, no cap, no subscription.
 - **Open-source self-hosted** — server setup, gateway, and docs are all here. Inspect it, fork it, contribute.
