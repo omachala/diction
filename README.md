@@ -5,7 +5,7 @@
     <img src="assets/logo-dark.png" alt="Diction" height="50">
   </picture>
   <br><br>
-  <strong>Voice keyboard for iPhone.<br>You talk. We type.</strong><br>Free and open-source speech-to-text keyboard for iOS.
+  <strong>Voice keyboard for iPhone.<br>You talk. We type.</strong><br>Free speech-to-text keyboard for iOS. Open-source self-hosting infrastructure.
 </p>
 
 <p align="center">
@@ -48,7 +48,7 @@ Install the app, add the keyboard, and start dictating. On-device transcription 
 
 ### Self-Hosted
 
-1. Run a Whisper container on any machine (home server, NAS, cloud VM)
+1. Run a transcription server on any machine (home server, NAS, cloud VM)
 2. Make it reachable from your phone (local IP, reverse proxy, or [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/))
 3. Paste the URL into the Diction app
 4. Switch to the Diction keyboard in any app → tap mic → speak → text appears
@@ -61,7 +61,7 @@ cd diction
 docker compose up -d whisper-small
 ```
 
-Whisper API is now running at `http://<your-server-ip>:9002`. Done.
+Your server is now running at `http://<your-server-ip>:9002`. Done.
 
 ### Connecting the app
 
