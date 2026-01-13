@@ -85,9 +85,9 @@ Replace `192.168.1.100` with your server's actual IP. A green dot in the app con
 
 ## Models
 
-Diction is model agnostic. It works with **any [OpenAI-compatible](https://platform.openai.com/docs/api-reference/audio/createTranscription) speech-to-text endpoint**.
+Run whatever works for you. A model fine-tuned for your language. A licensed model for your industry. A private model trained on your domain. Point Diction at your server and it just works.
 
-This repo includes a Docker Compose setup with popular [faster-whisper](https://github.com/fedirz/faster-whisper-server) models:
+This repo includes a quickstart Docker Compose setup with [faster-whisper](https://github.com/fedirz/faster-whisper-server) to get you running in minutes:
 
 ```
 docker compose up -d whisper-tiny          # port 9001 - ~350 MB RAM, ~1-2s
@@ -97,7 +97,7 @@ docker compose up -d whisper-large         # port 9004 - ~3.5 GB RAM, ~20-30s
 docker compose up -d whisper-distil-large  # port 9005 - ~2 GB RAM, ~4-6s
 ```
 
-You can also point Diction at [whisper.cpp](https://github.com/ggerganov/whisper.cpp), OpenAI's API, or any future model that speaks the same protocol.
+Already running your own server? Point Diction at it. The gateway handles the rest.
 
 ## No Public IP?
 
