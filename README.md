@@ -36,11 +36,11 @@
 
 ## Why Diction?
 
-- **Self-host in three commands** — clone, `docker compose up`, done. Runs on any machine with Docker: home server, NAS, cloud VM.
-- **Any model, any server** — point Diction at your own endpoint. Fine-tuned, domain-specific, local. You choose what runs.
-- **What you say stays with you** — audio goes to your server and nowhere else. No third-party routing. Full stop.
-- **Free. No word limits. No catch.** — self-hosted mode is free forever. No trial, no cap, no subscription.
-- **Open-source self-hosted** — server setup, gateway, and docs are all here. Inspect it, fork it, contribute.
+- **Dictation keyboard for any app** — a free [Whisper Flow](https://whisperflow.com) alternative. Switch to Diction in any text field, tap mic, speak. Text appears instantly.
+- **What you say stays with you** — on-device mode works offline. Self-hosted sends audio only to your server. No third-party routing.
+- **Free. No word limits. No catch.** — no trial, no cap, no subscription.
+- **Self-host in three commands** — `git clone`, `docker compose up`, done. Server setup, gateway, and docs are all in this repo.
+- **Any model, any server** — fine-tuned for your language. Licensed for your industry. Trained on your domain. You choose what runs.
 - **99 languages** — multilingual transcription out of the box.
 
 ## How It Works
