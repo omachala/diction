@@ -5,7 +5,9 @@
     <img src="assets/logo-dark.png" alt="Diction" height="50">
   </picture>
   <br><br>
-  <strong>Voice keyboard for iPhone.<br>You talk. We type.</strong><br>Free speech-to-text keyboard for iOS. Open-source self-hosting infrastructure.
+  <strong>You talk. We type.</strong>
+  <br><br>
+  Free speech-to-text keyboard for iOS.<br>Open-source self-hosted, on-device or cloud transcription.
 </p>
 
 <p align="center">
