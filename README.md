@@ -36,7 +36,7 @@
 
 ## Why Diction?
 
-- **Dictation keyboard for any app** — a free [Whisper Flow](https://whisperflow.com) alternative. Switch to Diction in any text field, tap mic, speak. Text appears instantly.
+- **Dictation keyboard for any app** — a free Wispr Flow alternative. Switch to Diction in any text field, tap mic, speak. Text appears instantly.
 - **What you say stays with you** — on-device mode works offline. Self-hosted sends audio only to your server. No third-party routing.
 - **Free. No word limits. No catch.** — no trial, no cap, no subscription.
 - **Self-host in three commands** — `git clone`, `docker compose up`, done. Server setup, gateway, and docs are all in this repo.
