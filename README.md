@@ -131,7 +131,7 @@ Read the full [Privacy Policy](https://diction.one/privacy).
 
 ## Contributing
 
-We welcome contributions to the self-hosting infrastructure, documentation, and Docker setup. See [CONTRIBUTING.md](CONTRIBUTING.md).
+All contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
