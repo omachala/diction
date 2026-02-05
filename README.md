@@ -36,12 +36,12 @@
 
 ## Why Diction?
 
-- **Dictation keyboard for any app** — a free Wispr Flow alternative. Switch to Diction in any text field, tap mic, speak. Text appears instantly.
-- **What you say stays with you** — on-device mode works offline. Self-hosted sends audio only to your server. No third-party routing.
-- **Free. No word limits. No catch.** — no trial, no cap, no subscription.
-- **Self-host in three commands** — `git clone`, `docker compose up`, done. Server setup, gateway, and docs are all in this repo.
-- **Any model, any server** — fine-tuned for your language. Licensed for your industry. Trained on your domain. You choose what runs.
-- **99 languages** — multilingual transcription out of the box.
+- **Dictation keyboard for any app** - a free Wispr Flow alternative. Switch to Diction in any text field, tap mic, speak. Text appears instantly.
+- **What you say stays with you** - on-device mode works offline. Self-hosted sends audio only to your server. No third-party routing.
+- **Free. No word limits. No catch.** - no trial, no cap, no subscription.
+- **Self-host in three commands** - `git clone`, `docker compose up`, done. Server setup, gateway, and docs are all in this repo.
+- **Any model, any server** - fine-tuned for your language. Licensed for your industry. Trained on your domain. You choose what runs.
+- **99 languages** - multilingual transcription out of the box.
 
 ## How It Works
 
@@ -106,9 +106,9 @@ Already running your own server? Point Diction at it. The gateway handles the re
 
 No problem. You don't need to open ports on your router:
 
-- **[Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)** — free, outbound-only connection. No port forwarding needed.
-- **[Tailscale](https://tailscale.com/)** — free WireGuard mesh VPN. Install on server + phone, connect from anywhere.
-- **[ngrok](https://ngrok.com/)** — instant public URL, great for testing.
+- **[Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)** - free, outbound-only connection. No port forwarding needed.
+- **[Tailscale](https://tailscale.com/)** - free WireGuard mesh VPN. Install on server + phone, connect from anywhere.
+- **[ngrok](https://ngrok.com/)** - instant public URL, great for testing.
 
 See the [Self-Hosting Guide](docs/self-hosting.md) for detailed instructions.
 
@@ -120,7 +120,7 @@ This is a keyboard extension. We take privacy seriously:
 - **Self-hosted**: Audio goes only to your server. Full stop.
 - **Diction One**: Audio is processed and immediately discarded. Not stored, not used for training.
 - **No analytics, no tracking, no telemetry.** The app contains zero third-party SDKs.
-- **Full Access** is required by iOS for network — the keyboard needs to reach the transcription endpoint. No keylogging, no clipboard access.
+- **Full Access** is required by iOS for network - the keyboard needs to reach the transcription endpoint. No keylogging, no clipboard access.
 
 Read the full [Privacy Policy](https://diction.one/privacy).
 
@@ -135,6 +135,6 @@ We welcome contributions to the self-hosting infrastructure, documentation, and 
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).
 
 The iOS app is distributed via the App Store. This repository contains the self-hosting infrastructure and documentation.
