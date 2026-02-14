@@ -3,9 +3,7 @@ name: Gateway Tests
 on:
   push:
     branches: [master]
-    paths: [gateway/**]
   pull_request:
-    paths: [gateway/**]
   workflow_dispatch:
 
 jobs:
