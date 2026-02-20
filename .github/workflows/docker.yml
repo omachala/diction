@@ -22,10 +22,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ghcr.io/omachala/diction-gateway
+          tags: |
+            type=sha
+            type=raw,value=latest
+
       - uses: docker/build-push-action@v6
         with:
           context: gateway
           push: true
-          tags: |
-            ghcr.io/omachala/diction-gateway:latest
-            ghcr.io/omachala/diction-gateway:${{ github.sha }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
