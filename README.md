@@ -51,56 +51,51 @@ Install the app, add the keyboard, and start dictating. On-device transcription 
 
 ### Self-Hosted
 
-1. Run a transcription server on any machine (home server, NAS, cloud VM)
-2. Make it reachable from your phone (local IP, reverse proxy, or [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/))
-3. Paste the URL into the Diction app
-4. Switch to the Diction keyboard in any app → tap mic → speak → text appears
-
-Three commands to start the server:
+#### Quick start
 
 ```bash
 git clone https://github.com/omachala/diction.git
 cd diction
-docker compose up -d whisper-small
+docker compose up -d gateway whisper-small
 ```
 
-Your server is now running at `http://<your-server-ip>:9002`. Done.
+Your server is running at `http://<your-ip>:9000`. Open the Diction app, go to **Self-Hosted**, paste the URL. Done.
 
-### Connecting the app
+#### Using the pre-built gateway image
 
-In the Diction app, go to the **Self-Hosted** tab and paste your server URL into the **Endpoint URL** field:
-
-```
-http://<your-server-ip>:<port>
+```bash
+docker pull ghcr.io/omachala/diction-gateway:latest
 ```
 
-Each model runs on its own port:
+Or pin to a specific version:
 
-| Model | Port | Endpoint URL |
-|-------|------|-------------|
-| `whisper-tiny` | 9001 | `http://192.168.1.100:9001` |
-| `whisper-small` | 9002 | `http://192.168.1.100:9002` |
-| `whisper-medium` | 9003 | `http://192.168.1.100:9003` |
-| `whisper-large` | 9004 | `http://192.168.1.100:9004` |
-| `whisper-distil-large` | 9005 | `http://192.168.1.100:9005` |
-
-Replace `192.168.1.100` with your server's actual IP. A green dot in the app confirms the endpoint is reachable.
-
-## Models
-
-Run whatever works for you. A model fine-tuned for your language. A licensed model for your industry. A private model trained on your domain. Point Diction at your server and it just works.
-
-This repo includes a quickstart Docker Compose setup with [faster-whisper](https://github.com/fedirz/faster-whisper-server) to get you running in minutes:
-
-```
-docker compose up -d whisper-tiny          # port 9001 - ~350 MB RAM, ~1-2s
-docker compose up -d whisper-small         # port 9002 - ~800 MB RAM, ~3-4s  ← recommended
-docker compose up -d whisper-medium        # port 9003 - ~1.8 GB RAM, ~8-12s
-docker compose up -d whisper-large         # port 9004 - ~3.5 GB RAM, ~20-30s
-docker compose up -d whisper-distil-large  # port 9005 - ~2 GB RAM, ~4-6s
+```bash
+docker pull ghcr.io/omachala/diction-gateway:v1.0.0
 ```
 
-Already running your own server? Point Diction at it. The gateway handles the rest.
+#### Available models
+
+The Docker Compose setup includes several models out of the box:
+
+| Service | Port | RAM | Latency (CPU) |
+|---------|------|-----|---------------|
+| `whisper-tiny` | 9001 | ~350 MB | ~1-2s |
+| `whisper-small` | 9002 | ~800 MB | ~3-4s |
+| `whisper-medium` | 9003 | ~1.8 GB | ~8-12s |
+| `whisper-large` | 9004 | ~3.5 GB | ~20-30s |
+| `whisper-distil-large` | 9005 | ~2 GB | ~4-6s |
+| `parakeet` | 9006 | ~2 GB | ~1-2s |
+
+Start any model individually or use the gateway on port 9000 which routes between them:
+
+```bash
+docker compose up -d gateway whisper-small    # gateway + one model
+docker compose up -d                          # everything
+```
+
+#### Bring your own model
+
+The gateway proxies to any speech-to-text server. Run a model fine-tuned for your language, licensed for your industry, or trained on your domain. Point Diction at it and it just works.
 
 ## No Public IP?
 
