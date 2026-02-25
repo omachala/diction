@@ -51,43 +51,27 @@ Install the app, add the keyboard, and start dictating. On-device transcription 
 
 ### Self-Hosted
 
-#### Quick start (Docker Compose)
-
-Clone the repo and start the gateway + a transcription model:
-
 ```bash
-git clone https://github.com/omachala/diction.git
-cd diction
-docker compose up -d gateway whisper-small
-```
-
-The gateway is now running at `http://<your-ip>:9000`.
-
-#### Quick start (pre-built image)
-
-No need to clone. Run the gateway and a transcription backend directly:
-
-```bash
-# 1. Create a shared network
 docker network create diction
 
-# 2. Start a transcription model
 docker run -d --name whisper-small --network diction \
   -e WHISPER__MODEL=Systran/faster-whisper-small \
   -e WHISPER__INFERENCE_DEVICE=cpu \
   fedirz/faster-whisper-server:latest-cpu
 
-# 3. Start the gateway
 docker run -d --name diction-gateway --network diction \
   -p 9000:8080 \
   ghcr.io/omachala/diction-gateway:latest
 ```
 
-The gateway is now running at `http://<your-ip>:9000`. Pin to a specific version with `ghcr.io/omachala/diction-gateway:v1.0.0`.
+Your server is running at `http://<your-ip>:9000`. Open the Diction app, go to **Self-Hosted**, paste the URL. Done.
 
-#### Connect the app
+Or use Docker Compose:
 
-Open the Diction app, go to **Self-Hosted**, paste your server URL. A green dot confirms the connection. Done.
+```bash
+git clone https://github.com/omachala/diction.git && cd diction
+docker compose up -d gateway whisper-small
+```
 
 #### Available models
 
