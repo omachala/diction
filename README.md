@@ -51,49 +51,42 @@ Install the app, add the keyboard, and start dictating. On-device transcription 
 
 ### Self-Hosted
 
-```bash
-docker network create diction
+Save this as `docker-compose.yml` and run `docker compose up -d`:
 
-docker run -d --name whisper-small --network diction \
-  -e WHISPER__MODEL=Systran/faster-whisper-small \
-  -e WHISPER__INFERENCE_DEVICE=cpu \
-  fedirz/faster-whisper-server:latest-cpu
+```yaml
+services:
+  gateway:
+    image: ghcr.io/omachala/diction-gateway:latest
+    ports:
+      - "9000:8080"
 
-docker run -d --name diction-gateway --network diction \
-  -p 9000:8080 \
-  ghcr.io/omachala/diction-gateway:latest
+  whisper-small:
+    image: fedirz/faster-whisper-server:latest-cpu
+    environment:
+      WHISPER__MODEL: Systran/faster-whisper-small
+      WHISPER__INFERENCE_DEVICE: cpu
 ```
 
 Your server is running at `http://<your-ip>:9000`. Open the Diction app, go to **Self-Hosted**, paste the URL. Done.
 
-Or use Docker Compose:
+#### More models
 
-```bash
-git clone https://github.com/omachala/diction.git && cd diction
-docker compose up -d gateway whisper-small
-```
+Swap or add models to your compose file. The gateway handles routing and streaming between them.
 
-#### Available models
+| Model | RAM | Latency (CPU) |
+|-------|-----|---------------|
+| `whisper-tiny` | ~350 MB | ~1-2s |
+| `whisper-small` | ~800 MB | ~3-4s |
+| `whisper-medium` | ~1.8 GB | ~8-12s |
+| `whisper-large` | ~3.5 GB | ~20-30s |
+| `whisper-distil-large` | ~2 GB | ~4-6s |
+| `parakeet` | ~2 GB | ~1-2s |
 
-| Service | Port | RAM | Latency (CPU) |
-|---------|------|-----|---------------|
-| `whisper-tiny` | 9001 | ~350 MB | ~1-2s |
-| `whisper-small` | 9002 | ~800 MB | ~3-4s |
-| `whisper-medium` | 9003 | ~1.8 GB | ~8-12s |
-| `whisper-large` | 9004 | ~3.5 GB | ~20-30s |
-| `whisper-distil-large` | 9005 | ~2 GB | ~4-6s |
-| `parakeet` | 9006 | ~2 GB | ~1-2s |
-
-With Docker Compose you can start any combination:
-
-```bash
-docker compose up -d gateway whisper-small    # gateway + one model
-docker compose up -d                          # everything
-```
+See [`docker-compose.yml`](docker-compose.yml) in this repo for the full setup with all models.
 
 #### Bring your own model
 
-The gateway proxies to any speech-to-text server. Run a model fine-tuned for your language, licensed for your industry, or trained on your domain. Point Diction at it and it just works.
+Run a model fine-tuned for your language, licensed for your industry, or trained on your domain. Point Diction at it and it just works.
 
 ## No Public IP?
 
