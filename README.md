@@ -68,7 +68,7 @@ Whisper API is now running at `http://<your-server-ip>:9002`. Done.
 | **Model agnostic** | ✅ Any model, any URL | ❌ Locked in | ❌ Locked in |
 | **Zero third-party SDKs** | ✅ | ❌ | N/A |
 
-**Wispr Flow** is a polished product with AI editing features. If you want filler word removal, grammar correction, and context-aware tone -Wispr Flow does that. Diction is pure transcription: what you say is what you get. The trade-off is freedom, privacy, and cost.
+Diction is pure transcription: what you say is what you get. No AI rewriting, no filler word removal. If you want that, paid alternatives exist. Diction's trade-off is freedom, privacy, and cost.
 
 ## Models
 
