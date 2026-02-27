@@ -1,0 +1,125 @@
+# Diction — Self-Hosted Whisper Transcription
+#
+# Quick start:
+#   cp .env.example .env
+#   docker compose up -d whisper-small gateway   # single model
+#   docker compose up -d                          # all models
+#
+# Then point the Diction app endpoint to: http://<your-server>:9000
+#
+# Models and memory requirements:
+#   tiny         ~350 MB RAM    ~1-2s latency
+#   small        ~800 MB RAM    ~3-4s latency
+#   medium       ~1.8 GB RAM    ~8-12s latency
+#   large-v3     ~3.5 GB RAM    ~20-30s latency
+#   distil-large ~2.0 GB RAM    ~4-6s latency
+#
+# Models are downloaded on first start and cached in a shared volume.
+# Subsequent starts are instant.
+
+services:
+
+  gateway:
+    image: ghcr.io/omachala/diction-gateway:latest
+    container_name: diction-gateway
+    restart: unless-stopped
+    ports:
+      - "9000:8080"
+    environment:
+      DEFAULT_MODEL: ${DEFAULT_MODEL:-small}
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      - whisper-tiny
+      - whisper-small
+      - whisper-medium
+      - whisper-large
+      - whisper-distil-large
+
+  whisper-tiny:
+    image: fedirz/faster-whisper-server:latest-cpu
+    container_name: diction-whisper-tiny
+    restart: unless-stopped
+    volumes:
+      - whisper-models:/root/.cache/huggingface
+    environment:
+      WHISPER__MODEL: Systran/faster-whisper-tiny
+      WHISPER__INFERENCE_DEVICE: cpu
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 120s
+
+  whisper-small:
+    image: fedirz/faster-whisper-server:latest-cpu
+    container_name: diction-whisper-small
+    restart: unless-stopped
+    volumes:
+      - whisper-models:/root/.cache/huggingface
+    environment:
+      WHISPER__MODEL: Systran/faster-whisper-small
+      WHISPER__INFERENCE_DEVICE: cpu
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 120s
+
+  whisper-medium:
+    image: fedirz/faster-whisper-server:latest-cpu
+    container_name: diction-whisper-medium
+    restart: unless-stopped
+    volumes:
+      - whisper-models:/root/.cache/huggingface
+    environment:
+      WHISPER__MODEL: Systran/faster-whisper-medium
+      WHISPER__INFERENCE_DEVICE: cpu
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 120s
+
+  whisper-large:
+    image: fedirz/faster-whisper-server:latest-cpu
+    container_name: diction-whisper-large
+    restart: unless-stopped
+    volumes:
+      - whisper-models:/root/.cache/huggingface
+    environment:
+      WHISPER__MODEL: Systran/faster-whisper-large-v3
+      WHISPER__INFERENCE_DEVICE: cpu
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 120s
+
+  whisper-distil-large:
+    image: fedirz/faster-whisper-server:latest-cpu
+    container_name: diction-whisper-distil-large
+    restart: unless-stopped
+    volumes:
+      - whisper-models:/root/.cache/huggingface
+    environment:
+      WHISPER__MODEL: Systran/faster-distil-whisper-large-v3
+      WHISPER__INFERENCE_DEVICE: cpu
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 120s
+
+volumes:
+  whisper-models:
+    name: diction-whisper-models
