@@ -65,7 +65,7 @@ Whisper API is now running at `http://<your-server-ip>:9002`. Done.
 | **Open source server** | ✅ | ❌ | ❌ |
 | **iOS keyboard** | ✅ | ✅ | ✅ Built-in |
 | **Custom Whisper endpoint** | ✅ Any URL | ❌ | ❌ |
-| **Accuracy** | ✅ Whisper | ✅ Whisper + AI | ❌ Poor |
+| **Accuracy** | ✅ Any Whisper model | ✅ Whisper + AI | ❌ Poor |
 | **Zero third-party SDKs** | ✅ | ❌ | N/A |
 
 **Wispr Flow** is a polished product with AI editing features. If you want filler word removal, grammar correction, and context-aware tone -Wispr Flow does that. Diction is pure transcription: what you say is what you get. The trade-off is freedom, privacy, and cost.
@@ -84,7 +84,7 @@ docker compose up -d whisper-distil-large  # port 9005 -~2 GB RAM, ~4-6s
 
 Models are downloaded automatically on first start and cached. Subsequent starts are instant.
 
-Works with any [OpenAI-compatible](https://platform.openai.com/docs/api-reference/audio/createTranscription) Whisper endpoint -[faster-whisper-server](https://github.com/fedirz/faster-whisper-server), [whisper.cpp](https://github.com/ggerganov/whisper.cpp), or OpenAI's own API.
+Diction works with **any [OpenAI-compatible](https://platform.openai.com/docs/api-reference/audio/createTranscription) speech-to-text endpoint**. You're not locked into one model or provider. Use [faster-whisper-server](https://github.com/fedirz/faster-whisper-server), [whisper.cpp](https://github.com/ggerganov/whisper.cpp), OpenAI's API, or any future model that speaks the same protocol.
 
 ## No Public IP?
 
