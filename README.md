@@ -23,7 +23,8 @@
 ---
 
 <p align="center">
-  <img src="assets/simulator-screenshot.png" width="300" alt="Diction app screenshot">
+  <img src="assets/screenshot-settings.png" width="280" alt="Diction settings screen">&nbsp;&nbsp;
+  <img src="assets/screenshot-recording.png" width="280" alt="Diction recording screen">
 </p>
 
 ## Why Diction?
