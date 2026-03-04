@@ -1,17 +1,10 @@
-# Diction - Self-Hosted Speech-to-Text
+# docker compose up -d gateway whisper-small
 #
-# Quick start:
-#
-#   docker compose up -d gateway whisper-small
-#
-# The gateway runs on port 8080 and provides:
-#   - Model routing: POST /v1/audio/transcriptions with model=small|medium|etc
-#   - WebSocket streaming: WS /v1/audio/stream?model=small
-#   - Health checks: GET /health, GET /v1/models
-#   - Auto format conversion: audio is converted to WAV for backends that need it
-#
-# Models are downloaded on first start and cached in a shared volume.
-# Subsequent starts are instant.
+# Gateway endpoints:
+#   POST /v1/audio/transcriptions   - transcribe audio
+#   WS   /v1/audio/stream           - stream audio in real time
+#   GET  /v1/models                 - list available models
+#   GET  /health                    - health check
 
 services:
 
