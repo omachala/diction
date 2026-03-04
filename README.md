@@ -81,10 +81,6 @@ Swap or add models to your compose file. The gateway handles routing and streami
 | `whisper-small` | ~800 MB | ~3-4s |
 | `whisper-medium` | ~1.8 GB | ~8-12s |
 | `whisper-large` | ~3.5 GB | ~20-30s |
-| `whisper-distil-large` | ~2 GB | ~4-6s |
-| `parakeet` | ~2 GB | ~1-2s |
-
-See [`docker-compose.yml`](docker-compose.yml) in this repo for the full setup with all models.
 
 #### Bring your own model
 
