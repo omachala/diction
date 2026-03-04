@@ -58,7 +58,7 @@ services:
   gateway:
     image: ghcr.io/omachala/diction-gateway:latest
     ports:
-      - "9000:8080"
+      - "8080:8080"
 
   whisper-small:
     image: fedirz/faster-whisper-server:latest-cpu
@@ -67,7 +67,9 @@ services:
       WHISPER__INFERENCE_DEVICE: cpu
 ```
 
-Your server is running at `http://<your-ip>:9000`. Open the Diction app, go to **Self-Hosted**, paste the URL. Done.
+Your server needs to be reachable from your phone. See [No Public IP?](#no-public-ip) for options like Cloudflare Tunnel, Tailscale, or ngrok.
+
+Once reachable, open the Diction app, go to **Self-Hosted**, paste your server URL. Done.
 
 #### More models
 
