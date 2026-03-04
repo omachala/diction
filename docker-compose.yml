@@ -1,48 +1,26 @@
-# Diction — Self-Hosted Speech-to-Text
+# Diction - Self-Hosted Speech-to-Text
 #
-# Quick start with gateway (recommended):
+# Quick start:
 #
 #   docker compose up -d gateway whisper-small
 #
-# The gateway runs on port 9000 and provides:
+# The gateway runs on port 8080 and provides:
 #   - Model routing: POST /v1/audio/transcriptions with model=small|medium|etc
-#   - WebSocket streaming: WS /v1/audio/stream?model=small (stream audio during
-#     recording — transcription starts instantly when you stop)
+#   - WebSocket streaming: WS /v1/audio/stream?model=small
 #   - Health checks: GET /health, GET /v1/models
 #   - Auto format conversion: audio is converted to WAV for backends that need it
 #
-# Point the Diction app to: http://<your-server-ip>:9000
-#
-# Or connect directly to a model (no gateway needed):
-#
-#   docker compose up -d whisper-small
-#
-# Then point the Diction app endpoint to:
-#   http://<your-server-ip>:9002   (port depends on model, see below)
-#
-# Models, ports, and memory requirements:
-#
-#   Model          Port   RAM        Latency (CPU)   Provider
-#   ──────────────────────────────────────────────────────────────
-#   gateway        9000   ~15 MB     —               —
-#   tiny           9001   ~350 MB    ~1-2s           Whisper
-#   small          9002   ~800 MB    ~3-4s           Whisper
-#   medium         9003   ~1.8 GB    ~8-12s          Whisper
-#   large-v3       9004   ~3.5 GB    ~20-30s         Whisper
-#   distil-large   9005   ~2.0 GB    ~4-6s           Whisper
-#   parakeet       9006   ~2.0 GB    ~1-2s           NVIDIA Parakeet
-#
 # Models are downloaded on first start and cached in a shared volume.
-# Subsequent starts are instant (Parakeet models baked into image).
+# Subsequent starts are instant.
 
 services:
 
   gateway:
-    build: ./gateway
+    image: ghcr.io/omachala/diction-gateway:latest
     container_name: diction-gateway
     restart: unless-stopped
     ports:
-      - "9000:8080"
+      - "8080:8080"
     environment:
       DEFAULT_MODEL: small
     depends_on:
@@ -53,30 +31,10 @@ services:
       timeout: 5s
       retries: 3
 
-  whisper-tiny:
-    image: fedirz/faster-whisper-server:latest-cpu
-    container_name: diction-whisper-tiny
-    restart: unless-stopped
-    ports:
-      - "9001:8000"
-    volumes:
-      - whisper-models:/root/.cache/huggingface
-    environment:
-      WHISPER__MODEL: Systran/faster-whisper-tiny
-      WHISPER__INFERENCE_DEVICE: cpu
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 120s
-
   whisper-small:
     image: fedirz/faster-whisper-server:latest-cpu
     container_name: diction-whisper-small
     restart: unless-stopped
-    ports:
-      - "9002:8000"
     volumes:
       - whisper-models:/root/.cache/huggingface
     environment:
@@ -93,8 +51,6 @@ services:
     image: fedirz/faster-whisper-server:latest-cpu
     container_name: diction-whisper-medium
     restart: unless-stopped
-    ports:
-      - "9003:8000"
     volumes:
       - whisper-models:/root/.cache/huggingface
     environment:
@@ -111,8 +67,6 @@ services:
     image: fedirz/faster-whisper-server:latest-cpu
     container_name: diction-whisper-large
     restart: unless-stopped
-    ports:
-      - "9004:8000"
     volumes:
       - whisper-models:/root/.cache/huggingface
     environment:
@@ -125,38 +79,6 @@ services:
       retries: 3
       start_period: 120s
 
-  whisper-distil-large:
-    image: fedirz/faster-whisper-server:latest-cpu
-    container_name: diction-whisper-distil-large
-    restart: unless-stopped
-    ports:
-      - "9005:8000"
-    volumes:
-      - whisper-models:/root/.cache/huggingface
-    environment:
-      WHISPER__MODEL: Systran/faster-distil-whisper-large-v3
-      WHISPER__INFERENCE_DEVICE: cpu
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 120s
-
-  parakeet:
-    image: ghcr.io/achetronic/parakeet:latest-int8
-    container_name: diction-parakeet
-    restart: unless-stopped
-    ports:
-      - "9006:5092"
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:5092/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
-
 volumes:
   whisper-models:
-    # Shared across all Whisper models — downloaded once, reused by all
     name: diction-whisper-models

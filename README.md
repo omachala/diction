@@ -77,7 +77,6 @@ Swap or add models to your compose file. The gateway handles routing and streami
 
 | Model | RAM | Latency (CPU) |
 |-------|-----|---------------|
-| `whisper-tiny` | ~350 MB | ~1-2s |
 | `whisper-small` | ~800 MB | ~3-4s |
 | `whisper-medium` | ~1.8 GB | ~8-12s |
 | `whisper-large` | ~3.5 GB | ~20-30s |
