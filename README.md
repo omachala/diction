@@ -7,7 +7,7 @@
   <br><br>
   <strong>You talk. We type.</strong>
   <br><br>
-  Open-source voice keyboard for iOS. Tap mic, speak, done.<br>Works in any app — on your device or your own server.
+  Open-source voice keyboard for iOS. Works in every app.<br>Transcription runs on your device or your own server.
 </p>
 
 <p align="center">
