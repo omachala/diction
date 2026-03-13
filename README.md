@@ -29,16 +29,16 @@
 
 <p align="center">
   <img src="assets/slide-01.png" width="200" alt="You talk. We type.">&nbsp;
-  <img src="assets/slide-02.png" width="200" alt="Free. No word limits. No catch.">&nbsp;
+  <img src="assets/slide-02.png" width="200" alt="No limits. No word caps. No catch.">&nbsp;
   <img src="assets/slide-03.png" width="200" alt="What you say stays with you.">&nbsp;
   <img src="assets/slide-04.png" width="200" alt="Self-host. Your server, your rules.">
 </p>
 
 ## Why Diction?
 
-- **Dictation keyboard for any app** - a free Wispr Flow alternative. Switch to Diction in any text field, tap mic, speak. Text appears instantly.
+- **Dictation keyboard for any app** - a Wispr Flow alternative. Switch to Diction in any text field, tap mic, speak. Text appears instantly.
 - **What you say stays with you** - on-device mode works offline. Self-hosted sends audio only to your server. No third-party routing.
-- **Free. No word limits. No catch.** - no trial, no cap, no subscription.
+- **On-device is free, no limits** - local and self-hosted modes have no word caps, no expiry, no catch. [Diction One](#diction-one) ($5.99/month) adds cloud transcription.
 - **Self-host in three commands** - `git clone`, `docker compose up`, done. Server setup, gateway, and docs are all in this repo.
 - **Any model, any server** - fine-tuned for your language. Licensed for your industry. Trained on your domain. You choose what runs.
 - **99 languages** - multilingual transcription out of the box.
@@ -106,6 +106,12 @@ This is a keyboard extension. We take privacy seriously:
 - **Full Access** is required by iOS for network - the keyboard needs to reach the transcription endpoint. No keylogging, no clipboard access.
 
 Read the full [Privacy Policy](https://diction.one/privacy).
+
+## Diction One
+
+Diction One is an optional paid subscription ($5.99/month, 2-week free trial) that adds cloud transcription — audio is sent to the Diction cloud endpoint, processed, and immediately discarded.
+
+On-device and self-hosted modes are completely free with no word limits.
 
 ## Requirements
 
