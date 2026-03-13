@@ -7,7 +7,7 @@
   <br><br>
   <strong>You talk. We type.</strong>
   <br><br>
-  Voice keyboard for iOS. Tap mic, speak, done.<br>Works in any app — on your device or your own server.
+  Open-source voice keyboard for iOS. Tap mic, speak, done.<br>Works in any app — on your device or your own server.
 </p>
 
 <p align="center">
@@ -40,8 +40,7 @@
 - **Your audio stays where you send it** — on-device works offline, nothing leaves your phone. Self-hosted sends audio to your server only. No third-party routing.
 - **On-device and self-hosted are free, no limits** — no word caps, no expiry, no catch. [Diction One](#diction-one) adds the hosted option if you don't want to run a server.
 - **Three commands to self-host** — clone this repo, run `docker compose up`, paste the URL in the app. Done.
-- **Run any model** — point Diction at a model fine-tuned for medical dictation, your language, or your accent. The gateway handles the routing.
-- **99 languages** — Whisper handles them all, no extra config.
+- **Run any model** — point Diction at any Whisper-compatible server. Use a model fine-tuned for medical dictation, your language, or your accent.
 
 ## How It Works
 
@@ -83,11 +82,11 @@ Swap or add models to your compose file. The gateway handles routing and streami
 
 #### Bring your own model
 
-Run a model fine-tuned for your language, licensed for your industry, or trained on your domain. Point Diction at it and it just works.
+Point Diction at any Whisper-compatible endpoint. Use a model fine-tuned for your language, accent, or domain — the gateway routes requests to it automatically.
 
 ## No Public IP?
 
-No problem. You don't need to open ports on your router:
+You don't need to open ports on your router:
 
 - **[Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)** - free, outbound-only connection. No port forwarding needed.
 - **[Tailscale](https://tailscale.com/)** - free WireGuard mesh VPN. Install on server + phone, connect from anywhere.
@@ -109,9 +108,9 @@ Read the full [Privacy Policy](https://diction.one/privacy).
 
 ## Diction One
 
-Don't want to run a server? Diction One gives you cloud transcription without the setup — audio is sent to the Diction endpoint, transcribed, and immediately discarded. Pricing and trial details are in the app.
+On-device and self-hosted are completely free with no word limits.
 
-On-device and self-hosted modes are completely free with no word limits.
+If you don't want to run a server, Diction One gives you cloud transcription without the setup — audio is sent to the Diction endpoint, transcribed, and immediately discarded. Pricing and trial details are in the app.
 
 ## Requirements
 
