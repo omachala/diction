@@ -7,7 +7,7 @@
   <br><br>
   <strong>You talk. We type.</strong>
   <br><br>
-  Free speech-to-text keyboard for iOS.<br>Open-source self-hosted, on-device or cloud transcription.
+  Voice keyboard for iOS. Tap mic, speak, done.<br>Works in any app — on your device or your own server.
 </p>
 
 <p align="center">
@@ -36,12 +36,12 @@
 
 ## Why Diction?
 
-- **Dictation keyboard for any app** - a Wispr Flow alternative. Switch to Diction in any text field, tap mic, speak. Text appears instantly.
-- **What you say stays with you** - on-device mode works offline. Self-hosted sends audio only to your server. No third-party routing.
-- **On-device is free, no limits** - local and self-hosted modes have no word caps, no expiry, no catch. [Diction One](#diction-one) ($5.99/month) adds cloud transcription.
-- **Self-host in three commands** - `git clone`, `docker compose up`, done. Server setup, gateway, and docs are all in this repo.
-- **Any model, any server** - fine-tuned for your language. Licensed for your industry. Trained on your domain. You choose what runs.
-- **99 languages** - multilingual transcription out of the box.
+- **Works in every app** — switch to Diction in any text field: Messages, Notes, email, search bars, anything. Tap mic, speak, text appears.
+- **Your audio stays where you send it** — on-device works offline, nothing leaves your phone. Self-hosted sends audio to your server only. No third-party routing.
+- **On-device and self-hosted are free, no limits** — no word caps, no expiry, no catch. [Diction One](#diction-one) ($5.99/month) adds the hosted option if you don't want to run a server.
+- **Three commands to self-host** — clone this repo, run `docker compose up`, paste the URL in the app. Done.
+- **Run any model** — point Diction at a model fine-tuned for medical dictation, your language, or your accent. The gateway handles the routing.
+- **99 languages** — Whisper handles them all, no extra config.
 
 ## How It Works
 
@@ -97,19 +97,19 @@ See the [Self-Hosting Guide](docs/self-hosting.md) for detailed instructions.
 
 ## Privacy
 
-This is a keyboard extension. We take privacy seriously:
+Keyboards can read everything you type. Here's exactly what Diction does with your audio:
 
-- **On-device**: Everything stays on your phone. No network needed.
-- **Self-hosted**: Audio goes only to your server. Full stop.
-- **Diction One**: Audio is processed and immediately discarded. Not stored, not used for training.
-- **No analytics, no tracking, no telemetry.** The app contains zero third-party SDKs.
-- **Full Access** is required by iOS for network - the keyboard needs to reach the transcription endpoint. No keylogging, no clipboard access.
+- **On-device**: Everything stays on your phone. No network connection made.
+- **Self-hosted**: Audio goes to your server only. Nothing else sees it.
+- **Diction One**: Audio is transcribed and immediately discarded. Not stored, not used for training.
+- **Zero third-party SDKs.** No analytics, no tracking, no telemetry of any kind.
+- **Full Access** is required by iOS for any keyboard that makes network requests. Diction has no QWERTY input to log — it only uses the network to reach your transcription endpoint.
 
 Read the full [Privacy Policy](https://diction.one/privacy).
 
 ## Diction One
 
-Diction One is an optional paid subscription ($5.99/month, 2-week free trial) that adds cloud transcription — audio is sent to the Diction cloud endpoint, processed, and immediately discarded.
+Don't want to run a server? Diction One ($5.99/month, 2-week free trial) gives you cloud transcription without the setup — audio is sent to the Diction endpoint, transcribed, and immediately discarded.
 
 On-device and self-hosted modes are completely free with no word limits.
 
@@ -120,7 +120,7 @@ On-device and self-hosted modes are completely free with no word limits.
 
 ## Contributing
 
-All contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md).
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
