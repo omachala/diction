@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last updated:** February 2025
+**Last updated:** March 2026
 
 Diction is built with privacy as a core principle. Here's exactly what happens with your data.
 
@@ -14,9 +14,9 @@ When you use Diction with your own Whisper server:
 
 You are in complete control.
 
-## Cloud Mode (Diction Cloud)
+## Diction One (Cloud Mode)
 
-When you use the hosted Diction Cloud endpoint:
+When you use the Diction One cloud endpoint:
 
 - **Audio is processed and immediately discarded.** We do not store recordings.
 - **Transcriptions are not stored.** The text is returned to your device and deleted from server memory.
@@ -43,7 +43,7 @@ Diction requests **Full Access** for the keyboard extension. This is required by
 
 ```
 Your voice → iPhone mic → Diction keyboard → Your Whisper server → Transcribed text → Your app
-                                              (or Diction Cloud)
+                                              (or Diction One cloud)
 ```
 
 That's it. No side channels, no analytics endpoints, no tracking pixels.
