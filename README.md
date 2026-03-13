@@ -36,11 +36,11 @@
 
 ## Why Diction?
 
-- **Works in every app** — switch to Diction in any text field: Messages, Notes, email, search bars, anything. Tap mic, speak, text appears.
-- **Your audio stays where you send it** — on-device works offline, nothing leaves your phone. Self-hosted sends audio to your server only. No third-party routing.
-- **On-device and self-hosted are free, no limits** — no word caps, no expiry, no catch. [Diction One](#diction-one) adds the hosted option if you don't want to run a server.
-- **Three commands to self-host** — clone this repo, run `docker compose up`, paste the URL in the app. Done.
-- **Run any model** — point Diction at any Whisper-compatible server. Use a model fine-tuned for medical dictation, your language, or your accent.
+- **Works in every app.** Switch to Diction in any text field: Messages, Notes, email, search bars, anything. Tap mic, speak, text appears.
+- **Your audio stays where you send it.** On-device works offline, nothing leaves your phone. Self-hosted sends audio to your server only. No third-party routing.
+- **On-device and self-hosted are free, no limits.** No word caps, no expiry, no catch. [Diction One](#diction-one) adds the hosted option if you don't want to run a server.
+- **Three commands to self-host.** Clone this repo, run `docker compose up`, paste the URL in the app. Done.
+- **Run any model.** Point Diction at any Whisper-compatible server. Use a model fine-tuned for medical dictation, your language, or your accent.
 
 ## How It Works
 
@@ -82,7 +82,7 @@ Swap or add models to your compose file. The gateway handles routing and streami
 
 #### Bring your own model
 
-Point Diction at any Whisper-compatible endpoint. Use a model fine-tuned for your language, accent, or domain — the gateway routes requests to it automatically.
+Point Diction at any Whisper-compatible endpoint. Use a model fine-tuned for your language, accent, or domain. The gateway routes requests to it automatically.
 
 ## No Public IP?
 
@@ -102,7 +102,7 @@ Keyboards can read everything you type. Here's exactly what Diction does with yo
 - **Self-hosted**: Audio goes to your server only. Nothing else sees it.
 - **Diction One**: Audio is transcribed and immediately discarded. Not stored, not used for training.
 - **Zero third-party SDKs.** No analytics, no tracking, no telemetry of any kind.
-- **Full Access** is required by iOS for any keyboard that makes network requests. Diction has no QWERTY input to log — it only uses the network to reach your transcription endpoint.
+- **Full Access** is required by iOS for any keyboard that makes network requests. Diction has no QWERTY input to log. It only uses the network to reach your transcription endpoint.
 
 Read the full [Privacy Policy](https://diction.one/privacy).
 
@@ -110,7 +110,7 @@ Read the full [Privacy Policy](https://diction.one/privacy).
 
 On-device and self-hosted are completely free with no word limits.
 
-If you don't want to run a server, Diction One gives you cloud transcription without the setup — audio is sent to the Diction endpoint, transcribed, and immediately discarded. Pricing and trial details are in the app.
+If you don't want to run a server, Diction One gives you cloud transcription without the setup. Audio is sent to the Diction endpoint, transcribed, and immediately discarded. Pricing and trial details are in the app.
 
 ## Requirements
 
