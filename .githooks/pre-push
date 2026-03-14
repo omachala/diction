@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Block pushing any commit that contains Co-Authored-By lines.
+# Catches --no-verify bypasses of the commit-msg hook.
+
+set -euo pipefail
+
+while read local_ref local_sha remote_ref remote_sha; do
+  if [ "$local_sha" = "0000000000000000000000000000000000000000" ]; then
+    continue
+  fi
+
+  if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
+    range="$local_sha"
+  else
+    range="$remote_sha..$local_sha"
+  fi
+
+  bad=$(git log "$range" --format="%H %s" | while read sha subject; do
+    if git show -s --format="%B" "$sha" | grep -qi "^Co-Authored-By:"; then
+      echo "  $sha $subject"
+    fi
+  done)
+
+  if [ -n "$bad" ]; then
+    echo "✗ Push rejected: the following commits contain Co-Authored-By lines:"
+    echo "$bad"
+    exit 1
+  fi
+done
+
+exit 0

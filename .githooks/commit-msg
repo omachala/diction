@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Block commits containing Co-Authored-By lines (AI co-authors are banned).
+if grep -qi "^Co-Authored-By:" "$1"; then
+  echo "✗ Commit rejected: Co-Authored-By lines are not allowed in this repo."
+  exit 1
+fi
