@@ -2,6 +2,7 @@ package core
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -143,6 +144,12 @@ func convertToWAVBytes(audioData []byte, filename string) ([]byte, error) {
 
 // TranscriptionHandler returns the handler for POST /v1/audio/transcriptions.
 func (g *Gateway) TranscriptionHandler() http.HandlerFunc {
+	return g.TranscriptionHandlerWithPostProcess(nil)
+}
+
+// TranscriptionHandlerWithPostProcess is like TranscriptionHandler but calls postProcess
+// on the transcript when ?enhance=true is requested. Pass nil for no post-processing.
+func (g *Gateway) TranscriptionHandlerWithPostProcess(postProcess func(context.Context, string) (string, error)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			http.Error(w, `{"error":"method not allowed"}`, http.StatusMethodNotAllowed)
@@ -159,9 +166,6 @@ func (g *Gateway) TranscriptionHandler() http.HandlerFunc {
 			http.Error(w, fmt.Sprintf(`{"error":"request body exceeds %d bytes"}`, g.maxBodySize), http.StatusRequestEntityTooLarge)
 			return
 		}
-
-		// LLM enhancement opt-in: ?enhance=true
-		enhanceEnabled := r.URL.Query().Get("enhance") == "true"
 
 		// Resolve backend
 		contentType := r.Header.Get("Content-Type")
@@ -187,6 +191,7 @@ func (g *Gateway) TranscriptionHandler() http.HandlerFunc {
 		}
 
 		// Proxy via httputil.ReverseProxy
+		enhanceEnabled := r.URL.Query().Get("enhance") == "true"
 		whisperStart := time.Now()
 		proxy := &httputil.ReverseProxy{
 			Director: func(req *http.Request) {
@@ -202,7 +207,7 @@ func (g *Gateway) TranscriptionHandler() http.HandlerFunc {
 				whisperMs := time.Since(whisperStart).Milliseconds()
 				resp.Header.Set("X-Diction-Whisper-Ms", fmt.Sprintf("%d", whisperMs))
 
-				if g.cleanupFunc == nil || !enhanceEnabled || resp.StatusCode != http.StatusOK {
+				if postProcess == nil || !enhanceEnabled || resp.StatusCode != http.StatusOK {
 					return nil
 				}
 
@@ -223,14 +228,14 @@ func (g *Gateway) TranscriptionHandler() http.HandlerFunc {
 					return nil
 				}
 
-				// Call LLM cleanup
+				// Post-process transcript
 				llmStart := time.Now()
-				cleaned, err := g.cleanupFunc(resp.Request.Context(), transcription.Text)
+				cleaned, err := postProcess(resp.Request.Context(), transcription.Text)
 				llmMs := time.Since(llmStart).Milliseconds()
 				resp.Header.Set("X-Diction-LLM-Ms", fmt.Sprintf("%d", llmMs))
 
 				if err != nil {
-					log.Printf("LLM cleanup error (returning raw): %v", err)
+					log.Printf("post-process error (returning raw): %v", err)
 					resp.Body = io.NopCloser(bytes.NewReader(body))
 					return nil
 				}

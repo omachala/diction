@@ -43,6 +43,12 @@ type streamResult struct {
 //	Server → Client: text frame {"text":"transcribed text"}
 //	Server closes connection.
 func (g *Gateway) StreamingHandler() http.HandlerFunc {
+	return g.StreamingHandlerWithPostProcess(nil)
+}
+
+// StreamingHandlerWithPostProcess is like StreamingHandler but calls postProcess
+// on the transcript when ?enhance=true is requested. Pass nil for no post-processing.
+func (g *Gateway) StreamingHandlerWithPostProcess(postProcess func(context.Context, string) (string, error)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Resolve backend before upgrade
 		model := g.defaultModel
@@ -114,13 +120,12 @@ func (g *Gateway) StreamingHandler() http.HandlerFunc {
 			return
 		}
 
-		// Apply LLM cleanup if enabled (same as HTTP POST path)
-		enhanceEnabled := r.URL.Query().Get("enhance") == "true"
-		if g.cleanupFunc != nil && enhanceEnabled && text != "" {
-			if cleaned, err := g.cleanupFunc(ctx, text); err == nil {
+		// Apply post-processing if provided (e.g. ?enhance=true)
+		if postProcess != nil && r.URL.Query().Get("enhance") == "true" && text != "" {
+			if cleaned, err := postProcess(ctx, text); err == nil {
 				text = cleaned
 			} else {
-				log.Printf("ws llm cleanup: %v", err)
+				log.Printf("ws post-process: %v", err)
 			}
 		}
 
