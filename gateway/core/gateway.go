@@ -1,6 +1,7 @@
 package core
 
 import (
+	"context"
 	"net/http"
 	"net/url"
 	"os"
@@ -13,6 +14,10 @@ type Config struct {
 	Backends     []Backend
 	DefaultModel string
 	MaxBodySize  int64
+	// CleanupFunc optionally post-processes raw Whisper text before returning to client.
+	// Set by the cloud build (main.go) only — not part of the open-source core.
+	// If nil, raw transcript is returned as-is.
+	CleanupFunc func(ctx context.Context, text string) (string, error)
 }
 
 // Gateway holds runtime state: backends, health, config.
@@ -21,6 +26,7 @@ type Gateway struct {
 	health       *healthState
 	defaultModel string
 	maxBodySize  int64
+	cleanupFunc  func(ctx context.Context, text string) (string, error)
 }
 
 // NewGateway creates a Gateway and starts the background health checker.
@@ -30,6 +36,7 @@ func NewGateway(cfg Config) *Gateway {
 		health:       newHealthState(),
 		defaultModel: cfg.DefaultModel,
 		maxBodySize:  cfg.MaxBodySize,
+		cleanupFunc:  cfg.CleanupFunc,
 	}
 	g.startHealthChecker()
 	return g

@@ -2,6 +2,7 @@ package core
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -17,32 +18,13 @@ import (
 	"time"
 )
 
-// parseMultipart extracts the model field and returns the boundary.
-func parseMultipart(body []byte, contentType string, defaultModel string) (model, boundary string) {
-	model = defaultModel
+// parseBoundary extracts the multipart boundary from the Content-Type header.
+func parseBoundary(contentType string) string {
 	mediaType, params, err := mime.ParseMediaType(contentType)
 	if err != nil || !strings.HasPrefix(mediaType, "multipart/") {
-		return
+		return ""
 	}
-	boundary = params["boundary"]
-	if boundary == "" {
-		return
-	}
-	reader := multipart.NewReader(bytes.NewReader(body), boundary)
-	for {
-		part, err := reader.NextPart()
-		if err != nil {
-			break
-		}
-		if part.FormName() == "model" {
-			val, err := io.ReadAll(part)
-			if err == nil && len(val) > 0 {
-				model = string(val)
-			}
-		}
-		part.Close()
-	}
-	return
+	return params["boundary"]
 }
 
 // rewriteMultipart rewrites the multipart body:
@@ -178,14 +160,15 @@ func (g *Gateway) TranscriptionHandler() http.HandlerFunc {
 			return
 		}
 
-		// Extract model from multipart
-		contentType := r.Header.Get("Content-Type")
-		model, boundary := parseMultipart(body, contentType, g.defaultModel)
+		// LLM enhancement opt-in: ?enhance=true
+		enhanceEnabled := r.URL.Query().Get("enhance") == "true"
 
 		// Resolve backend
-		target, backend := g.resolveBackend(model)
+		contentType := r.Header.Get("Content-Type")
+		boundary := parseBoundary(contentType)
+		target, backend := g.resolveBackend(g.defaultModel)
 		if target == nil {
-			http.Error(w, fmt.Sprintf(`{"error":"unknown model: %s"}`, model), http.StatusBadRequest)
+			http.Error(w, `{"error":"backend unavailable"}`, http.StatusBadRequest)
 			return
 		}
 
@@ -204,6 +187,7 @@ func (g *Gateway) TranscriptionHandler() http.HandlerFunc {
 		}
 
 		// Proxy via httputil.ReverseProxy
+		whisperStart := time.Now()
 		proxy := &httputil.ReverseProxy{
 			Director: func(req *http.Request) {
 				req.URL.Scheme = target.Scheme
@@ -213,6 +197,50 @@ func (g *Gateway) TranscriptionHandler() http.HandlerFunc {
 				req.Header.Set("Content-Type", proxyContentType)
 				req.Body = io.NopCloser(bytes.NewReader(proxyBody))
 				req.ContentLength = int64(len(proxyBody))
+			},
+			ModifyResponse: func(resp *http.Response) error {
+				whisperMs := time.Since(whisperStart).Milliseconds()
+				resp.Header.Set("X-Diction-Whisper-Ms", fmt.Sprintf("%d", whisperMs))
+
+				if g.cleanupFunc == nil || !enhanceEnabled || resp.StatusCode != http.StatusOK {
+					return nil
+				}
+
+				// Read Whisper response body
+				body, err := io.ReadAll(resp.Body)
+				resp.Body.Close()
+				if err != nil {
+					resp.Body = io.NopCloser(bytes.NewReader(body))
+					return nil
+				}
+
+				// Parse {"text": "..."}
+				var transcription struct {
+					Text string `json:"text"`
+				}
+				if err := json.Unmarshal(body, &transcription); err != nil || transcription.Text == "" {
+					resp.Body = io.NopCloser(bytes.NewReader(body))
+					return nil
+				}
+
+				// Call LLM cleanup
+				llmStart := time.Now()
+				cleaned, err := g.cleanupFunc(resp.Request.Context(), transcription.Text)
+				llmMs := time.Since(llmStart).Milliseconds()
+				resp.Header.Set("X-Diction-LLM-Ms", fmt.Sprintf("%d", llmMs))
+
+				if err != nil {
+					log.Printf("LLM cleanup error (returning raw): %v", err)
+					resp.Body = io.NopCloser(bytes.NewReader(body))
+					return nil
+				}
+
+				// Rewrite response with cleaned text
+				newBody, _ := json.Marshal(map[string]string{"text": cleaned})
+				resp.Body = io.NopCloser(bytes.NewReader(newBody))
+				resp.ContentLength = int64(len(newBody))
+				resp.Header.Set("Content-Length", fmt.Sprintf("%d", len(newBody)))
+				return nil
 			},
 			Transport: &http.Transport{
 				MaxIdleConns:          20,

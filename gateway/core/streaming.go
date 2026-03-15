@@ -10,7 +10,6 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/coder/websocket"
@@ -38,41 +37,19 @@ type streamResult struct {
 //
 // Protocol:
 //
-//	Client connects: ws(s)://host/v1/audio/stream?model=small&language=en
+//	Client connects: ws(s)://host/v1/audio/stream?language=en
 //	Client → Server: binary frames of PCM audio (16-bit LE, mono, 16kHz)
 //	Client → Server: text frame {"action":"done"}
 //	Server → Client: text frame {"text":"transcribed text"}
 //	Server closes connection.
 func (g *Gateway) StreamingHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Validate model before upgrade
-		model := r.URL.Query().Get("model")
-		if model == "" {
-			model = g.defaultModel
-		}
+		// Resolve backend before upgrade
+		model := g.defaultModel
 		target, _ := g.resolveBackend(model)
-		if target == nil {
-			http.Error(w, fmt.Sprintf(`{"error":"unknown model: %s"}`, model), http.StatusBadRequest)
+		if target == nil || !g.health.get(model) {
+			http.Error(w, `{"error":"backend unavailable"}`, http.StatusServiceUnavailable)
 			return
-		}
-		if !g.health.get(strings.TrimSpace(model)) {
-			// Try matching by iterating backends
-			backendUp := false
-			for _, b := range g.backends {
-				for _, alias := range b.Aliases {
-					if strings.EqualFold(model, alias) {
-						backendUp = g.health.get(b.Name)
-						break
-					}
-				}
-				if backendUp {
-					break
-				}
-			}
-			if !backendUp {
-				http.Error(w, `{"error":"backend unavailable"}`, http.StatusServiceUnavailable)
-				return
-			}
 		}
 
 		language := r.URL.Query().Get("language")
@@ -135,6 +112,16 @@ func (g *Gateway) StreamingHandler() http.HandlerFunc {
 			log.Printf("ws proxy: %v", err)
 			conn.Close(wsCloseFailed, "transcription failed")
 			return
+		}
+
+		// Apply LLM cleanup if enabled (same as HTTP POST path)
+		enhanceEnabled := r.URL.Query().Get("enhance") == "true"
+		if g.cleanupFunc != nil && enhanceEnabled && text != "" {
+			if cleaned, err := g.cleanupFunc(ctx, text); err == nil {
+				text = cleaned
+			} else {
+				log.Printf("ws llm cleanup: %v", err)
+			}
 		}
 
 		result, _ := json.Marshal(streamResult{Text: text})
