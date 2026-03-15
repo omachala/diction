@@ -139,17 +139,24 @@ func wsURL(srv *httptest.Server, query string) string {
 	return u
 }
 
-func TestStreamingHandler_UnknownModel(t *testing.T) {
-	srv, _ := startStreamingServer(t, "ok", http.StatusOK)
+func TestStreamingHandler_NoMatchingBackend(t *testing.T) {
+	// defaultModel has no matching backend → HTTP 503 before WebSocket upgrade
+	g := &Gateway{
+		backends:     []Backend{},
+		health:       newHealthState(),
+		defaultModel: "small",
+		maxBodySize:  10 * 1024 * 1024,
+	}
+	srv := httptest.NewServer(g.StreamingHandler())
+	defer srv.Close()
 
-	// Unknown model → HTTP 400 before WebSocket upgrade
-	resp, err := http.Get(srv.URL + "/v1/audio/stream?model=unknown-model-xyz")
+	resp, err := http.Get(srv.URL + "/v1/audio/stream")
 	if err != nil {
 		t.Fatalf("GET: %v", err)
 	}
 	resp.Body.Close()
-	if resp.StatusCode != http.StatusBadRequest {
-		t.Errorf("status: want 400, got %d", resp.StatusCode)
+	if resp.StatusCode != http.StatusServiceUnavailable {
+		t.Errorf("status: want 503, got %d", resp.StatusCode)
 	}
 }
 
@@ -157,7 +164,7 @@ func TestStreamingHandler_BackendUnavailable(t *testing.T) {
 	srv, g := startStreamingServer(t, "ok", http.StatusOK)
 	g.health.set("small", false) // mark as down
 
-	resp, err := http.Get(srv.URL + "/v1/audio/stream?model=small")
+	resp, err := http.Get(srv.URL + "/v1/audio/stream")
 	if err != nil {
 		t.Fatalf("GET: %v", err)
 	}
