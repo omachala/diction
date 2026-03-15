@@ -406,6 +406,90 @@ func TestStreamingHandler_HealthByAliasName(t *testing.T) {
 	}
 }
 
+func startStreamingServerWithPostProcess(t *testing.T, whisperResponse string, postProcess func(context.Context, string) (string, error)) *httptest.Server {
+	t.Helper()
+	whisper := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"text":"%s"}`, whisperResponse)
+	}))
+	t.Cleanup(whisper.Close)
+
+	g := &Gateway{
+		backends: []Backend{
+			{Name: "small", URL: whisper.URL, Aliases: []string{"small"}},
+		},
+		health:       newHealthState(),
+		defaultModel: "small",
+		maxBodySize:  10 * 1024 * 1024,
+	}
+	g.health.set("small", true)
+
+	srv := httptest.NewServer(g.StreamingHandlerWithPostProcess(postProcess))
+	t.Cleanup(srv.Close)
+	return srv
+}
+
+func TestStreamingHandler_WithPostProcess_Success(t *testing.T) {
+	postProcess := func(ctx context.Context, text string) (string, error) {
+		return "cleaned: " + text, nil
+	}
+	srv := startStreamingServerWithPostProcess(t, "raw audio", postProcess)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	conn, _, err := websocket.Dial(ctx, wsURL(srv, "enhance=true"), nil)
+	if err != nil {
+		t.Fatalf("dial: %v", err)
+	}
+	defer conn.CloseNow()
+
+	conn.Write(ctx, websocket.MessageBinary, make([]byte, 3200))
+	done, _ := json.Marshal(map[string]string{"action": "done"})
+	conn.Write(ctx, websocket.MessageText, done)
+
+	_, data, err := conn.Read(ctx)
+	if err != nil {
+		t.Fatalf("read: %v", err)
+	}
+	var result struct{ Text string `json:"text"` }
+	json.Unmarshal(data, &result)
+	if result.Text != "cleaned: raw audio" {
+		t.Errorf("want 'cleaned: raw audio', got %q", result.Text)
+	}
+}
+
+func TestStreamingHandler_WithPostProcess_ErrorFallback(t *testing.T) {
+	// postProcess error → raw transcript returned unchanged
+	postProcess := func(ctx context.Context, text string) (string, error) {
+		return "", fmt.Errorf("llm error")
+	}
+	srv := startStreamingServerWithPostProcess(t, "raw audio", postProcess)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	conn, _, err := websocket.Dial(ctx, wsURL(srv, "enhance=true"), nil)
+	if err != nil {
+		t.Fatalf("dial: %v", err)
+	}
+	defer conn.CloseNow()
+
+	conn.Write(ctx, websocket.MessageBinary, make([]byte, 3200))
+	done, _ := json.Marshal(map[string]string{"action": "done"})
+	conn.Write(ctx, websocket.MessageText, done)
+
+	_, data, err := conn.Read(ctx)
+	if err != nil {
+		t.Fatalf("read: %v", err)
+	}
+	var result struct{ Text string `json:"text"` }
+	json.Unmarshal(data, &result)
+	if result.Text != "raw audio" {
+		t.Errorf("want 'raw audio' fallback, got %q", result.Text)
+	}
+}
+
 func TestStreamingHandler_DefaultModel(t *testing.T) {
 	// No ?model param → uses default model
 	srv, _ := startStreamingServer(t, "default model used", http.StatusOK)

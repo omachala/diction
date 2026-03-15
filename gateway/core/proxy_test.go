@@ -2,6 +2,7 @@ package core
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -337,6 +338,75 @@ func TestTranscriptionHandler_WAVConversionFails(t *testing.T) {
 
 	if rr.Code != http.StatusInternalServerError {
 		t.Errorf("status: want 500, got %d (body: %s)", rr.Code, rr.Body.String())
+	}
+}
+
+func TestTranscriptionHandler_WithPostProcess_Success(t *testing.T) {
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"text":"raw transcript"}`)
+	}))
+	defer backend.Close()
+
+	g := &Gateway{
+		backends: []Backend{
+			{Name: "small", URL: backend.URL, Aliases: []string{"small"}},
+		},
+		health:       newHealthState(),
+		defaultModel: "small",
+		maxBodySize:  10 * 1024 * 1024,
+	}
+
+	postProcess := func(ctx context.Context, text string) (string, error) {
+		return "cleaned: " + text, nil
+	}
+
+	body, ct := buildMultipart(t, map[string]string{"model": "small"}, "audio.m4a", "fake-audio")
+	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions?enhance=true", bytes.NewReader(body))
+	req.Header.Set("Content-Type", ct)
+	rr := httptest.NewRecorder()
+	g.TranscriptionHandlerWithPostProcess(postProcess)(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("status: want 200, got %d (body: %s)", rr.Code, rr.Body.String())
+	}
+	if !strings.Contains(rr.Body.String(), "cleaned: raw transcript") {
+		t.Errorf("expected cleaned transcript, got: %s", rr.Body.String())
+	}
+}
+
+func TestTranscriptionHandler_WithPostProcess_ErrorFallback(t *testing.T) {
+	// postProcess error → raw transcript returned unchanged
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"text":"raw transcript"}`)
+	}))
+	defer backend.Close()
+
+	g := &Gateway{
+		backends: []Backend{
+			{Name: "small", URL: backend.URL, Aliases: []string{"small"}},
+		},
+		health:       newHealthState(),
+		defaultModel: "small",
+		maxBodySize:  10 * 1024 * 1024,
+	}
+
+	postProcess := func(ctx context.Context, text string) (string, error) {
+		return "", fmt.Errorf("llm error")
+	}
+
+	body, ct := buildMultipart(t, map[string]string{"model": "small"}, "audio.m4a", "fake-audio")
+	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions?enhance=true", bytes.NewReader(body))
+	req.Header.Set("Content-Type", ct)
+	rr := httptest.NewRecorder()
+	g.TranscriptionHandlerWithPostProcess(postProcess)(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("status: want 200, got %d", rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "raw transcript") {
+		t.Errorf("expected raw transcript fallback, got: %s", rr.Body.String())
 	}
 }
 
