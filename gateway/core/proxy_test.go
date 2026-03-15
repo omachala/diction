@@ -33,42 +33,27 @@ func buildMultipart(t *testing.T, fields map[string]string, fileName, fileConten
 	return buf.Bytes(), w.FormDataContentType()
 }
 
-// --- parseMultipart ---
+// --- parseBoundary ---
 
-func TestParseMultipart_ExtractsModel(t *testing.T) {
-	body, ct := buildMultipart(t, map[string]string{"model": "medium"}, "audio.m4a", "fake-audio")
-	model, boundary := parseMultipart(body, ct, "small")
-	if model != "medium" {
-		t.Errorf("model: want medium, got %s", model)
-	}
+func TestParseBoundary_ExtractsBoundary(t *testing.T) {
+	_, ct := buildMultipart(t, map[string]string{}, "audio.m4a", "fake-audio")
+	boundary := parseBoundary(ct)
 	if boundary == "" {
 		t.Error("expected non-empty boundary")
 	}
 }
 
-func TestParseMultipart_FallsBackToDefault(t *testing.T) {
-	// No model field in the form
-	body, ct := buildMultipart(t, map[string]string{}, "audio.m4a", "fake-audio")
-	model, _ := parseMultipart(body, ct, "small")
-	if model != "small" {
-		t.Errorf("model: want small (default), got %s", model)
-	}
-}
-
-func TestParseMultipart_InvalidContentType(t *testing.T) {
-	model, boundary := parseMultipart([]byte("anything"), "application/json", "small")
-	if model != "small" {
-		t.Errorf("model: want small, got %s", model)
-	}
+func TestParseBoundary_InvalidContentType(t *testing.T) {
+	boundary := parseBoundary("application/json")
 	if boundary != "" {
 		t.Errorf("boundary: want empty for non-multipart, got %s", boundary)
 	}
 }
 
-func TestParseMultipart_EmptyBody(t *testing.T) {
-	model, _ := parseMultipart([]byte{}, "multipart/form-data; boundary=xxx", "small")
-	if model != "small" {
-		t.Errorf("model: want small, got %s", model)
+func TestParseBoundary_ExplicitBoundary(t *testing.T) {
+	boundary := parseBoundary("multipart/form-data; boundary=abc123")
+	if boundary != "abc123" {
+		t.Errorf("boundary: want abc123, got %s", boundary)
 	}
 }
 
@@ -76,7 +61,7 @@ func TestParseMultipart_EmptyBody(t *testing.T) {
 
 func TestRewriteMultipart_StripsModelField(t *testing.T) {
 	body, ct := buildMultipart(t, map[string]string{"model": "medium", "language": "en"}, "audio.m4a", "fake-audio-data")
-	_, boundary := parseMultipart(body, ct, "small")
+	boundary := parseBoundary(ct)
 
 	rewritten, newCT, err := rewriteMultipart(body, boundary, false)
 	if err != nil {
@@ -123,7 +108,7 @@ func TestRewriteMultipart_StripsModelField(t *testing.T) {
 func TestRewriteMultipart_PreservesFileContent(t *testing.T) {
 	const audioContent = "this-is-fake-audio-bytes"
 	body, ct := buildMultipart(t, map[string]string{"model": "small"}, "audio.m4a", audioContent)
-	_, boundary := parseMultipart(body, ct, "small")
+	boundary := parseBoundary(ct)
 
 	rewritten, newCT, err := rewriteMultipart(body, boundary, false)
 	if err != nil {
@@ -153,7 +138,7 @@ func TestRewriteMultipart_PreservesFileContent(t *testing.T) {
 func TestRewriteMultipart_NoModelField(t *testing.T) {
 	// No model field — rewrite should still work cleanly
 	body, ct := buildMultipart(t, map[string]string{}, "audio.m4a", "audio")
-	_, boundary := parseMultipart(body, ct, "small")
+	boundary := parseBoundary(ct)
 
 	_, _, err := rewriteMultipart(body, boundary, false)
 	if err != nil {
@@ -166,7 +151,7 @@ func TestRewriteMultipart_ConvertToWAV(t *testing.T) {
 	// part is re-emitted with Content-Type: audio/wav and filename "audio.wav".
 	wavData := []byte("RIFF\x00\x00\x00\x00WAVEfmt ")
 	body, ct := buildMultipart(t, map[string]string{"language": "en"}, "audio.m4a", string(wavData))
-	_, boundary := parseMultipart(body, ct, "small")
+	boundary := parseBoundary(ct)
 
 	rewritten, newCT, err := rewriteMultipart(body, boundary, true)
 	if err != nil {
@@ -258,9 +243,15 @@ func TestTranscriptionHandler_MethodNotAllowed(t *testing.T) {
 	}
 }
 
-func TestTranscriptionHandler_UnknownModel(t *testing.T) {
-	g := testGateway()
-	body, ct := buildMultipart(t, map[string]string{"model": "gpt-4o"}, "audio.m4a", "data")
+func TestTranscriptionHandler_NoMatchingBackend(t *testing.T) {
+	// defaultModel has no matching backend — gateway returns 400
+	g := &Gateway{
+		backends:     []Backend{},
+		health:       newHealthState(),
+		defaultModel: "small",
+		maxBodySize:  10 * 1024 * 1024,
+	}
+	body, ct := buildMultipart(t, map[string]string{}, "audio.m4a", "data")
 	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions", bytes.NewReader(body))
 	req.Header.Set("Content-Type", ct)
 	rr := httptest.NewRecorder()
