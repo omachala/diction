@@ -1,8 +1,6 @@
 name: Build & Publish Gateway
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
