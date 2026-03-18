@@ -2,13 +2,44 @@ package core
 
 // Backend describes a speech-to-text model backend.
 type Backend struct {
-	Name        string
-	URL         string
-	Aliases     []string
-	DisplayName string
-	Description string
-	Provider    string // "whisper" or "parakeet"
-	NeedsWAV   bool   // if true, gateway converts audio to WAV before proxying
+	Name            string
+	URL             string
+	Aliases         []string
+	DisplayName     string
+	Description     string
+	Provider        string // "whisper" or "parakeet"
+	NeedsWAV        bool   // if true, gateway converts audio to WAV before proxying
+	ForwardModel    string // model name to inject into forwarded request; empty = don't inject
+	AuthHeader      string // Authorization header value to inject into backend requests; empty = none
+	SkipHealthCheck bool   // if true, skip health polling (custom/external backends)
+}
+
+// CustomBackendFromEnv builds a custom backend from environment variables.
+// Returns nil if CUSTOM_BACKEND_URL is not set.
+//
+// Supported env vars:
+//
+//	CUSTOM_BACKEND_URL       (required) base URL of the backend, e.g. http://192.168.1.50:8000
+//	CUSTOM_BACKEND_MODEL     model name to forward in the request, e.g. Systran/faster-whisper-large-v3-turbo
+//	CUSTOM_BACKEND_NEEDS_WAV set to "true" if the backend only accepts WAV audio (default: false)
+//	CUSTOM_BACKEND_AUTH      Authorization header value, e.g. "Bearer sk-xxx" (default: none)
+func CustomBackendFromEnv() *Backend {
+	rawURL := EnvOrDefault("CUSTOM_BACKEND_URL", "")
+	if rawURL == "" {
+		return nil
+	}
+	return &Backend{
+		Name:            "custom",
+		URL:             rawURL,
+		Aliases:         []string{"custom"},
+		DisplayName:     "Custom",
+		Description:     "custom backend",
+		Provider:        "custom",
+		NeedsWAV:        EnvBoolOrDefault("CUSTOM_BACKEND_NEEDS_WAV", false),
+		ForwardModel:    EnvOrDefault("CUSTOM_BACKEND_MODEL", ""),
+		AuthHeader:      EnvOrDefault("CUSTOM_BACKEND_AUTH", ""),
+		SkipHealthCheck: true,
+	}
 }
 
 // DefaultBackends returns the standard set of STT backends.

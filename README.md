@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://apps.apple.com/app/diction-voice-keyboard/id6759807364"><img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store" height="40"></a>
+  <a href="https://apps.apple.com/app/id6759807364"><img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store" height="40"></a>
 </p>
 
 <p align="center">
@@ -82,7 +82,22 @@ Swap or add models to your compose file. The gateway handles routing and streami
 
 #### Bring your own model
 
-Point Diction at any Whisper-compatible endpoint. Use a model fine-tuned for your language, accent, or domain. The gateway routes requests to it automatically.
+Already running a speech model on your homelab? You don't need to run ours. Set `CUSTOM_BACKEND_URL` to point the gateway at your existing server:
+
+```yaml
+services:
+  gateway:
+    image: ghcr.io/omachala/diction-gateway:latest
+    ports:
+      - "8080:8080"
+    environment:
+      CUSTOM_BACKEND_URL: http://my-server:8000
+      CUSTOM_BACKEND_MODEL: your-model-name  # model name your server expects
+```
+
+If your server only accepts WAV audio, add `CUSTOM_BACKEND_NEEDS_WAV: "true"` and the gateway converts automatically. For servers behind an API key, add `CUSTOM_BACKEND_AUTH: "Bearer sk-xxx"`.
+
+Works with any server that implements `POST /v1/audio/transcriptions`. See the [full guide](https://diction.one/features/custom-model) for more examples.
 
 ## No Public IP?
 

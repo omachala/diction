@@ -24,11 +24,18 @@ type Gateway struct {
 }
 
 // NewGateway creates a Gateway and starts the background health checker.
+// If CUSTOM_BACKEND_URL is set, the custom backend is prepended and becomes the default.
 func NewGateway(cfg Config) *Gateway {
+	backends := cfg.Backends
+	defaultModel := cfg.DefaultModel
+	if custom := CustomBackendFromEnv(); custom != nil {
+		backends = append([]Backend{*custom}, backends...)
+		defaultModel = "custom"
+	}
 	g := &Gateway{
-		backends:     cfg.Backends,
+		backends:     backends,
 		health:       newHealthState(),
-		defaultModel: cfg.DefaultModel,
+		defaultModel: defaultModel,
 		maxBodySize:  cfg.MaxBodySize,
 	}
 	g.startHealthChecker()

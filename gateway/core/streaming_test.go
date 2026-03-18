@@ -31,7 +31,7 @@ func TestProxyToBackend_Success(t *testing.T) {
 	target, _ := url.Parse(backend.URL)
 	pcm := make([]byte, 3200) // 0.1s of silence at 16kHz 16-bit mono
 
-	text, err := g.proxyToBackend(context.Background(), target, pcm, "small", "en")
+	text, err := g.proxyToBackend(context.Background(), target, pcm, &Backend{Name: "small"}, "en")
 	if err != nil {
 		t.Fatalf("proxyToBackend: %v", err)
 	}
@@ -50,7 +50,7 @@ func TestProxyToBackend_NoLanguage(t *testing.T) {
 	g := testGateway()
 	target, _ := url.Parse(backend.URL)
 
-	text, err := g.proxyToBackend(context.Background(), target, make([]byte, 100), "small", "")
+	text, err := g.proxyToBackend(context.Background(), target, make([]byte, 100), &Backend{Name: "small"}, "")
 	if err != nil {
 		t.Fatalf("proxyToBackend with empty language: %v", err)
 	}
@@ -68,7 +68,7 @@ func TestProxyToBackend_BackendError(t *testing.T) {
 	g := testGateway()
 	target, _ := url.Parse(backend.URL)
 
-	_, err := g.proxyToBackend(context.Background(), target, make([]byte, 100), "small", "")
+	_, err := g.proxyToBackend(context.Background(), target, make([]byte, 100), &Backend{Name: "small"}, "")
 	if err == nil {
 		t.Fatal("expected error for backend 500")
 	}
@@ -84,7 +84,7 @@ func TestProxyToBackend_InvalidJSON(t *testing.T) {
 	g := testGateway()
 	target, _ := url.Parse(backend.URL)
 
-	_, err := g.proxyToBackend(context.Background(), target, make([]byte, 100), "small", "")
+	_, err := g.proxyToBackend(context.Background(), target, make([]byte, 100), &Backend{Name: "small"}, "")
 	if err == nil {
 		t.Fatal("expected error for invalid JSON response")
 	}
@@ -94,7 +94,7 @@ func TestProxyToBackend_UnreachableHost(t *testing.T) {
 	g := testGateway()
 	target, _ := url.Parse("http://127.0.0.1:1") // nothing listening there
 
-	_, err := g.proxyToBackend(context.Background(), target, make([]byte, 100), "small", "")
+	_, err := g.proxyToBackend(context.Background(), target, make([]byte, 100), &Backend{Name: "small"}, "")
 	if err == nil {
 		t.Fatal("expected error for unreachable host")
 	}
@@ -406,7 +406,7 @@ func TestStreamingHandler_HealthByAliasName(t *testing.T) {
 	}
 }
 
-func startStreamingServerWithPostProcess(t *testing.T, whisperResponse string, postProcess func(context.Context, string) (string, error)) *httptest.Server {
+func startStreamingServerWithPostProcess(t *testing.T, whisperResponse string, postProcess func(context.Context, string, string) (string, error)) *httptest.Server {
 	t.Helper()
 	whisper := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -430,7 +430,7 @@ func startStreamingServerWithPostProcess(t *testing.T, whisperResponse string, p
 }
 
 func TestStreamingHandler_WithPostProcess_Success(t *testing.T) {
-	postProcess := func(ctx context.Context, text string) (string, error) {
+	postProcess := func(ctx context.Context, text, contextJSON string) (string, error) {
 		return "cleaned: " + text, nil
 	}
 	srv := startStreamingServerWithPostProcess(t, "raw audio", postProcess)
@@ -461,7 +461,7 @@ func TestStreamingHandler_WithPostProcess_Success(t *testing.T) {
 
 func TestStreamingHandler_WithPostProcess_ErrorFallback(t *testing.T) {
 	// postProcess error → raw transcript returned unchanged
-	postProcess := func(ctx context.Context, text string) (string, error) {
+	postProcess := func(ctx context.Context, text, contextJSON string) (string, error) {
 		return "", fmt.Errorf("llm error")
 	}
 	srv := startStreamingServerWithPostProcess(t, "raw audio", postProcess)
@@ -515,5 +515,47 @@ func TestStreamingHandler_DefaultModel(t *testing.T) {
 	json.Unmarshal(data, &result)
 	if result.Text != "default model used" {
 		t.Errorf("want 'default model used', got %q", result.Text)
+	}
+}
+
+func TestStreamingHandler_FirstTextFrameAsContext(t *testing.T) {
+	var receivedContext string
+	postProcess := func(ctx context.Context, text, contextJSON string) (string, error) {
+		receivedContext = contextJSON
+		return "cleaned: " + text, nil
+	}
+	srv := startStreamingServerWithPostProcess(t, "raw audio", postProcess)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	conn, _, err := websocket.Dial(ctx, wsURL(srv, "enhance=true"), nil)
+	if err != nil {
+		t.Fatalf("dial: %v", err)
+	}
+	defer conn.CloseNow()
+
+	// Send context JSON as first text frame
+	contextJSON := `{"before":"hello ","after":" world","selected":"test"}`
+	conn.Write(ctx, websocket.MessageText, []byte(contextJSON))
+
+	// Send audio
+	conn.Write(ctx, websocket.MessageBinary, make([]byte, 3200))
+
+	// Send done
+	done, _ := json.Marshal(map[string]string{"action": "done"})
+	conn.Write(ctx, websocket.MessageText, done)
+
+	_, data, err := conn.Read(ctx)
+	if err != nil {
+		t.Fatalf("read: %v", err)
+	}
+	var result struct{ Text string `json:"text"` }
+	json.Unmarshal(data, &result)
+	if result.Text != "cleaned: raw audio" {
+		t.Errorf("want 'cleaned: raw audio', got %q", result.Text)
+	}
+	if receivedContext != contextJSON {
+		t.Errorf("context: want %q, got %q", contextJSON, receivedContext)
 	}
 }

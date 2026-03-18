@@ -64,7 +64,7 @@ func TestRewriteMultipart_StripsModelField(t *testing.T) {
 	body, ct := buildMultipart(t, map[string]string{"model": "medium", "language": "en"}, "audio.m4a", "fake-audio-data")
 	boundary := parseBoundary(ct)
 
-	rewritten, newCT, err := rewriteMultipart(body, boundary, false)
+	rewritten, newCT, err := rewriteMultipart(body, boundary, false, "")
 	if err != nil {
 		t.Fatalf("rewriteMultipart error: %v", err)
 	}
@@ -111,7 +111,7 @@ func TestRewriteMultipart_PreservesFileContent(t *testing.T) {
 	body, ct := buildMultipart(t, map[string]string{"model": "small"}, "audio.m4a", audioContent)
 	boundary := parseBoundary(ct)
 
-	rewritten, newCT, err := rewriteMultipart(body, boundary, false)
+	rewritten, newCT, err := rewriteMultipart(body, boundary, false, "")
 	if err != nil {
 		t.Fatalf("rewriteMultipart error: %v", err)
 	}
@@ -141,7 +141,7 @@ func TestRewriteMultipart_NoModelField(t *testing.T) {
 	body, ct := buildMultipart(t, map[string]string{}, "audio.m4a", "audio")
 	boundary := parseBoundary(ct)
 
-	_, _, err := rewriteMultipart(body, boundary, false)
+	_, _, err := rewriteMultipart(body, boundary, false, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -154,7 +154,7 @@ func TestRewriteMultipart_ConvertToWAV(t *testing.T) {
 	body, ct := buildMultipart(t, map[string]string{"language": "en"}, "audio.m4a", string(wavData))
 	boundary := parseBoundary(ct)
 
-	rewritten, newCT, err := rewriteMultipart(body, boundary, true)
+	rewritten, newCT, err := rewriteMultipart(body, boundary, true, "")
 	if err != nil {
 		t.Fatalf("rewriteMultipart error: %v", err)
 	}
@@ -357,7 +357,7 @@ func TestTranscriptionHandler_WithPostProcess_Success(t *testing.T) {
 		maxBodySize:  10 * 1024 * 1024,
 	}
 
-	postProcess := func(ctx context.Context, text string) (string, error) {
+	postProcess := func(ctx context.Context, text, contextJSON string) (string, error) {
 		return "cleaned: " + text, nil
 	}
 
@@ -392,7 +392,7 @@ func TestTranscriptionHandler_WithPostProcess_ErrorFallback(t *testing.T) {
 		maxBodySize:  10 * 1024 * 1024,
 	}
 
-	postProcess := func(ctx context.Context, text string) (string, error) {
+	postProcess := func(ctx context.Context, text, contextJSON string) (string, error) {
 		return "", fmt.Errorf("llm error")
 	}
 
@@ -443,5 +443,84 @@ func TestTranscriptionHandler_ModelStrippedBeforeProxy(t *testing.T) {
 
 	if rr.Code != http.StatusOK {
 		t.Errorf("status: want 200, got %d (body: %s)", rr.Code, rr.Body.String())
+	}
+}
+
+func TestExtractFormField_Found(t *testing.T) {
+	body, ct := buildMultipart(t, map[string]string{"context": `{"before":"hello","after":"world"}`, "language": "en"}, "audio.wav", "data")
+	boundary := parseBoundary(ct)
+	got := extractFormField(body, boundary, "context")
+	if got != `{"before":"hello","after":"world"}` {
+		t.Errorf("context: want JSON, got %q", got)
+	}
+}
+
+func TestExtractFormField_NotFound(t *testing.T) {
+	body, ct := buildMultipart(t, map[string]string{"language": "en"}, "audio.wav", "data")
+	boundary := parseBoundary(ct)
+	got := extractFormField(body, boundary, "context")
+	if got != "" {
+		t.Errorf("context: want empty, got %q", got)
+	}
+}
+
+func TestRewriteMultipart_StripsContextField(t *testing.T) {
+	body, ct := buildMultipart(t, map[string]string{"context": `{"before":"x"}`, "language": "en"}, "audio.wav", "audio")
+	boundary := parseBoundary(ct)
+	rewritten, newCT, err := rewriteMultipart(body, boundary, false, "")
+	if err != nil {
+		t.Fatalf("rewriteMultipart: %v", err)
+	}
+	_, params, _ := parseMediaType(newCT)
+	reader := multipart.NewReader(bytes.NewReader(rewritten), params["boundary"])
+	for {
+		part, err := reader.NextPart()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			t.Fatalf("read part: %v", err)
+		}
+		if part.FormName() == "context" {
+			t.Error("context field should have been stripped")
+		}
+		part.Close()
+	}
+}
+
+func TestTranscriptionHandler_ContextFieldPassedToPostProcess(t *testing.T) {
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"text":"raw"}`)
+	}))
+	defer backend.Close()
+
+	g := &Gateway{
+		backends: []Backend{
+			{Name: "small", URL: backend.URL, Aliases: []string{"small"}},
+		},
+		health:       newHealthState(),
+		defaultModel: "small",
+		maxBodySize:  10 * 1024 * 1024,
+	}
+
+	var receivedContext string
+	postProcess := func(ctx context.Context, text, contextJSON string) (string, error) {
+		receivedContext = contextJSON
+		return text, nil
+	}
+
+	contextJSON := `{"before":"hello ","after":" world","selected":"test"}`
+	body, ct := buildMultipart(t, map[string]string{"context": contextJSON}, "audio.wav", "RIFF"+string(make([]byte, 100)))
+	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions?enhance=true", bytes.NewReader(body))
+	req.Header.Set("Content-Type", ct)
+	rr := httptest.NewRecorder()
+	g.TranscriptionHandlerWithPostProcess(postProcess)(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("status: want 200, got %d (body: %s)", rr.Code, rr.Body.String())
+	}
+	if receivedContext != contextJSON {
+		t.Errorf("context: want %q, got %q", contextJSON, receivedContext)
 	}
 }

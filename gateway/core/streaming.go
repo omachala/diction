@@ -48,12 +48,13 @@ func (g *Gateway) StreamingHandler() http.HandlerFunc {
 
 // StreamingHandlerWithPostProcess is like StreamingHandler but calls postProcess
 // on the transcript when ?enhance=true is requested. Pass nil for no post-processing.
-func (g *Gateway) StreamingHandlerWithPostProcess(postProcess func(context.Context, string) (string, error)) http.HandlerFunc {
+// postProcess receives (ctx, transcript, contextJSON).
+func (g *Gateway) StreamingHandlerWithPostProcess(postProcess func(context.Context, string, string) (string, error)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Resolve backend before upgrade
 		model := g.defaultModel
-		target, _ := g.resolveBackend(model)
-		if target == nil || !g.health.get(model) {
+		target, backend := g.resolveBackend(model)
+		if target == nil || (!backend.SkipHealthCheck && !g.health.get(model)) {
 			http.Error(w, `{"error":"backend unavailable"}`, http.StatusServiceUnavailable)
 			return
 		}
@@ -72,9 +73,11 @@ func (g *Gateway) StreamingHandlerWithPostProcess(postProcess func(context.Conte
 		ctx, cancel := context.WithTimeout(r.Context(), streamTimeout)
 		defer cancel()
 
-		// Collect PCM chunks
+		// Collect PCM chunks; first text frame (if not a done/action) is context JSON
 		var pcmBuf bytes.Buffer
+		var contextJSON string
 		maxPCM := g.maxBodySize
+		contextRead := false
 
 		for {
 			msgType, data, err := conn.Read(ctx)
@@ -89,13 +92,19 @@ func (g *Gateway) StreamingHandlerWithPostProcess(postProcess func(context.Conte
 					return
 				}
 				pcmBuf.Write(data)
+				contextRead = true // context frame must come before any audio
 				continue
 			}
 
-			// Text message — check for done action
+			// Text message — check for done action or context
 			if msgType == websocket.MessageText {
 				var action streamAction
 				if err := json.Unmarshal(data, &action); err != nil {
+					// Not valid JSON action — treat as context if first text frame
+					if !contextRead {
+						contextJSON = string(data)
+						contextRead = true
+					}
 					continue
 				}
 				if action.Action == "done" {
@@ -103,6 +112,12 @@ func (g *Gateway) StreamingHandlerWithPostProcess(postProcess func(context.Conte
 						language = action.Language
 					}
 					break
+				}
+				// First text frame without action field is context JSON
+				if !contextRead && action.Action == "" {
+					contextJSON = string(data)
+					contextRead = true
+					continue
 				}
 			}
 		}
@@ -113,7 +128,7 @@ func (g *Gateway) StreamingHandlerWithPostProcess(postProcess func(context.Conte
 		}
 
 		// Wrap PCM in WAV header and POST to backend
-		text, err := g.proxyToBackend(ctx, target, pcmBuf.Bytes(), model, language)
+		text, err := g.proxyToBackend(ctx, target, pcmBuf.Bytes(), backend, language)
 		if err != nil {
 			log.Printf("ws proxy: %v", err)
 			conn.Close(wsCloseFailed, "transcription failed")
@@ -122,7 +137,7 @@ func (g *Gateway) StreamingHandlerWithPostProcess(postProcess func(context.Conte
 
 		// Apply post-processing if provided (e.g. ?enhance=true)
 		if postProcess != nil && r.URL.Query().Get("enhance") == "true" && text != "" {
-			if cleaned, err := postProcess(ctx, text); err == nil {
+			if cleaned, err := postProcess(ctx, text, contextJSON); err == nil {
 				text = cleaned
 			} else {
 				log.Printf("ws post-process: %v", err)
@@ -140,7 +155,7 @@ func (g *Gateway) StreamingHandlerWithPostProcess(postProcess func(context.Conte
 }
 
 // proxyToBackend wraps raw PCM in a WAV and POSTs multipart to the whisper backend.
-func (g *Gateway) proxyToBackend(ctx context.Context, target *url.URL, pcm []byte, model, language string) (string, error) {
+func (g *Gateway) proxyToBackend(ctx context.Context, target *url.URL, pcm []byte, backend *Backend, language string) (string, error) {
 	// Build WAV
 	var wav bytes.Buffer
 	if err := WriteWAVHeader(&wav, len(pcm)); err != nil {
@@ -160,7 +175,11 @@ func (g *Gateway) proxyToBackend(ctx context.Context, target *url.URL, pcm []byt
 		return "", fmt.Errorf("copy wav: %w", err)
 	}
 
-	writer.WriteField("model", model)
+	modelToForward := backend.ForwardModel
+	if modelToForward == "" {
+		modelToForward = backend.Name
+	}
+	writer.WriteField("model", modelToForward)
 	if language != "" {
 		writer.WriteField("language", language)
 	}
@@ -173,6 +192,9 @@ func (g *Gateway) proxyToBackend(ctx context.Context, target *url.URL, pcm []byt
 		return "", fmt.Errorf("create request: %w", err)
 	}
 	req.Header.Set("Content-Type", writer.FormDataContentType())
+	if backend.AuthHeader != "" {
+		req.Header.Set("Authorization", backend.AuthHeader)
+	}
 
 	client := &http.Client{Timeout: 10 * time.Minute}
 	resp, err := client.Do(req)

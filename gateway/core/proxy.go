@@ -29,9 +29,9 @@ func parseBoundary(contentType string) string {
 }
 
 // rewriteMultipart rewrites the multipart body:
-// - Strips the "model" field (each backend container serves one model, the field is only used for gateway routing)
+// - Strips the "model" field (routing is done); if forwardModel is non-empty, injects it for the backend
 // - If convertToWAV is true, converts the audio file to 16kHz mono WAV via ffmpeg (for backends that only accept WAV)
-func rewriteMultipart(body []byte, boundary string, convertToWAV bool) ([]byte, string, error) {
+func rewriteMultipart(body []byte, boundary string, convertToWAV bool, forwardModel string) ([]byte, string, error) {
 	reader := multipart.NewReader(bytes.NewReader(body), boundary)
 
 	var buf bytes.Buffer
@@ -46,8 +46,8 @@ func rewriteMultipart(body []byte, boundary string, convertToWAV bool) ([]byte, 
 			return nil, "", fmt.Errorf("read multipart: %w", err)
 		}
 
-		// Strip model field — gateway already routed to the correct backend
-		if part.FormName() == "model" {
+		// Strip model and context fields — gateway-only, not forwarded to backend
+		if part.FormName() == "model" || part.FormName() == "context" {
 			part.Close()
 			continue
 		}
@@ -91,6 +91,12 @@ func rewriteMultipart(body []byte, boundary string, convertToWAV bool) ([]byte, 
 			if err := writer.WriteField(fieldName, string(data)); err != nil {
 				return nil, "", fmt.Errorf("write field %s: %w", fieldName, err)
 			}
+		}
+	}
+
+	if forwardModel != "" {
+		if err := writer.WriteField("model", forwardModel); err != nil {
+			return nil, "", fmt.Errorf("write model field: %w", err)
 		}
 	}
 
@@ -142,6 +148,24 @@ func convertToWAVBytes(audioData []byte, filename string) ([]byte, error) {
 	return wavData, nil
 }
 
+// extractFormField reads a single field value from a multipart body without consuming it.
+func extractFormField(body []byte, boundary, fieldName string) string {
+	reader := multipart.NewReader(bytes.NewReader(body), boundary)
+	for {
+		part, err := reader.NextPart()
+		if err != nil {
+			break
+		}
+		if part.FormName() == fieldName {
+			data, _ := io.ReadAll(part)
+			part.Close()
+			return string(data)
+		}
+		part.Close()
+	}
+	return ""
+}
+
 // TranscriptionHandler returns the handler for POST /v1/audio/transcriptions.
 func (g *Gateway) TranscriptionHandler() http.HandlerFunc {
 	return g.TranscriptionHandlerWithPostProcess(nil)
@@ -149,7 +173,8 @@ func (g *Gateway) TranscriptionHandler() http.HandlerFunc {
 
 // TranscriptionHandlerWithPostProcess is like TranscriptionHandler but calls postProcess
 // on the transcript when ?enhance=true is requested. Pass nil for no post-processing.
-func (g *Gateway) TranscriptionHandlerWithPostProcess(postProcess func(context.Context, string) (string, error)) http.HandlerFunc {
+// postProcess receives (ctx, transcript, contextJSON).
+func (g *Gateway) TranscriptionHandlerWithPostProcess(postProcess func(context.Context, string, string) (string, error)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			http.Error(w, `{"error":"method not allowed"}`, http.StatusMethodNotAllowed)
@@ -180,7 +205,7 @@ func (g *Gateway) TranscriptionHandlerWithPostProcess(postProcess func(context.C
 		proxyBody := body
 		proxyContentType := contentType
 		if boundary != "" {
-			converted, newCT, err := rewriteMultipart(body, boundary, backend.NeedsWAV)
+			converted, newCT, err := rewriteMultipart(body, boundary, backend.NeedsWAV, backend.ForwardModel)
 			if err != nil {
 				log.Printf("Multipart rewrite failed for %s: %v", backend.Name, err)
 				http.Error(w, `{"error":"request processing failed"}`, http.StatusInternalServerError)
@@ -189,6 +214,15 @@ func (g *Gateway) TranscriptionHandlerWithPostProcess(postProcess func(context.C
 			proxyBody = converted
 			proxyContentType = newCT
 		}
+
+		// Extract context from multipart form field (stripped during rewrite)
+		var contextJSON string
+		if boundary != "" {
+			contextJSON = extractFormField(body, boundary, "context")
+		}
+
+		// Capture E2E client key before proxy (X-Diction-E2E header carries client ephemeral X25519 pubkey)
+		e2eClientKey := r.Header.Get("X-Diction-E2E")
 
 		// Proxy via httputil.ReverseProxy
 		enhanceEnabled := r.URL.Query().Get("enhance") == "true"
@@ -202,12 +236,16 @@ func (g *Gateway) TranscriptionHandlerWithPostProcess(postProcess func(context.C
 				req.Header.Set("Content-Type", proxyContentType)
 				req.Body = io.NopCloser(bytes.NewReader(proxyBody))
 				req.ContentLength = int64(len(proxyBody))
+				if backend.AuthHeader != "" {
+					req.Header.Set("Authorization", backend.AuthHeader)
+				}
 			},
 			ModifyResponse: func(resp *http.Response) error {
 				whisperMs := time.Since(whisperStart).Milliseconds()
 				resp.Header.Set("X-Diction-Whisper-Ms", fmt.Sprintf("%d", whisperMs))
 
-				if postProcess == nil || !enhanceEnabled || resp.StatusCode != http.StatusOK {
+				needsRewrite := (postProcess != nil && enhanceEnabled) || e2eClientKey != ""
+				if !needsRewrite || resp.StatusCode != http.StatusOK {
 					return nil
 				}
 
@@ -228,20 +266,40 @@ func (g *Gateway) TranscriptionHandlerWithPostProcess(postProcess func(context.C
 					return nil
 				}
 
-				// Post-process transcript
-				llmStart := time.Now()
-				cleaned, err := postProcess(resp.Request.Context(), transcription.Text)
-				llmMs := time.Since(llmStart).Milliseconds()
-				resp.Header.Set("X-Diction-LLM-Ms", fmt.Sprintf("%d", llmMs))
+				transcript := transcription.Text
 
-				if err != nil {
-					log.Printf("post-process error (returning raw): %v", err)
-					resp.Body = io.NopCloser(bytes.NewReader(body))
-					return nil
+				// LLM post-processing (if requested)
+				if postProcess != nil && enhanceEnabled {
+					llmStart := time.Now()
+					cleaned, err := postProcess(resp.Request.Context(), transcript, contextJSON)
+					llmMs := time.Since(llmStart).Milliseconds()
+					resp.Header.Set("X-Diction-LLM-Ms", fmt.Sprintf("%d", llmMs))
+					if err != nil {
+						log.Printf("post-process error (returning raw): %v", err)
+					} else {
+						transcript = cleaned
+					}
 				}
 
-				// Rewrite response with cleaned text
-				newBody, _ := json.Marshal(map[string]string{"text": cleaned})
+				// E2E encrypt transcript if client sent ephemeral pubkey
+				if e2eClientKey != "" {
+					ct, pk, err := EncryptTranscript(transcript, e2eClientKey)
+					if err != nil {
+						log.Printf("e2e encrypt error: %v", err)
+						// Fall through to plain response
+					} else {
+						newBody, _ := json.Marshal(map[string]any{
+							"e2e": map[string]string{"ct": ct, "pk": pk},
+						})
+						resp.Body = io.NopCloser(bytes.NewReader(newBody))
+						resp.ContentLength = int64(len(newBody))
+						resp.Header.Set("Content-Length", fmt.Sprintf("%d", len(newBody)))
+						return nil
+					}
+				}
+
+				// Plain response (no E2E or E2E failed)
+				newBody, _ := json.Marshal(map[string]string{"text": transcript})
 				resp.Body = io.NopCloser(bytes.NewReader(newBody))
 				resp.ContentLength = int64(len(newBody))
 				resp.Header.Set("Content-Length", fmt.Sprintf("%d", len(newBody)))
