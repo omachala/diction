@@ -1,38 +1,31 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue';
 
 const scope = ref(null);
-const typedText = ref('');
-const fullText = 'Hey, running 10 mins late. Traffic is crazy!';
-
+const bubbles = reactive([]);
+let bubbleId = 0;
 let isMounted = true;
 let rafId = null;
 
-// Per-bar random parameters (matches iOS WaveformView.swift)
-const BAR_COUNT = 16;
-const barScales = [];
-const barSpeeds = [];
-const barPhases = [];
-const barFreqs = [];
-const barHeights = new Float32Array(BAR_COUNT);
-const barOffsets = new Float32Array(BAR_COUNT);
+// Dot waveform parameters (matches iOS WaveformView.swift frequencies)
+const DOT_COUNT = 16;
+const dotScales = [];
+const dotSpeeds = [];
+const dotPhases = [];
+const dotFreqs = [];
+const dotHeights = new Float32Array(DOT_COUNT);
+const dotOffsets = new Float32Array(DOT_COUNT);
 
-for (let i = 0; i < BAR_COUNT; i++) {
-  // Center bars animate more (iOS: 0.15 to 1.0, bell curve)
-  const center = (BAR_COUNT - 1) / 2;
+for (let i = 0; i < DOT_COUNT; i++) {
+  const center = (DOT_COUNT - 1) / 2;
   const dist = Math.abs(i - center) / center;
-  barScales[i] = 0.15 + 0.85 * (1 - dist * dist);
-  // Random easing speed per bar (iOS: 0.08 to 0.30)
-  barSpeeds[i] = 0.08 + Math.random() * 0.22;
-  // Random phase offset (iOS: 0 to 2pi)
-  barPhases[i] = Math.random() * Math.PI * 2;
-  // Random oscillation frequency (iOS: 1.5 to 4.0 Hz)
-  barFreqs[i] = 1.5 + Math.random() * 2.5;
+  dotScales[i] = 0.15 + 0.85 * (1 - dist * dist);
+  dotSpeeds[i] = 0.08 + Math.random() * 0.22;
+  dotPhases[i] = Math.random() * Math.PI * 2;
+  dotFreqs[i] = 1.5 + Math.random() * 2.5;
 }
 
-// Simulated audio level -- mimics natural speech patterns
 function getAudioLevel(time) {
-  // Layered sine waves for organic speech-like amplitude
   const base = 0.3 + 0.2 * Math.sin(time * 1.2);
   const mid = 0.25 * Math.sin(time * 2.7 + 1.0);
   const fast = 0.15 * Math.sin(time * 5.3 + 2.0);
@@ -40,9 +33,9 @@ function getAudioLevel(time) {
   return Math.max(0, Math.min(1, base + mid + fast + burst));
 }
 
-let mode = 'idle'; // 'idle' | 'recording' | 'transcribing'
+let mode = 'idle';
 let startTime = 0;
-let barEls = [];
+let dotEls = [];
 
 function tick() {
   if (!isMounted) return;
@@ -51,37 +44,37 @@ function tick() {
 
   if (mode === 'recording') {
     const level = getAudioLevel(elapsed);
-    for (let i = 0; i < BAR_COUNT; i++) {
-      // iOS formula: target = level * (0.4 + 0.6 * sin(time * freq + phase)) * scale
-      const sin = Math.sin(elapsed * barFreqs[i] + barPhases[i]);
-      const target = level * (0.4 + 0.6 * sin) * barScales[i];
-      // Smooth toward target (iOS: barSpeed easing)
-      barHeights[i] += (target - barHeights[i]) * barSpeeds[i];
-      barOffsets[i] += (0 - barOffsets[i]) * 0.2;
+    for (let i = 0; i < DOT_COUNT; i++) {
+      const sin = Math.sin(elapsed * dotFreqs[i] + dotPhases[i]);
+      const target = level * (0.4 + 0.6 * sin) * dotScales[i];
+      dotHeights[i] += (target - dotHeights[i]) * dotSpeeds[i];
+      dotOffsets[i] += (0 - dotOffsets[i]) * 0.2;
     }
   } else if (mode === 'transcribing') {
-    // iOS wave mode: bars collapse, sine wave travels horizontally
     const waveSpeed = 5.0;
-    const waveLength = BAR_COUNT * 0.35;
-    for (let i = 0; i < BAR_COUNT; i++) {
-      // Collapse height to minimum (iOS: 0.08)
-      barHeights[i] += (0.08 - barHeights[i]) * 0.15;
-      // Traveling sine wave as vertical offset
+    const waveLength = DOT_COUNT * 0.35;
+    for (let i = 0; i < DOT_COUNT; i++) {
+      dotHeights[i] += (0.08 - dotHeights[i]) * 0.15;
       const phase = (i / waveLength) * Math.PI * 2;
       const targetOffset = Math.sin(phase - elapsed * waveSpeed) * 0.18;
-      barOffsets[i] += (targetOffset - barOffsets[i]) * 0.2;
+      dotOffsets[i] += (targetOffset - dotOffsets[i]) * 0.2;
+    }
+  } else {
+    for (let i = 0; i < DOT_COUNT; i++) {
+      dotHeights[i] += (0 - dotHeights[i]) * 0.1;
+      dotOffsets[i] += (0 - dotOffsets[i]) * 0.1;
     }
   }
 
-  // Apply to DOM
-  if (barEls.length === BAR_COUNT) {
-    const containerHeight = 42; // bar container usable height in px
-    const minH = containerHeight * 0.08;
-    for (let i = 0; i < BAR_COUNT; i++) {
-      const h = minH + (containerHeight - minH) * Math.max(0, barHeights[i]);
-      const offsetPx = barOffsets[i] * containerHeight;
-      barEls[i].style.height = `${h}px`;
-      barEls[i].style.transform = `translateY(${offsetPx}px)`;
+  // Apply height + offset to DOM (original bar animation, slightly reduced)
+  if (dotEls.length === DOT_COUNT) {
+    const containerH = 38;
+    const minH = containerH * 0.08;
+    for (let i = 0; i < DOT_COUNT; i++) {
+      const h = minH + (containerH - minH) * Math.max(0, dotHeights[i]);
+      const offsetPx = dotOffsets[i] * containerH;
+      dotEls[i].style.height = `${h}px`;
+      dotEls[i].style.transform = `translateY(${offsetPx}px)`;
     }
   }
 
@@ -92,81 +85,121 @@ function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
 
-function fadeIn(el, duration = 200) {
-  el.style.transition = `opacity ${duration}ms ease`;
-  el.style.opacity = '1';
-  return sleep(duration);
+// Varied sizes for natural conversation look
+const widths = ['45%', '65%', '50%', '75%', '40%', '60%', '55%', '70%'];
+const heights = [26, 34, 24, 38, 28, 32, 24, 36];
+let sizeIdx = 0;
+
+function addBubble(type) {
+  const w = widths[sizeIdx % widths.length];
+  const h = heights[sizeIdx % heights.length];
+  sizeIdx++;
+  bubbles.push({ id: bubbleId++, type, width: w, height: h + 'px' });
+  while (bubbles.length > 12) bubbles.shift();
 }
 
-function fadeOut(el, duration = 200) {
-  el.style.transition = `opacity ${duration}ms ease`;
-  el.style.opacity = '0';
-  return sleep(duration);
-}
+// Seed enough bubbles to fill the screen like a real conversation
+bubbles.push(
+  { id: bubbleId++, type: 'incoming', width: '55%', height: '26px' },
+  { id: bubbleId++, type: 'outgoing', width: '70%', height: '34px' },
+  { id: bubbleId++, type: 'incoming', width: '40%', height: '24px' },
+  { id: bubbleId++, type: 'outgoing', width: '60%', height: '32px' },
+  { id: bubbleId++, type: 'incoming', width: '75%', height: '38px' },
+  { id: bubbleId++, type: 'outgoing', width: '50%', height: '28px' },
+  { id: bubbleId++, type: 'incoming', width: '45%', height: '24px' },
+  { id: bubbleId++, type: 'outgoing', width: '65%', height: '36px' },
+  { id: bubbleId++, type: 'incoming', width: '55%', height: '26px' },
+  { id: bubbleId++, type: 'outgoing', width: '70%', height: '30px' },
+);
+sizeIdx = 10;
 
 async function runTimeline() {
   if (!scope.value || !isMounted) return;
 
   const barIdle = scope.value.querySelector('.bar-idle');
   const barWaveform = scope.value.querySelector('.bar-waveform');
-  const typedBubble = scope.value.querySelector('.typed-bubble');
-  barEls = Array.from(scope.value.querySelectorAll('.bar-waveform .bar'));
+  dotEls = Array.from(scope.value.querySelectorAll('.bar-waveform .dot'));
 
-  // Reset
-  typedText.value = '';
-  barHeights.fill(0);
-  barOffsets.fill(0);
+  function fadeIn(el, duration = 200) {
+    if (!el) return sleep(0);
+    el.style.transition = `opacity ${duration}ms ease`;
+    el.style.opacity = '1';
+    return sleep(duration);
+  }
+  function fadeOut(el, duration = 200) {
+    if (!el) return sleep(0);
+    el.style.transition = `opacity ${duration}ms ease`;
+    el.style.opacity = '0';
+    return sleep(duration);
+  }
+
+  const dictionBar = scope.value.querySelector('.diction-bar');
+
+  async function pressButton() {
+    if (!dictionBar) return;
+    dictionBar.style.transition = 'transform 0.1s ease-in';
+    dictionBar.style.transform = 'scale(0.93)';
+    await sleep(100);
+    dictionBar.style.transition = 'transform 0.15s ease-out';
+    dictionBar.style.transform = 'scale(1)';
+    await sleep(150);
+  }
+
+  dotHeights.fill(0);
+  dotOffsets.fill(0);
   if (barIdle) barIdle.style.opacity = '1';
   if (barWaveform) barWaveform.style.opacity = '0';
-  if (typedBubble) typedBubble.style.opacity = '0';
-  barEls.forEach(bar => {
-    bar.style.height = '3px';
-    bar.style.transform = 'translateY(0)';
+  dotEls.forEach(d => {
+    d.style.height = '3px';
+    d.style.transform = 'translateY(0)';
   });
 
-  // Phase 1: Idle
-  mode = 'idle';
-  await sleep(1500);
+  await sleep(1200);
   if (!isMounted) return;
 
-  // Phase 2: Recording
-  await fadeOut(barIdle);
-  if (!isMounted) return;
-  await fadeIn(barWaveform);
-  if (!isMounted) return;
-  mode = 'recording';
-  startTime = performance.now() / 1000;
-  await sleep(3000);
-  if (!isMounted) return;
-
-  // Phase 3: Transcribing
-  mode = 'transcribing';
-  startTime = performance.now() / 1000;
-  await sleep(2000);
-  if (!isMounted) return;
-
-  // Phase 4: Done -- back to idle
-  await fadeOut(barWaveform);
-  if (!isMounted) return;
-  await fadeIn(barIdle);
-  if (!isMounted) return;
-  mode = 'idle';
-
-  // Phase 5: Show typed text
-  await fadeIn(typedBubble, 300);
-  if (!isMounted) return;
-  for (let i = 0; i <= fullText.length; i++) {
+  while (isMounted) {
+    // Tap the button
+    await pressButton();
     if (!isMounted) return;
-    typedText.value = fullText.slice(0, i);
-    await sleep(30);
-  }
-  await sleep(2000);
-  if (!isMounted) return;
-  await fadeOut(typedBubble, 300);
-  if (!isMounted) return;
 
-  // Loop
-  if (isMounted) runTimeline();
+    // Recording
+    await fadeOut(barIdle);
+    if (!isMounted) return;
+    await fadeIn(barWaveform);
+    if (!isMounted) return;
+    mode = 'recording';
+    startTime = performance.now() / 1000;
+    await sleep(2500);
+    if (!isMounted) return;
+
+    // Transcribing (quick — Diction is fast)
+    mode = 'transcribing';
+    startTime = performance.now() / 1000;
+    await sleep(600);
+    if (!isMounted) return;
+
+    // Back to idle
+    await fadeOut(barWaveform);
+    if (!isMounted) return;
+    await fadeIn(barIdle);
+    if (!isMounted) return;
+    mode = 'idle';
+
+    // New outgoing (blue) bubble — user just dictated this
+    await sleep(300);
+    if (!isMounted) return;
+    addBubble('outgoing');
+    await nextTick();
+
+    // Incoming (gray) reply arrives
+    await sleep(1200);
+    if (!isMounted) return;
+    addBubble('incoming');
+    await nextTick();
+
+    await sleep(1500);
+    if (!isMounted) return;
+  }
 }
 
 onMounted(() => {
@@ -183,33 +216,31 @@ onUnmounted(() => {
 
 <template>
   <div class="hero-demo" ref="scope">
-    <!-- Phone frame -->
     <div class="phone-frame">
       <div class="phone-screen">
         <div class="dynamic-island"></div>
 
-        <!-- Chat UI -->
+        <!-- Chat conversation -->
         <div class="chat-ui">
-          <div class="chat-bubble incoming short"></div>
-          <div class="chat-bubble outgoing long"></div>
-          <div class="chat-bubble incoming long"></div>
-          <div class="chat-bubble outgoing short"></div>
-          <div class="chat-bubble incoming typed-bubble">
-            <span class="typed-text">{{ typedText }}<span class="cursor" v-if="typedText.length > 0 && typedText.length < fullText.length">|</span></span>
-          </div>
+          <TransitionGroup name="bubble">
+            <div
+              v-for="b in bubbles"
+              :key="b.id"
+              class="chat-bubble"
+              :class="b.type"
+              :style="{ width: b.width, height: b.height }"
+            ></div>
+          </TransitionGroup>
         </div>
 
         <!-- Diction bar -->
         <div class="diction-bar">
-          <!-- Idle state -->
           <div class="bar-idle">
             <img src="/mic-fill.svg" alt="" class="bar-mic" />
             <span class="bar-logo">Diction</span>
           </div>
-
-          <!-- Recording/Transcribing waveform -->
           <div class="bar-waveform">
-            <div class="bar" v-for="i in 16" :key="i"></div>
+            <div class="dot" v-for="i in 16" :key="i"></div>
           </div>
         </div>
       </div>
@@ -220,8 +251,8 @@ onUnmounted(() => {
 <style scoped>
 .hero-demo {
   position: relative;
-  width: 280px;
-  height: 500px;
+  width: 260px;
+  height: 540px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -229,8 +260,8 @@ onUnmounted(() => {
 
 .phone-frame {
   position: relative;
-  width: 260px;
-  height: 480px;
+  width: 240px;
+  height: 520px;
   border: 5px solid #1a1a1a;
   border-radius: 42px;
   overflow: hidden;
@@ -262,19 +293,25 @@ onUnmounted(() => {
   z-index: 10;
 }
 
-/* Chat UI */
+/* Chat UI — flex-end so bubbles stack from bottom */
 .chat-ui {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 50px 14px 90px;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px;
+  padding-bottom: 80px;
   height: 100%;
+  overflow: hidden;
+  position: relative;
+  mask-image: linear-gradient(to bottom, transparent 6%, black 14%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 6%, black 14%);
 }
 
 .chat-bubble {
   border-radius: 16px;
+  flex-shrink: 0;
   background: #e5e5ea;
-  min-height: 24px;
 }
 
 .dark .chat-bubble {
@@ -292,37 +329,26 @@ onUnmounted(() => {
   border-bottom-right-radius: 4px;
 }
 
-.chat-bubble.short { width: 45%; flex: 0.6; }
-.chat-bubble.long { width: 75%; flex: 1; }
+/* Bubble enter animation — fade in from below */
+.bubble-enter-active {
+  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+}
 
-.chat-bubble.typed-bubble {
-  align-self: flex-start;
-  width: 90%;
-  flex: 1.2;
-  display: flex;
-  align-items: flex-start;
-  padding: 10px 12px;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
-  font-size: 14px;
-  font-weight: 400;
-  color: #000;
-  line-height: 1.4;
-  text-align: left;
+.bubble-enter-from {
   opacity: 0;
+  transform: translateY(16px);
 }
 
-.dark .chat-bubble.typed-bubble {
-  color: #fff;
+/* Existing bubbles shift up smoothly */
+.bubble-move {
+  transition: transform 0.4s ease;
 }
 
-.cursor {
-  animation: blink 0.5s step-end infinite;
-  color: #007AFF;
-}
-
-@keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
+/* Removed bubbles vanish instantly (they're off-screen at top) */
+.bubble-leave-active {
+  position: absolute;
+  opacity: 0;
+  transition: none;
 }
 
 /* Diction bar */
@@ -363,35 +389,35 @@ onUnmounted(() => {
   letter-spacing: 0.5px;
 }
 
-/* Waveform */
+/* Dot waveform — actual circles, not bars */
 .bar-waveform {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 5px;
   opacity: 0;
 }
 
-.bar-waveform .bar {
-  width: 4px;
+.bar-waveform .dot {
+  width: 3px;
   height: 3px;
   background: #fff;
-  border-radius: 2px;
+  border-radius: 1.5px;
   will-change: height, transform;
 }
 
 /* Responsive */
 @media (max-width: 960px) {
   .hero-demo {
-    width: 240px;
-    height: 440px;
+    width: 220px;
+    height: 454px;
   }
 
   .phone-frame {
-    width: 220px;
-    height: 400px;
+    width: 200px;
+    height: 434px;
     border-width: 4px;
     border-radius: 36px;
   }
@@ -406,14 +432,17 @@ onUnmounted(() => {
   }
 
   .chat-ui {
-    padding: 42px 10px 76px;
-    gap: 8px;
+    padding: 10px;
+    padding-bottom: 66px;
+    gap: 6px;
   }
 
-  .chat-bubble.typed-bubble {
-    font-size: 12px;
-    padding: 8px 10px;
+  .chat-bubble {
+    border-radius: 12px;
   }
+
+  .chat-bubble.incoming { border-bottom-left-radius: 3px; }
+  .chat-bubble.outgoing { border-bottom-right-radius: 3px; }
 
   .diction-bar {
     height: 46px;
@@ -435,15 +464,15 @@ onUnmounted(() => {
 
 @media (max-width: 640px) {
   .hero-demo {
-    width: 200px;
-    height: 380px;
+    width: 186px;
+    height: 384px;
   }
 
   .phone-frame {
-    width: 180px;
-    height: 340px;
+    width: 166px;
+    height: 360px;
     border-width: 3px;
-    border-radius: 30px;
+    border-radius: 26px;
   }
 
   .phone-screen {
@@ -457,29 +486,17 @@ onUnmounted(() => {
   }
 
   .chat-ui {
-    padding: 34px 8px 64px;
-    gap: 6px;
+    padding: 8px;
+    padding-bottom: 54px;
+    gap: 5px;
   }
 
   .chat-bubble {
-    border-radius: 12px;
-    min-height: 18px;
+    border-radius: 10px;
   }
 
-  .chat-bubble.incoming {
-    border-bottom-left-radius: 3px;
-  }
-
-  .chat-bubble.outgoing {
-    border-bottom-right-radius: 3px;
-  }
-
-  .chat-bubble.typed-bubble {
-    font-size: 10px;
-    padding: 6px 8px;
-    border-radius: 12px;
-    border-bottom-left-radius: 3px;
-  }
+  .chat-bubble.incoming { border-bottom-left-radius: 3px; }
+  .chat-bubble.outgoing { border-bottom-right-radius: 3px; }
 
   .diction-bar {
     height: 38px;
@@ -498,8 +515,10 @@ onUnmounted(() => {
     height: 14px;
   }
 
-  .bar-waveform .bar {
-    width: 3px;
+  .bar-waveform .dot {
+    width: 2px;
+    height: 2px;
+    border-radius: 1px;
   }
 
   .bar-waveform {

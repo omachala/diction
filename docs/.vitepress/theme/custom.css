@@ -110,7 +110,11 @@
   transition: none;
 }
 
-/* -- Hero content centered -- */
+/* -- Hero content centered horizontally & vertically -- */
+.VPHero .container {
+  align-items: center !important;
+}
+
 .VPHero .main {
   text-align: center;
   align-items: center;
