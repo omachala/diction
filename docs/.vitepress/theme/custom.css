@@ -1,0 +1,297 @@
+/* ===========================================
+   Diction Theme -- Blue, Green & Black
+   iOS accent: #007AFF (systemBlue)
+   iOS success: #34C759 (systemGreen)
+   =========================================== */
+
+@font-face {
+  font-family: 'BigShouldersInlineText';
+  src: url('/fonts/BigShouldersInlineText-ExtraBold.ttf') format('truetype');
+  font-weight: 800;
+  font-display: swap;
+}
+
+:root {
+  /* Brand palette */
+  --diction-blue: #007AFF;
+  --diction-blue-dark: #0055CC;
+  --diction-blue-light: #4DA3FF;
+  --diction-black: #1a1a1a;
+
+  /* VitePress brand overrides */
+  --vp-c-brand-1: var(--diction-blue);
+  --vp-c-brand-2: var(--diction-blue-dark);
+  --vp-c-brand-3: var(--diction-blue-light);
+  --vp-c-brand-soft: rgba(0, 122, 255, 0.12);
+
+  /* Text */
+  --vp-c-text-1: var(--diction-black);
+  --vp-c-text-2: #4a4a4a;
+  --vp-c-text-3: #6e6e6e;
+
+  /* Home hero name -- solid black, no gradient */
+  --vp-home-hero-name-color: var(--diction-black);
+  --vp-home-hero-name-background: none;
+
+  /* Hero glow behind screenshots */
+  --vp-home-hero-image-background-image: radial-gradient(circle, rgba(0, 122, 255, 0.15), rgba(0, 122, 255, 0.03));
+  --vp-home-hero-image-filter: blur(56px);
+}
+
+.dark {
+  --vp-c-brand-1: #4DA3FF;
+  --vp-c-brand-2: #007AFF;
+  --vp-c-brand-3: #0055CC;
+  --vp-c-brand-soft: rgba(77, 163, 255, 0.14);
+
+  --vp-c-text-1: #e8e8e8;
+  --vp-c-text-2: #a0a0a0;
+  --vp-c-text-3: #707070;
+
+  --vp-home-hero-name-color: #e8e8e8;
+  --vp-home-hero-image-background-image: radial-gradient(circle, rgba(0, 122, 255, 0.3), rgba(0, 122, 255, 0.08));
+}
+
+/* -- Solid white navbar -- */
+:root {
+  --vp-nav-bg-color: #ffffff;
+}
+
+.dark {
+  --vp-nav-bg-color: #1e1e20;
+}
+
+/* -- Search button border -- */
+.VPNavBarSearchButton {
+  border: 1px solid var(--vp-c-divider) !important;
+}
+
+/* -- Nav title: BigShouldersInlineText font -- */
+.VPNavBarTitle .title {
+  font-family: 'BigShouldersInlineText', sans-serif;
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: 0.5px;
+}
+
+/* -- Nav logo: iOS app icon style -- */
+.VPNavBarTitle img {
+  border-radius: 22.5%;
+}
+
+/* -- Home page background glow -- */
+.VPHome {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 122, 255, 0.08), transparent),
+    radial-gradient(ellipse 50% 50% at 10% 60%, rgba(0, 122, 255, 0.05), transparent);
+}
+
+.dark .VPHome {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 122, 255, 0.15), transparent),
+    radial-gradient(ellipse 50% 50% at 10% 60%, rgba(0, 122, 255, 0.08), transparent);
+}
+
+/* -- Hero typography -- */
+.VPHero .name {
+  font-family: 'BigShouldersInlineText', sans-serif;
+  font-weight: 800;
+  padding-bottom: 0.2em;
+  /* Override VitePress gradient clip — solid color only */
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  -webkit-text-fill-color: var(--vp-home-hero-name-color) !important;
+}
+
+.VPHero .name,
+.VPHero .text,
+.VPHero .tagline {
+  transition: none;
+}
+
+/* -- Hero content centered -- */
+.VPHero .main {
+  text-align: center;
+  align-items: center;
+}
+
+.VPHero .heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.VPHero .actions {
+  justify-content: center !important;
+}
+
+/* -- Hero action buttons with icons -- */
+.VPHero .actions .VPButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.VPHero .actions .VPButton.brand {
+  background-color: var(--diction-blue) !important;
+  border-color: var(--diction-blue) !important;
+}
+
+.VPHero .actions .VPButton.brand:hover {
+  background-color: var(--diction-blue-dark) !important;
+  border-color: var(--diction-blue-dark) !important;
+}
+
+/* App Store button -- Apple logo */
+.VPHero .actions .VPButton.brand::before {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  background: url('/apple-logo.svg') no-repeat center / contain;
+  flex-shrink: 0;
+}
+
+/* GitHub button -- black bg, white text, GitHub logo */
+.VPHero .actions .VPButton.alt {
+  background: var(--diction-black) !important;
+  color: white !important;
+  border-color: var(--diction-black) !important;
+}
+
+.VPHero .actions .VPButton.alt:hover {
+  background: #333 !important;
+  border-color: #333 !important;
+}
+
+.dark .VPHero .actions .VPButton.alt {
+  background: #fff !important;
+  color: #1a1a1a !important;
+  border-color: #fff !important;
+}
+
+.dark .VPHero .actions .VPButton.alt:hover {
+  background: #e0e0e0 !important;
+  border-color: #e0e0e0 !important;
+}
+
+.VPHero .actions .VPButton.alt::before {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  background: url('/github-mark.svg') no-repeat center / contain;
+  flex-shrink: 0;
+}
+
+.dark .VPHero .actions .VPButton.alt::before {
+  filter: invert(1);
+}
+
+/* -- Feature cards -- white bg with lift on hover -- */
+.VPFeatures .VPFeature {
+  background: white !important;
+  border: 1px solid var(--vp-c-divider) !important;
+  border-radius: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.VPFeatures .VPFeature:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 122, 255, 0.1);
+}
+
+.dark .VPFeatures .VPFeature {
+  background: rgba(30, 30, 32, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.dark .VPFeatures .VPFeature:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.dark .VPFeatures .VPFeature .VPImage {
+  filter: brightness(0) invert(1) brightness(0.8);
+}
+
+/* -- Diction One feature card: branded title -- */
+.VPFeatures .box:has(img[src*="cloud"]) .title {
+  font-family: 'BigShouldersInlineText', sans-serif;
+  font-weight: 800;
+  font-size: 1.4em;
+  letter-spacing: 0.5px;
+}
+
+/* -- Collapsible FAQ -- */
+.faq-section details {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  padding: 0;
+  margin-bottom: 8px;
+}
+
+.faq-section details summary {
+  padding: 14px 18px;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.faq-section details summary::before {
+  content: '+';
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--vp-c-brand-1);
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.faq-section details[open] summary::before {
+  content: '-';
+}
+
+.faq-section details summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-section details > div {
+  padding: 0 18px 14px 48px;
+  color: var(--vp-c-text-2);
+  line-height: 1.7;
+}
+
+/* -- Mobile hero: hide phone demo (it overlaps text), clean background -- */
+@media (max-width: 959px) {
+  .VPHero .image {
+    display: none;
+  }
+
+  .VPHero .main {
+    max-width: 100%;
+  }
+
+  /* Neutralize the blue gradient behind the inline font on mobile */
+  .VPHome {
+    background: none;
+  }
+}
+
+/* -- Content sections -- */
+.content-section {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.content-section h2 {
+  border-top: none !important;
+  padding-top: 2rem;
+  margin-top: 2rem;
+}

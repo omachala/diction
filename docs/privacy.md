@@ -1,53 +1,83 @@
+---
+title: Privacy Policy
+description: Diction privacy policy. The Diction app has zero analytics and zero tracking. Your voice data is never stored.
+---
+
 # Privacy Policy
 
-**Last updated:** March 2026
+*Last updated: March 2026*
 
-Diction is built with privacy as a core principle. Here's exactly what happens with your data.
+Diction is a speech-to-text keyboard for iOS developed by Ondrej Machala. Your privacy is the foundation of how Diction is built, not a feature we bolt on later.
 
-## Self-Hosted Mode
+The Diction **app** contains **zero analytics and zero tracking code**. No data is collected, transmitted, or sold by the app. Your App Store privacy label reads "Data Not Collected." That is accurate.
 
-When you use Diction with your own Whisper server:
+This website uses Google Analytics to understand how visitors find diction.one. The app itself contains no analytics of any kind.
 
-- **Audio is sent only to your server.** No data touches any third-party service.
-- **Nothing is stored.** Audio is processed in memory and discarded immediately after transcription.
-- **We have no access** to your audio, transcriptions, or any other data.
+## How Each Mode Handles Your Audio
 
-You are in complete control.
+### On-Device Mode
 
-## Diction One (Cloud Mode)
+Audio is processed entirely on your iPhone using a local speech model. **Nothing leaves your device.** No internet connection is required. Audio is held in memory during transcription and discarded the moment the result is returned.
 
-When you use the Diction One cloud endpoint:
+### Self-Hosted Mode
+
+When you connect Diction to your own server:
+
+- **Audio travels only to your server.** No data touches any third-party service.
+- **Nothing is stored by Diction.** Audio is processed and discarded immediately after transcription.
+- **We have no access** to your audio, your transcriptions, your server, or any other data you produce.
+
+### Diction One (Cloud)
+
+When you use the hosted Diction One service:
 
 - **Audio is processed and immediately discarded.** We do not store recordings.
-- **Transcriptions are not stored.** The text is returned to your device and deleted from server memory.
-- **No training data.** Your audio is never used to train or improve any models.
+- **Transcriptions are not retained.** Text is returned to your device and removed from server memory.
+- **No model training.** Your audio is never used to train, fine-tune, or improve any models.
 
-## What We Don't Do
+## What We Collect
 
-- No analytics or tracking SDKs
-- No user behavior tracking
-- No data collection of any kind
-- No advertising
-- No selling or sharing of data with third parties
+**Nothing.**
 
-## Keyboard Extension & Full Access
+Diction does not collect, transmit, or store any personal data. Specifically:
 
-Diction requests **Full Access** for the keyboard extension. This is required by iOS for any keyboard that needs network access. Here's what Full Access means for Diction:
+- No analytics or usage tracking of any kind
+- No behavioural monitoring
+- No device identifiers sent anywhere
+- No advertising networks or ad code
+- No data shared with or sold to third parties
 
-- **Network access** — the keyboard needs to reach the Whisper endpoint to transcribe audio
-- **No keylogging** — Diction has no QWERTY keyboard, no text input to log
-- **No clipboard access** — Diction does not read your clipboard
-- **No contact access** — Diction does not access your contacts or any other personal data
+## Data Stored on Your Device
 
-## Data Flow
+Diction stores the following locally on your iPhone, accessible only to the app and its keyboard extension:
 
-```
-Your voice → iPhone mic → Diction keyboard → Your Whisper server → Transcribed text → Your app
-                                              (or Diction One cloud)
-```
+- **Your settings**: selected mode, language, server endpoint (if self-hosted)
+- **Subscription status**: whether you hold an active Diction One subscription (managed entirely by Apple)
+- **Downloaded speech models**: for on-device transcription, stored in the app's local container
 
-That's it. No side channels, no analytics endpoints, no tracking pixels.
+None of this data syncs to iCloud or any external service. Removing the app deletes all local data.
+
+## Keyboard Extension and Full Access
+
+Diction requests **Full Access** for the keyboard extension. iOS requires this permission for any keyboard that needs network access. Here is exactly what Full Access enables, and what it does not:
+
+- **Network access**: required to send audio to your server or Diction One for transcription
+- **No keylogging**: Diction has no QWERTY keyboard and no text input to record
+- **No clipboard access**: Diction does not read your clipboard
+- **No contacts access**: Diction does not access your contacts, photos, or any other personal data
+
+## Payments
+
+Diction One subscriptions are processed entirely by Apple through the App Store. We never receive or store your payment information, Apple ID, or billing details.
+
+## Children's Privacy
+
+Diction does not knowingly collect data from anyone, including children under 13. Since we collect no personal information at all, no additional protections are necessary.
+
+## Changes to This Policy
+
+If we update this policy, the revised version will be posted here with an updated date. Since Diction collects no data, material changes are unlikely.
 
 ## Contact
 
-Questions about privacy? Open an issue on [GitHub](https://github.com/omachala/diction/issues) or email [ondrej@diction.one](mailto:ondrej@diction.one).
+Questions about privacy? Email [support@diction.one](mailto:support@diction.one) or open an issue on [GitHub](https://github.com/omachala/diction/issues).

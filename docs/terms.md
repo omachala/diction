@@ -1,0 +1,70 @@
+---
+title: Terms of Service
+description: Diction terms of service. Voice keyboard for iPhone with on-device, self-hosted, and cloud transcription modes.
+---
+
+# Terms of Service
+
+*Last updated: March 2026*
+
+Diction is a speech-to-text keyboard for iOS developed by Ondrej Machala. By installing or using Diction, you agree to these terms. If you do not agree, do not use the app.
+
+## The Service
+
+Diction transcribes speech to text. Three modes are available:
+
+- **On-device**: transcription runs locally on your iPhone. Free, unlimited, no account required.
+- **Self-hosted**: you connect Diction to your own speech-to-text server. Free, unlimited, no account required.
+- **Diction One**: our hosted cloud transcription service. Requires a paid subscription.
+
+The app and cloud service are provided "as is" without warranty. We may update, modify, or discontinue features at any time.
+
+## Diction One Subscription
+
+Diction One is an optional paid service at **$5.99 per month** (USD), billed through Apple's App Store.
+
+- A **2-week free trial** is available for new subscribers.
+- Payment is charged to your Apple ID account at confirmation of purchase.
+- Your subscription **renews automatically** unless cancelled at least 24 hours before the end of the current billing period.
+- You can manage or cancel your subscription at any time in **Settings > Apple ID > Subscriptions** on your iPhone.
+- The free trial converts to a paid subscription automatically unless cancelled before the trial period ends.
+- Prices may vary by region due to Apple's local pricing.
+
+Refunds are handled by Apple according to their [standard terms](https://www.apple.com/legal/internet-services/itunes/).
+
+## Free Modes
+
+On-device and self-hosted modes are free with **no word limits, no daily caps, and no restrictions**. If you self-host, you are responsible for your own server infrastructure and any costs associated with running it.
+
+## Acceptable Use
+
+- Use Diction in compliance with all applicable laws.
+- Do not reverse-engineer, decompile, or redistribute the app.
+- Do not abuse, overload, or interfere with Diction One or any related infrastructure.
+- Do not use the service for any unlawful, harmful, or fraudulent purpose.
+
+## Intellectual Property
+
+Diction, its name, logo, and cloud infrastructure are the property of Ondrej Machala. The self-hosted server infrastructure is open source. See the [GitHub repository](https://github.com/omachala/diction) for licence details. The iOS app is proprietary and distributed exclusively through the App Store.
+
+Your transcriptions belong to you.
+
+## Limitation of Liability
+
+Diction is provided "as is" without warranties of any kind, express or implied. To the fullest extent permitted by law, we are not liable for any damages arising from the use of the app or service, including transcription errors, service interruptions, data loss, or inaccurate output.
+
+## Termination
+
+You may stop using Diction at any time by uninstalling the app. We reserve the right to suspend or terminate access to Diction One if you violate these terms.
+
+## Changes to These Terms
+
+We may update these terms. The revised version will be posted at this URL with an updated date. Continued use of Diction after changes constitutes acceptance of the updated terms.
+
+## Governing Law
+
+These terms are governed by the laws of England and Wales. Any disputes arising from these terms will be subject to the exclusive jurisdiction of the courts of England and Wales.
+
+## Contact
+
+Questions about these terms? Email [support@diction.one](mailto:support@diction.one).

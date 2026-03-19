@@ -1,0 +1,126 @@
+---
+title: "Context-Aware Text Editing"
+description: Diction reads the text around your cursor and adapts your dictation to fit. Insert into sentences, replace selected text, fix typos -- all by voice.
+---
+
+# Context-Aware Text Editing
+
+Diction is not a blank-page dictation tool. It sees where your cursor is, reads the text before and after the insertion point, and understands what you have selected. When AI Enhancement is active, every dictation is shaped to fit the context it is landing in.
+
+This turns Diction from a transcription tool into a voice-powered text editor.
+
+## Insert Anywhere
+
+Place your cursor in the middle of a sentence and dictate. Diction reads the surrounding text and formats the insertion to fit -- correct capitalisation, punctuation, and tone.
+
+**Example: filling in a sentence**
+
+You are writing an email:
+
+> Hi Sarah, I wanted to follow up on ▌ and see if you had any questions.
+
+You tap the mic and say: *"the proposal I sent last week"*
+
+Result:
+
+> Hi Sarah, I wanted to follow up on **the proposal I sent last week** and see if you had any questions.
+
+No stray capital letter. No extra period. It fits because Diction sees the sentence around it.
+
+---
+
+**Example: continuing a list**
+
+You have a note open:
+
+> Things to pack:
+> - Passport
+> - Charger
+> ▌
+
+You tap the mic and say: *"laptop and headphones"*
+
+Result:
+
+> Things to pack:
+> - Passport
+> - Charger
+> - **Laptop and headphones**
+
+It matches the list format because it can see the pattern above.
+
+---
+
+**Example: adding to a code comment**
+
+You are editing a code file:
+
+> // TODO: refactor this function to ▌
+
+You say: *"handle the edge case where the input array is empty"*
+
+Result:
+
+> // TODO: refactor this function to **handle the edge case where the input array is empty**
+
+Lowercase, no period. It reads like you typed it.
+
+## Select and Replace
+
+Select text in any app, then dictate. Diction replaces the selection with your new words. This is the fastest way to rewrite, rephrase, or fix text by voice.
+
+**Example: rewriting a sentence**
+
+Your draft says:
+
+> I think we should probably consider maybe going with the second option if that is okay with everyone.
+
+Select the whole sentence. Tap the mic. Say: *"Let's go with option B."*
+
+Result:
+
+> **Let's go with option B.**
+
+No copy-paste. No deleting. Select, speak, replaced.
+
+---
+
+**Example: fixing a single word**
+
+You wrote "defiantly" when you meant "definitely". Double-tap the word to select it. Tap the mic. Say *"definitely"*. Replaced.
+
+---
+
+**Example: rephrasing a paragraph**
+
+You have a paragraph in a document that does not sound right. Select it. Dictate what you actually want to say. The entire selection is replaced with your new dictation, formatted to fit the surrounding document.
+
+## How It Works
+
+Every time you tap the mic, Diction captures:
+
+- The text before your cursor (up to 500 characters)
+- The text after your cursor (up to 500 characters)
+- Any selected text
+
+This context is sent alongside your audio. AI Enhancement uses it to decide capitalisation, punctuation, formatting, and tone. The result is text that reads like it was typed in place, not pasted from a separate dictation box.
+
+## When Is Context Used?
+
+Context-aware editing requires **AI Enhancement** to be active. AI Enhancement is available with Diction One cloud.
+
+Without AI Enhancement (on-device or self-hosted without cloud post-processing), Diction still handles select-and-replace correctly -- your dictation replaces the selection. But the formatting will not adapt to surrounding text.
+
+| Mode | Select and Replace | Context-Aware Formatting |
+|------|-------------------|------------------------|
+| On-Device | Yes | -- |
+| Self-Hosted | Yes | -- |
+| Diction One Cloud | Yes | Yes |
+| Diction One Cloud (AI Enhancement off) | Yes | -- |
+
+## Tips
+
+- **Place your cursor precisely.** The more context Diction has on both sides, the better the formatting. Tap to position your cursor where you want the text to go.
+- **Select generously.** When replacing, select the full phrase or sentence you want to rewrite. Diction works best when it can see the whole thing you are replacing.
+- **Speak naturally.** You do not need to dictate punctuation or capitalisation. AI Enhancement handles it based on context.
+- **Use it for edits, not just dictation.** Diction is most powerful when you are refining existing text. First drafts, rewrites, quick fixes -- it handles all of them.
