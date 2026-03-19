@@ -22,6 +22,7 @@ No server to run. No model to download. Open the app, subscribe, and start dicta
 - **AI Enhancement**: optional post-processing that cleans up your transcription. Removes filler words, fixes grammar, adds proper punctuation and capitalisation.
 - **99 languages**: full multilingual support. Switch languages in settings.
 - **Zero setup**: no server, no Docker, no downloads. Works immediately after subscribing.
+- **On-device fallback**: if the cloud request fails for any reason, Diction automatically retries using a local model on your iPhone. Your dictation is never lost to a network issue.
 - **Audio immediately discarded**: we transcribe and it's gone. Nothing is recorded. Nothing is stored. Nothing is shared. Nothing is used to train models.
 
 ## AI Enhancement

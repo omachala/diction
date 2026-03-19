@@ -29,6 +29,7 @@ That's it. The server code is [open source](https://github.com/omachala/diction)
 - **Audio stays on your network**: from your phone to your server and back. No third party in the middle.
 - **Free, unlimited, no restrictions**: no Diction subscription needed. No word limits. No daily caps. No trial that expires.
 - **Any Whisper-compatible endpoint**: works with any server that supports the OpenAI-compatible transcription API format. Not locked to our server.
+- **On-device fallback**: if your server is unreachable, Diction automatically retries using a local model on your iPhone. Your dictation is never lost to a network issue.
 - **Run anywhere**: home server, NAS, Raspberry Pi, cloud VM, behind a reverse proxy, over a VPN. If Docker runs there, Diction connects to it.
 - **Pick your own models**: run whatever speech model fits your use case. Your language, your accuracy requirements, your hardware.
 - **Open-source server**: the server infrastructure is fully open source on GitHub. Inspect it, modify it, contribute to it.

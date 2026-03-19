@@ -29,6 +29,10 @@ Pick the backend that fits how you work. Switch any time in settings.
 
 <Icon name="cloud" /> **[Diction One Cloud](/cloud)** . Frontier speech models, highest accuracy, zero setup. Includes AI Enhancement and context-aware dictation.
 
+## <Icon name="shield" /> On-Device Fallback
+
+Network issues happen. When cloud or self-hosted transcription fails, Diction automatically retries using an on-device model running locally on your iPhone. The fallback model is pre-loaded in the background so the switch is instant. Your voice is never lost to a dropped connection.
+
 ## <Icon name="globe" /> 99 Languages
 
 On-device, self-hosted, and cloud modes all support the full set. No extra downloads needed for cloud and self-hosted. Switch languages in settings.
