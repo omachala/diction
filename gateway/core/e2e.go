@@ -62,6 +62,63 @@ func EncryptTranscript(transcript string, clientPubB64 string) (ctB64, serverPub
 		nil
 }
 
+// LoadStaticKey loads the server's static X25519 private key from base64url encoding.
+func LoadStaticKey(b64 string) (*ecdh.PrivateKey, error) {
+	raw, err := base64.RawURLEncoding.DecodeString(b64)
+	if err != nil {
+		return nil, fmt.Errorf("decode static key: %w", err)
+	}
+	return ecdh.X25519().NewPrivateKey(raw)
+}
+
+// DecryptRequest decrypts a client-encrypted request body using the server static key.
+// Uses ECDH(server_static_priv, client_ephemeral_pub) + HKDF("diction-cleanup-req-v1").
+// ctB64 is base64url-encoded nonce(12) + ciphertext + tag(16).
+// clientPubB64 is the base64url-encoded client ephemeral X25519 public key from X-Diction-E2E header.
+func DecryptRequest(ctB64, clientPubB64 string, serverStaticKey *ecdh.PrivateKey) ([]byte, error) {
+	clientPubBytes, err := base64.RawURLEncoding.DecodeString(clientPubB64)
+	if err != nil {
+		return nil, fmt.Errorf("decode client pubkey: %w", err)
+	}
+	clientPub, err := ecdh.X25519().NewPublicKey(clientPubBytes)
+	if err != nil {
+		return nil, fmt.Errorf("parse client pubkey: %w", err)
+	}
+
+	shared, err := serverStaticKey.ECDH(clientPub)
+	if err != nil {
+		return nil, fmt.Errorf("ecdh: %w", err)
+	}
+
+	key := hkdfSHA256(shared, nil, []byte("diction-cleanup-req-v1"), 32)
+
+	ctData, err := base64.RawURLEncoding.DecodeString(ctB64)
+	if err != nil {
+		return nil, fmt.Errorf("decode ciphertext: %w", err)
+	}
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, fmt.Errorf("aes: %w", err)
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, fmt.Errorf("gcm: %w", err)
+	}
+
+	if len(ctData) < gcm.NonceSize() {
+		return nil, fmt.Errorf("ciphertext too short")
+	}
+	nonce := ctData[:gcm.NonceSize()]
+	ciphertext := ctData[gcm.NonceSize():]
+
+	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
+	if err != nil {
+		return nil, fmt.Errorf("decrypt: %w", err)
+	}
+	return plaintext, nil
+}
+
 // hkdfSHA256 derives keyLen bytes from ikm using HKDF-SHA256 (RFC 5869).
 // Uses only stdlib crypto — no external dependencies required.
 func hkdfSHA256(ikm, salt, info []byte, keyLen int) []byte {
