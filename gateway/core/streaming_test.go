@@ -239,7 +239,9 @@ func TestStreamingHandler_LanguageOverrideInDone(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read result: %v", err)
 	}
-	var result struct{ Text string `json:"text"` }
+	var result struct {
+		Text string `json:"text"`
+	}
 	json.Unmarshal(data, &result)
 	if result.Text != "override" {
 		t.Errorf("text: want 'override', got %q", result.Text)
@@ -338,7 +340,9 @@ func TestStreamingHandler_NonDoneTextMessage(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read: %v", err)
 	}
-	var result struct{ Text string `json:"text"` }
+	var result struct {
+		Text string `json:"text"`
+	}
 	json.Unmarshal(data, &result)
 	if result.Text != "after ignore" {
 		t.Errorf("want 'after ignore', got %q", result.Text)
@@ -367,7 +371,9 @@ func TestStreamingHandler_InvalidTextIgnored(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read: %v", err)
 	}
-	var result struct{ Text string `json:"text"` }
+	var result struct {
+		Text string `json:"text"`
+	}
 	json.Unmarshal(data, &result)
 	if result.Text != "after garbage" {
 		t.Errorf("want 'after garbage', got %q", result.Text)
@@ -399,7 +405,9 @@ func TestStreamingHandler_HealthByAliasName(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read: %v", err)
 	}
-	var result struct{ Text string `json:"text"` }
+	var result struct {
+		Text string `json:"text"`
+	}
 	json.Unmarshal(data, &result)
 	if result.Text != "alias ok" {
 		t.Errorf("want 'alias ok', got %q", result.Text)
@@ -452,7 +460,9 @@ func TestStreamingHandler_WithPostProcess_Success(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read: %v", err)
 	}
-	var result struct{ Text string `json:"text"` }
+	var result struct {
+		Text string `json:"text"`
+	}
 	json.Unmarshal(data, &result)
 	if result.Text != "cleaned: raw audio" {
 		t.Errorf("want 'cleaned: raw audio', got %q", result.Text)
@@ -483,7 +493,9 @@ func TestStreamingHandler_WithPostProcess_ErrorFallback(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read: %v", err)
 	}
-	var result struct{ Text string `json:"text"` }
+	var result struct {
+		Text string `json:"text"`
+	}
 	json.Unmarshal(data, &result)
 	if result.Text != "raw audio" {
 		t.Errorf("want 'raw audio' fallback, got %q", result.Text)
@@ -511,7 +523,9 @@ func TestStreamingHandler_DefaultModel(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read: %v", err)
 	}
-	var result struct{ Text string `json:"text"` }
+	var result struct {
+		Text string `json:"text"`
+	}
 	json.Unmarshal(data, &result)
 	if result.Text != "default model used" {
 		t.Errorf("want 'default model used', got %q", result.Text)
@@ -550,7 +564,9 @@ func TestStreamingHandler_FirstTextFrameAsContext(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read: %v", err)
 	}
-	var result struct{ Text string `json:"text"` }
+	var result struct {
+		Text string `json:"text"`
+	}
 	json.Unmarshal(data, &result)
 	if result.Text != "cleaned: raw audio" {
 		t.Errorf("want 'cleaned: raw audio', got %q", result.Text)
