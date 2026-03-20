@@ -9,7 +9,7 @@ Both are iOS voice keyboards. The difference is where your audio goes and what i
 
 ## The core difference
 
-Willow is cloud-only. Every word you speak gets sent to their servers for transcription. There is no offline mode, no on-device processing, and no way to self-host.
+Willow is primarily cloud-based. Your audio gets sent to their servers for transcription. The iOS app has a limited offline fallback, but it's not a full on-device mode. There is no way to self-host.
 
 Diction lets you choose. On-device mode runs entirely on your iPhone with zero network requests. Self-hosted mode sends audio to a server you control. Cloud is available if you want it, but never required.
 
@@ -17,7 +17,7 @@ Diction lets you choose. On-device mode runs entirely on your iPhone with zero n
 
 | | Diction | Willow |
 |--|---------|--------|
-| On-device (fully offline) | Yes | No |
+| On-device (fully offline) | Yes | Limited fallback |
 | Self-hosted | Yes | No |
 | Cloud mode | Yes (optional) | Required |
 | iOS keyboard | Yes | Yes |
@@ -40,7 +40,7 @@ Diction's on-device mode is free with no word limits, no weekly caps, no restric
 
 ## Why Diction
 
-If your audio staying on your device matters to you, Diction is the only option. Willow has no offline mode and no path to self-hosting. If you work in healthcare, legal, or any environment where audio can't leave your network, cloud-only is a non-starter.
+If your audio staying on your device matters to you, Diction is the clear choice. Willow's offline fallback is limited and there's no path to self-hosting. If you work in healthcare, legal, or any environment where audio can't leave your network, cloud-only is a non-starter.
 
 If you don't want to pay for dictation, Diction's on-device mode has no caps. Willow's free tier runs out after a few emails.
 
