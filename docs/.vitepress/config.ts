@@ -267,7 +267,8 @@ gtag('config', 'G-PCV64Y7GFM');`,
           items: [
             { text: 'vs Wispr Flow', link: '/vs/wispr-flow' },
             { text: 'vs Apple Dictation', link: '/vs/apple-dictation' },
-            { text: 'vs Spokenly', link: '/vs/spokenly' },
+            { text: 'vs Willow', link: '/vs/willow' },
+            { text: 'vs Superwhisper', link: '/vs/superwhisper' },
           ],
         },
         {
