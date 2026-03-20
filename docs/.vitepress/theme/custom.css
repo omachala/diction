@@ -352,9 +352,37 @@
     max-width: 100%;
   }
 
+  .VPHero .name {
+    font-size: 64px !important;
+    margin-bottom: 24px !important;
+  }
+
+  .VPHero .text {
+    font-size: 40px !important;
+  }
+
+  .VPHero .tagline {
+    font-size: 17px !important;
+  }
+
   /* Neutralize the blue gradient behind the inline font on mobile */
   .VPHome {
     background: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .VPHero .name {
+    font-size: 52px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .VPHero .text {
+    font-size: 32px !important;
+  }
+
+  .VPHero .tagline {
+    font-size: 15px !important;
   }
 }
 
