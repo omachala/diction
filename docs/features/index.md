@@ -33,6 +33,12 @@ Pick the backend that fits how you work. Switch any time in settings.
 
 Network issues happen. When cloud or self-hosted transcription fails, Diction automatically retries using an on-device model running locally on your iPhone. The fallback model is pre-loaded in the background so the switch is instant. Your voice is never lost to a dropped connection.
 
+## <Icon name="arrow-path" /> Your Voice Is Never Lost
+
+If transcription fails for any reason, Diction keeps your audio safe. When you're ready, tap once to retry. The result lands exactly where your cursor was, without re-recording a single word.
+
+Diction takes resilience seriously. Your words are too important to lose to a bad connection.
+
 ## <Icon name="globe" /> 99 Languages
 
 On-device, self-hosted, and cloud modes all support the full set. No extra downloads needed for cloud and self-hosted. Switch languages in settings.
