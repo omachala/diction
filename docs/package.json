@@ -10,9 +10,9 @@
   },
   "devDependencies": {
     "vitepress": "^1.6.4",
-    "vitepress-plugin-llms": "^1.11.1"
+    "vitepress-plugin-llms": "^1.11.0"
   },
   "dependencies": {
-    "motion-v": "^2.0.1"
+    "motion-v": "2.0.0"
   }
 }

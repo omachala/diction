@@ -110,9 +110,50 @@
   transition: none;
 }
 
-/* -- Hero content centered horizontally & vertically -- */
-.VPHero .container {
+/* -- Hero takes full viewport, centered -- */
+.VPHero {
+  min-height: calc(100dvh - var(--vp-nav-height, 64px));
+  display: flex !important;
   align-items: center !important;
+  justify-content: center !important;
+  padding-top: calc(48px + var(--vp-nav-height, 64px)) !important;
+  padding-bottom: 48px !important;
+  box-sizing: border-box;
+}
+
+/* -- Hero container: both halves centered, same width as features -- */
+.VPHero .container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: 580px;
+}
+
+/* -- Text block: center everything vertically & horizontally -- */
+.VPHero .main {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  max-width: none !important;
+  flex: 1 1 55% !important;
+  margin-top: -40px;
+}
+
+/* -- Image block: center the phone -- */
+.VPHero .image {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 1 1 45% !important;
+}
+
+.VPHero .image-container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transform: none !important;
 }
 
 .VPHero .main {
@@ -128,6 +169,7 @@
 
 .VPHero .actions {
   justify-content: center !important;
+  margin-top: 24px !important;
 }
 
 /* -- Hero action buttons with icons -- */
@@ -135,6 +177,31 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  font-size: 15px;
+  padding: 10px 24px;
+  border-radius: 20px;
+}
+
+/* -- Hero text sizing -- */
+.VPHero .name {
+  font-size: 96px !important;
+  line-height: 1.1 !important;
+  margin-bottom: 40px !important;
+}
+
+.VPHero .text {
+  font-size: 62px !important;
+  line-height: 1.15 !important;
+}
+
+.VPHero .tagline {
+  font-size: 22px !important;
+  line-height: 1.5 !important;
+}
+
+.VPHero .actions .VPButton {
+  font-size: 18px;
+  padding: 12px 28px;
 }
 
 .VPHero .actions .VPButton.brand {
@@ -151,8 +218,8 @@
 .VPHero .actions .VPButton.brand::before {
   content: '';
   display: inline-block;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   background: url('/apple-logo.svg') no-repeat center / contain;
   flex-shrink: 0;
 }
@@ -183,14 +250,24 @@
 .VPHero .actions .VPButton.alt::before {
   content: '';
   display: inline-block;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   background: url('/github-mark.svg') no-repeat center / contain;
   flex-shrink: 0;
 }
 
 .dark .VPHero .actions .VPButton.alt::before {
   filter: invert(1);
+}
+
+/* -- Feature card typography & icons -- */
+.VPFeatures .VPFeature .VPImage {
+  width: 36px !important;
+  height: 36px !important;
+}
+
+.VPFeatures .VPFeature .title {
+  font-size: 24px !important;
 }
 
 /* -- Feature cards -- white bg with lift on hover -- */
@@ -220,13 +297,7 @@
   filter: brightness(0) invert(1) brightness(0.8);
 }
 
-/* -- Diction One feature card: branded title -- */
-.VPFeatures .box:has(img[src*="cloud"]) .title {
-  font-family: 'BigShouldersInlineText', sans-serif;
-  font-weight: 800;
-  font-size: 1.4em;
-  letter-spacing: 0.5px;
-}
+/* -- Diction One feature card -- */
 
 /* -- Collapsible FAQ -- */
 .faq-section details {
