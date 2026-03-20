@@ -16,8 +16,8 @@
 
 <p align="center">
   <a href="https://diction.one">Website</a> &bull;
-  <a href="docs/self-hosting.md">Self-Hosting Guide</a> &bull;
-  <a href="docs/privacy.md">Privacy Policy</a>
+  <a href="https://diction.one/self-hosted">Self-Hosting Guide</a> &bull;
+  <a href="https://diction.one/privacy">Privacy Policy</a>
 </p>
 
 <p align="center">
@@ -36,11 +36,13 @@
 
 ## Why Diction?
 
-- **Works in every app.** Switch to Diction in any text field: Messages, Notes, email, search bars, anything. Tap mic, speak, text appears.
-- **Your audio stays where you send it.** On-device works offline, nothing leaves your phone. Self-hosted sends audio to your server only. No third-party routing.
-- **On-device and self-hosted are free, no limits.** No word caps, no expiry, no catch. [Diction One](#diction-one) adds the hosted option if you don't want to run a server.
-- **Three commands to self-host.** Clone this repo, run `docker compose up`, paste the URL in the app. Done.
-- **Run any model.** Point Diction at any Whisper-compatible server. Use a model fine-tuned for medical dictation, your language, or your accent.
+- **Self-hosted.** `docker compose up` and paste the URL. Your server, your models, your data.
+- **Any Whisper-compatible model.** Point Diction at any endpoint. Medical, legal, accent-tuned — run whatever you want.
+- **End-to-end encrypted.** AES-256-GCM text encryption with X25519 key exchange. Same primitives as Signal and WireGuard.
+- **Zero tracking.** No analytics, no telemetry, no data collection. Audit the source yourself.
+- **On-device.** Whisper runs locally on your iPhone. No network, no server, nothing leaves the device.
+- **AI enhancement.** Optional LLM cleanup — only the transcript text is sent, never the audio.
+- **Free and unlimited.** On-device and self-hosted have no caps, no restrictions, no expiry.
 
 ## How It Works
 
@@ -107,7 +109,7 @@ You don't need to open ports on your router:
 - **[Tailscale](https://tailscale.com/)** - free WireGuard mesh VPN. Install on server + phone, connect from anywhere.
 - **[ngrok](https://ngrok.com/)** - instant public URL, great for testing.
 
-See the [Self-Hosting Guide](docs/self-hosting.md) for detailed instructions.
+See the [Self-Hosting Guide](https://diction.one/self-hosted) for detailed instructions.
 
 ## Privacy
 
