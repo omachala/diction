@@ -66,7 +66,7 @@ function tick() {
     }
   }
 
-  // Apply height + offset to DOM (original bar animation, slightly reduced)
+  // Apply height + offset to DOM (bar animation)
   if (dotEls.length === DOT_COUNT) {
     const containerH = 38;
     const minH = containerH * 0.08;
@@ -87,7 +87,7 @@ function sleep(ms) {
 
 // Varied sizes for natural conversation look
 const widths = ['45%', '65%', '50%', '75%', '40%', '60%', '55%', '70%'];
-const heights = [26, 34, 24, 38, 28, 32, 24, 36];
+const heights = [78, 90, 74, 88, 82, 86, 76, 84];
 let sizeIdx = 0;
 
 function addBubble(type) {
@@ -98,18 +98,18 @@ function addBubble(type) {
   while (bubbles.length > 12) bubbles.shift();
 }
 
-// Seed enough bubbles to fill the screen like a real conversation
+// Seed bubbles — tall enough that ~6 fill the screen
 bubbles.push(
-  { id: bubbleId++, type: 'incoming', width: '55%', height: '26px' },
-  { id: bubbleId++, type: 'outgoing', width: '70%', height: '34px' },
-  { id: bubbleId++, type: 'incoming', width: '40%', height: '24px' },
-  { id: bubbleId++, type: 'outgoing', width: '60%', height: '32px' },
-  { id: bubbleId++, type: 'incoming', width: '75%', height: '38px' },
-  { id: bubbleId++, type: 'outgoing', width: '50%', height: '28px' },
-  { id: bubbleId++, type: 'incoming', width: '45%', height: '24px' },
-  { id: bubbleId++, type: 'outgoing', width: '65%', height: '36px' },
-  { id: bubbleId++, type: 'incoming', width: '55%', height: '26px' },
-  { id: bubbleId++, type: 'outgoing', width: '70%', height: '30px' },
+  { id: bubbleId++, type: 'incoming', width: '55%', height: '78px' },
+  { id: bubbleId++, type: 'outgoing', width: '70%', height: '90px' },
+  { id: bubbleId++, type: 'incoming', width: '40%', height: '74px' },
+  { id: bubbleId++, type: 'outgoing', width: '60%', height: '88px' },
+  { id: bubbleId++, type: 'incoming', width: '75%', height: '82px' },
+  { id: bubbleId++, type: 'outgoing', width: '50%', height: '86px' },
+  { id: bubbleId++, type: 'incoming', width: '45%', height: '76px' },
+  { id: bubbleId++, type: 'outgoing', width: '65%', height: '84px' },
+  { id: bubbleId++, type: 'incoming', width: '55%', height: '78px' },
+  { id: bubbleId++, type: 'outgoing', width: '70%', height: '80px' },
 );
 sizeIdx = 10;
 
@@ -221,17 +221,15 @@ onUnmounted(() => {
         <div class="dynamic-island"></div>
 
         <!-- Chat conversation -->
-        <div class="chat-ui">
-          <TransitionGroup name="bubble">
-            <div
-              v-for="b in bubbles"
-              :key="b.id"
-              class="chat-bubble"
-              :class="b.type"
-              :style="{ width: b.width, height: b.height }"
-            ></div>
-          </TransitionGroup>
-        </div>
+        <TransitionGroup name="bubble" tag="div" class="chat-ui">
+          <div
+            v-for="b in bubbles"
+            :key="b.id"
+            class="chat-bubble"
+            :class="b.type"
+            :style="{ width: b.width, height: b.height }"
+          ></div>
+        </TransitionGroup>
 
         <!-- Diction bar -->
         <div class="diction-bar">
@@ -251,19 +249,20 @@ onUnmounted(() => {
 <style scoped>
 .hero-demo {
   position: relative;
-  width: 260px;
-  height: 540px;
+  width: 320px;
+  height: 664px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .phone-frame {
   position: relative;
-  width: 240px;
-  height: 520px;
+  width: 100%;
+  height: 100%;
   border: 5px solid #1a1a1a;
-  border-radius: 42px;
+  border-radius: 44px;
   overflow: hidden;
   background: #1a1a1a;
 }
@@ -273,7 +272,7 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   background: #f5f5f5;
-  border-radius: 38px;
+  border-radius: 40px;
   overflow: hidden;
 }
 
@@ -293,7 +292,7 @@ onUnmounted(() => {
   z-index: 10;
 }
 
-/* Chat UI — flex-end so bubbles stack from bottom */
+/* Chat UI — spacer pushes bubbles to bottom */
 .chat-ui {
   display: flex;
   flex-direction: column;
@@ -329,22 +328,22 @@ onUnmounted(() => {
   border-bottom-right-radius: 4px;
 }
 
-/* Bubble enter animation — fade in from below */
+/* Bubble enter — slide up from below like iMessage */
 .bubble-enter-active {
-  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+  transition: opacity 0.35s ease-out, transform 0.35s cubic-bezier(0.2, 0.8, 0.3, 1);
 }
 
 .bubble-enter-from {
   opacity: 0;
-  transform: translateY(16px);
+  transform: translateY(40px);
 }
 
 /* Existing bubbles shift up smoothly */
 .bubble-move {
-  transition: transform 0.4s ease;
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.3, 1);
 }
 
-/* Removed bubbles vanish instantly (they're off-screen at top) */
+/* Removed bubbles vanish instantly (clipped off-screen at top) */
 .bubble-leave-active {
   position: absolute;
   opacity: 0;
@@ -411,19 +410,19 @@ onUnmounted(() => {
 /* Responsive */
 @media (max-width: 960px) {
   .hero-demo {
-    width: 220px;
-    height: 454px;
+    width: 190px;
+    height: 400px;
   }
 
   .phone-frame {
-    width: 200px;
-    height: 434px;
+    width: 174px;
+    height: 378px;
     border-width: 4px;
-    border-radius: 36px;
+    border-radius: 32px;
   }
 
   .phone-screen {
-    border-radius: 32px;
+    border-radius: 28px;
   }
 
   .dynamic-island {
@@ -433,7 +432,7 @@ onUnmounted(() => {
 
   .chat-ui {
     padding: 10px;
-    padding-bottom: 66px;
+    padding-bottom: 60px;
     gap: 6px;
   }
 
@@ -445,7 +444,7 @@ onUnmounted(() => {
   .chat-bubble.outgoing { border-bottom-right-radius: 3px; }
 
   .diction-bar {
-    height: 46px;
+    height: 42px;
     bottom: 10px;
     left: 10px;
     right: 10px;
@@ -453,41 +452,41 @@ onUnmounted(() => {
   }
 
   .bar-logo {
-    font-size: 22px;
+    font-size: 20px;
   }
 
   .bar-mic {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
   }
 }
 
 @media (max-width: 640px) {
   .hero-demo {
-    width: 186px;
-    height: 384px;
+    width: 160px;
+    height: 340px;
   }
 
   .phone-frame {
-    width: 166px;
-    height: 360px;
+    width: 146px;
+    height: 318px;
     border-width: 3px;
     border-radius: 26px;
   }
 
   .phone-screen {
-    border-radius: 27px;
+    border-radius: 23px;
   }
 
   .dynamic-island {
-    width: 56px;
-    height: 18px;
+    width: 50px;
+    height: 16px;
     top: 8px;
   }
 
   .chat-ui {
     padding: 8px;
-    padding-bottom: 54px;
+    padding-bottom: 48px;
     gap: 5px;
   }
 
@@ -499,20 +498,20 @@ onUnmounted(() => {
   .chat-bubble.outgoing { border-bottom-right-radius: 3px; }
 
   .diction-bar {
-    height: 38px;
+    height: 34px;
     bottom: 8px;
     left: 8px;
     right: 8px;
-    border-radius: 12px;
+    border-radius: 10px;
   }
 
   .bar-logo {
-    font-size: 18px;
+    font-size: 16px;
   }
 
   .bar-mic {
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
   }
 
   .bar-waveform .dot {

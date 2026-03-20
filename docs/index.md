@@ -5,8 +5,8 @@ description: Voice keyboard for iPhone with open-source server. On-device, self-
 
 hero:
   name: Diction
-  text: Voice keyboard for iPhone
-  tagline: Tap the mic. Speak. Done. On-device, self-hosted, or cloud. No word limits. No tracking.
+  text: "Powerful<br>speech to text<br>iPhone keyboard"
+  tagline: "Your voice. Your data. On your device or self-hosted.<br>No limits · Private · Encrypted · Open source"
   actions:
     - theme: brand
       text: Download for iOS
@@ -21,6 +21,10 @@ features:
     title: Any App
     details: Fast and accurate speech to text iOS keyboard that works in any app. No word limits, no daily caps.
   - icon:
+      src: /icon-infinity.svg
+    title: No Limits
+    details: No weekly caps, no word restrictions, no catch. Dictate as much as you want, whenever you want.
+  - icon:
       src: /icon-phone.svg
     title: On-Device
     details: Speech recognition that runs locally on your iPhone. No internet required. Audio never leaves your device.
@@ -29,17 +33,13 @@ features:
     title: Self-Hosted
     details: Run licensed or industry-specific models on your own server. Your network, your data.
   - icon:
-      src: /icon-lock.svg
-    title: Privacy First
-    details: Zero analytics, zero tracking, zero third-party SDKs. Open source server you can audit.
-  - icon:
-      src: /icon-key.svg
-    title: Encrypted
-    details: AES-256 transcription encryption with X25519 key exchange. Signal and WireGuard grade privacy.
+      src: /icon-shield.svg
+    title: Private
+    details: AES-256 end-to-end text encryption with X25519 key exchange. Zero analytics, zero tracking, zero data collection.
   - icon:
       src: /icon-globe.svg
     title: Your Language
-    details: Automatic multilingual speech recognition.
+    details: Automatic multilingual speech recognition. Speak in your language, or translate to another — Diction handles both.
   - icon:
       src: /icon-chat.svg
     title: AI Enhancement
@@ -50,15 +50,33 @@ features:
     details: Cloud transcription with zero setup. Highest accuracy, lowest latency. Audio processed and immediately discarded.
 ---
 
-<div class="content-section faq-section">
+<div class="content-section faq-section" style="display: none;">
 
-## FAQ
+## Questions
 
 <details>
 <summary>Is it really free?</summary>
 <div>
 
-On-device and self-hosted modes are completely free. No word limits, no daily caps, no restrictions. If you self-host, you run your own server and pay your own infrastructure costs. Diction One cloud requires a subscription. Pricing is shown in the app, with a free trial included.
+On-device and self-hosted modes are completely free with basic models. No word limits, no daily caps. Pro unlocks premium on-device models for better accuracy, plus Diction One cloud. Free trial included.
+
+</div>
+</details>
+
+<details>
+<summary>How is it better than Apple Dictation?</summary>
+<div>
+
+Diction uses Whisper-based models that are significantly more accurate. No session time limits, no word caps. Works identically across all apps. Choose between on-device, cloud, or your own server.
+
+</div>
+</details>
+
+<details>
+<summary>Does it work offline?</summary>
+<div>
+
+Yes. On-device mode works without internet once the model is downloaded. Cloud and self-hosted modes require network access.
 
 </div>
 </details>
@@ -67,7 +85,7 @@ On-device and self-hosted modes are completely free. No word limits, no daily ca
 <summary>What languages does Diction support?</summary>
 <div>
 
-99 languages via Whisper. The on-device Standard model handles most languages well. Cloud and self-hosted modes use larger models for even better accuracy across all supported languages.
+99 languages via Whisper. On-device base model handles most languages well. Cloud and self-hosted modes use larger models for even better accuracy across all supported languages.
 
 </div>
 </details>
@@ -76,7 +94,16 @@ On-device and self-hosted modes are completely free. No word limits, no daily ca
 <summary>Is my voice data stored?</summary>
 <div>
 
-Never. On-device mode processes audio in memory and discards it immediately. Self-hosted mode sends audio only to your server. We have no access. Diction One cloud processes and discards. No recordings retained, no model training.
+Never. On-device mode processes audio in memory and discards it immediately. Self-hosted mode sends audio only to your server — we have no access. Diction One cloud processes and discards. No recordings retained, no model training.
+
+</div>
+</details>
+
+<details>
+<summary>What is AI Enhancement?</summary>
+<div>
+
+After transcription, Diction can optionally clean up your text — removing filler words, fixing grammar, and polishing the result. Only the text is sent to the AI, never the audio. Off by default.
 
 </div>
 </details>
