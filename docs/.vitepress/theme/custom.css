@@ -345,7 +345,7 @@
 /* -- Mobile hero: hide phone demo (it overlaps text), clean background -- */
 @media (max-width: 959px) {
   .VPHero .image {
-    display: none;
+    display: none !important;
   }
 
   .VPHero .main {
