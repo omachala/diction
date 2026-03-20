@@ -42,19 +42,15 @@ Wispr Flow is $15/month for unlimited dictation on Pro. There's a free tier capp
 
 Diction's on-device mode is free with no word limits. The Diction One cloud subscription is required only if you want cloud transcription with AI enhancement. Self-hosting is free if you can run a server.
 
-## When Wispr Flow is better
+## Why Diction
 
-Wispr Flow has been around longer, has more platforms (macOS, Windows, Android), and a larger team building it. If you spend most of your time on a Mac and want one app that works everywhere, Wispr Flow is the more complete solution today.
-
-Their accuracy numbers are genuinely impressive. They've published that 90% of outputs need no edits, and users send dictated text within 0.5 seconds of seeing it.
-
-## When Diction is better
-
-If you're on iPhone and want your audio to stay on your iPhone, Diction is the only option. No other iOS dictation keyboard offers on-device transcription through WhisperKit.
+If you're on iPhone and want your audio to stay on your iPhone, Diction is the only option. No other iOS dictation keyboard offers on-device transcription.
 
 If you're self-hosting infrastructure (Home Assistant, Nextcloud, Jellyfin, anything), adding a Whisper server takes minutes and Diction just points to it. You get unlimited dictation, no subscription, and complete data control.
 
 If you're in healthcare, legal, or anywhere that can't send audio to third-party servers, on-device or self-hosted is the practical answer.
+
+If you don't want to pay $15/month for dictation, Diction's on-device mode is free with no caps.
 
 ---
 

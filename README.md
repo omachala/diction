@@ -38,7 +38,7 @@
 
 - **Self-hosted.** `docker compose up` and paste the URL. Your server, your models, your data.
 - **Any Whisper-compatible model.** Point Diction at any endpoint. Medical, legal, accent-tuned — run whatever you want.
-- **End-to-end encrypted.** AES-256-GCM text encryption with X25519 key exchange. Same primitives as Signal and WireGuard.
+- **End-to-end text encrypted.** AES-256-GCM text encryption with X25519 key exchange. Same encryption used by Signal and WireGuard.
 - **Zero tracking.** No analytics, no telemetry, no data collection. Audit the source yourself.
 - **On-device.** Whisper runs locally on your iPhone. No network, no server, nothing leaves the device.
 - **AI enhancement.** Optional LLM cleanup — only the transcript text is sent, never the audio.
@@ -76,11 +76,12 @@ Once reachable, open the Diction app, go to **Self-Hosted**, paste your server U
 
 Swap or add models to your compose file. The gateway handles routing and streaming between them.
 
-| Model | RAM | Latency (CPU) |
-|-------|-----|---------------|
-| `whisper-small` | ~800 MB | ~3-4s |
-| `whisper-medium` | ~1.8 GB | ~8-12s |
-| `whisper-large` | ~3.5 GB | ~20-30s |
+| Model | Parameters | RAM |
+|-------|-----------|-----|
+| `whisper-small` | 244M | ~850 MB |
+| `whisper-medium` | 769M | ~2.1 GB |
+| `whisper-large-v3` | 1.5B | ~3.9 GB |
+| `whisper-large-v3-turbo` | 809M | ~2.3 GB |
 
 #### Bring your own model
 
