@@ -168,7 +168,7 @@ func TestTrialToken_CachesValidToken(t *testing.T) {
 	if err := verifyTrialToken(token, testSecret); err != nil {
 		t.Fatalf("first verify: %v", err)
 	}
-	// Second call should hit cache (with wrong secret — still passes due to cache)
+	// Second call should hit cache (with wrong secret - still passes due to cache)
 	if err := verifyTrialToken(token, []byte("wrong")); err != nil {
 		t.Errorf("second verify should hit cache and pass, got: %v", err)
 	}
@@ -514,7 +514,7 @@ func TestWriteAuthError_UnknownReason(t *testing.T) {
 // --- base64URLDecode padding ---
 
 func TestBase64URLDecode_NoPadding(t *testing.T) {
-	// len%4 == 0: no padding needed — "dGVzdA" (=base64("test") without "==")
+	// len%4 == 0: no padding needed - "dGVzdA" (=base64("test") without "==")
 	// "dGVzdA==" → "test"
 	data, err := base64URLDecode("dGVzdA")
 	if err != nil {
@@ -550,7 +550,7 @@ func TestBase64URLDecode_TwoPadBytes(t *testing.T) {
 // --- verifyTrialToken cache eviction ---
 
 func TestVerifyTrialToken_ShortExpiryClampsCache(t *testing.T) {
-	// Token expires in 2 minutes — less than tokenCacheTTL (5 min).
+	// Token expires in 2 minutes - less than tokenCacheTTL (5 min).
 	// This exercises the cacheExpiry = tokenExp branch.
 	exp := time.Now().Add(2 * time.Minute)
 	token := generateTrialToken("CLAMP-TEST-0000-0000-000000000001", exp, "trial", testSecret)

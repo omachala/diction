@@ -13,7 +13,7 @@ import (
 
 // EncryptTranscript encrypts a transcript string for the given client ephemeral X25519 public key.
 // Implements X25519 ECDH + HKDF-SHA256 key derivation + AES-256-GCM encryption.
-// Both parties derive the same AES-256 key from the ECDH shared secret — no static server key needed.
+// Both parties derive the same AES-256 key from the ECDH shared secret - no static server key needed.
 // Returns base64url-encoded ciphertext and server ephemeral public key for the client to decrypt.
 func EncryptTranscript(transcript string, clientPubB64 string) (ctB64, serverPubB64 string, err error) {
 	// Decode client ephemeral public key
@@ -120,7 +120,7 @@ func DecryptRequest(ctB64, clientPubB64 string, serverStaticKey *ecdh.PrivateKey
 }
 
 // hkdfSHA256 derives keyLen bytes from ikm using HKDF-SHA256 (RFC 5869).
-// Uses only stdlib crypto — no external dependencies required.
+// Uses only stdlib crypto - no external dependencies required.
 func hkdfSHA256(ikm, salt, info []byte, keyLen int) []byte {
 	if salt == nil {
 		salt = make([]byte, sha256.Size)

@@ -3,6 +3,12 @@ package core
 import (
 	"bytes"
 	"context"
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/ecdh"
+	"crypto/rand"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -137,7 +143,7 @@ func TestRewriteMultipart_PreservesFileContent(t *testing.T) {
 }
 
 func TestRewriteMultipart_NoModelField(t *testing.T) {
-	// No model field — rewrite should still work cleanly
+	// No model field - rewrite should still work cleanly
 	body, ct := buildMultipart(t, map[string]string{}, "audio.m4a", "audio")
 	boundary := parseBoundary(ct)
 
@@ -184,7 +190,7 @@ func TestRewriteMultipart_ConvertToWAV(t *testing.T) {
 // --- convertToWAVBytes ---
 
 func TestConvertToWAVBytes_PassthroughWhenAlreadyWAV(t *testing.T) {
-	// WAV files start with RIFF magic — should be returned unchanged.
+	// WAV files start with RIFF magic - should be returned unchanged.
 	wavData := []byte("RIFF\x00\x00\x00\x00WAVEfmt ")
 	result, err := convertToWAVBytes(wavData, "audio.wav")
 	if err != nil {
@@ -196,7 +202,7 @@ func TestConvertToWAVBytes_PassthroughWhenAlreadyWAV(t *testing.T) {
 }
 
 func TestConvertToWAVBytes_FFmpegErrorOnGarbage(t *testing.T) {
-	// Non-RIFF garbage — exercises temp dir creation, file write, ffmpeg exec,
+	// Non-RIFF garbage - exercises temp dir creation, file write, ffmpeg exec,
 	// and the error-return path (ffmpeg can't decode random bytes as .m4a).
 	garbage := bytes.Repeat([]byte{0xDE, 0xAD, 0xBE, 0xEF}, 64)
 	_, err := convertToWAVBytes(garbage, "audio.m4a")
@@ -245,7 +251,7 @@ func TestTranscriptionHandler_MethodNotAllowed(t *testing.T) {
 }
 
 func TestTranscriptionHandler_NoMatchingBackend(t *testing.T) {
-	// defaultModel has no matching backend — gateway returns 400
+	// defaultModel has no matching backend - gateway returns 400
 	g := &Gateway{
 		backends:     []Backend{},
 		health:       newHealthState(),
@@ -446,6 +452,70 @@ func TestTranscriptionHandler_ModelStrippedBeforeProxy(t *testing.T) {
 	}
 }
 
+func TestTranscriptionHandler_E2EEncryption(t *testing.T) {
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"text":"hello world"}`)
+	}))
+	defer backend.Close()
+
+	g := &Gateway{
+		backends: []Backend{
+			{Name: "small", URL: backend.URL, Aliases: []string{"small"}},
+		},
+		health:       newHealthState(),
+		defaultModel: "small",
+		maxBodySize:  10 * 1024 * 1024,
+	}
+
+	// Generate client ephemeral key
+	clientPriv, _ := ecdh.X25519().GenerateKey(rand.Reader)
+	clientPubB64 := base64.RawURLEncoding.EncodeToString(clientPriv.PublicKey().Bytes())
+
+	body, ct := buildMultipart(t, map[string]string{}, "audio.m4a", "fake-audio")
+	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions", bytes.NewReader(body))
+	req.Header.Set("Content-Type", ct)
+	req.Header.Set("X-Diction-E2E", clientPubB64)
+	rr := httptest.NewRecorder()
+	g.TranscriptionHandlerWithPostProcess(nil)(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("status: want 200, got %d (body: %s)", rr.Code, rr.Body.String())
+	}
+
+	// Response should contain e2e envelope
+	var resp struct {
+		E2E struct {
+			CT string `json:"ct"`
+			PK string `json:"pk"`
+		} `json:"e2e"`
+	}
+	if err := json.Unmarshal(rr.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if resp.E2E.CT == "" || resp.E2E.PK == "" {
+		t.Fatalf("expected e2e envelope with ct and pk, got: %s", rr.Body.String())
+	}
+
+	// Decrypt and verify
+	serverPubBytes, _ := base64.RawURLEncoding.DecodeString(resp.E2E.PK)
+	serverPub, _ := ecdh.X25519().NewPublicKey(serverPubBytes)
+	shared, _ := clientPriv.ECDH(serverPub)
+	key := hkdfSHA256(shared, nil, []byte("diction-transcript-v1"), 32)
+
+	ctBytes, _ := base64.RawURLEncoding.DecodeString(resp.E2E.CT)
+	block, _ := aes.NewCipher(key)
+	gcm, _ := cipher.NewGCM(block)
+	nonce := ctBytes[:gcm.NonceSize()]
+	plaintext, err := gcm.Open(nil, nonce, ctBytes[gcm.NonceSize():], nil)
+	if err != nil {
+		t.Fatalf("decrypt: %v", err)
+	}
+	if string(plaintext) != "hello world" {
+		t.Errorf("decrypted: want 'hello world', got %q", string(plaintext))
+	}
+}
+
 func TestExtractFormField_Found(t *testing.T) {
 	body, ct := buildMultipart(t, map[string]string{"context": `{"before":"hello","after":"world"}`, "language": "en"}, "audio.wav", "data")
 	boundary := parseBoundary(ct)
@@ -461,6 +531,38 @@ func TestExtractFormField_NotFound(t *testing.T) {
 	got := extractFormField(body, boundary, "context")
 	if got != "" {
 		t.Errorf("context: want empty, got %q", got)
+	}
+}
+
+func TestRewriteMultipart_InjectsForwardModel(t *testing.T) {
+	body, ct := buildMultipart(t, map[string]string{"model": "small", "language": "en"}, "audio.m4a", "fake-audio")
+	boundary := parseBoundary(ct)
+
+	rewritten, newCT, err := rewriteMultipart(body, boundary, false, "Systran/faster-whisper-large-v3-turbo")
+	if err != nil {
+		t.Fatalf("rewriteMultipart error: %v", err)
+	}
+
+	_, params, _ := parseMediaType(newCT)
+	reader := multipart.NewReader(bytes.NewReader(rewritten), params["boundary"])
+	var modelValue string
+	for {
+		part, err := reader.NextPart()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			t.Fatalf("read part: %v", err)
+		}
+		if part.FormName() == "model" {
+			data, _ := io.ReadAll(part)
+			modelValue = string(data)
+		}
+		part.Close()
+	}
+
+	if modelValue != "Systran/faster-whisper-large-v3-turbo" {
+		t.Errorf("model: want Systran/faster-whisper-large-v3-turbo, got %q", modelValue)
 	}
 }
 

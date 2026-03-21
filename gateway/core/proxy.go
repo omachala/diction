@@ -46,7 +46,7 @@ func rewriteMultipart(body []byte, boundary string, convertToWAV bool, forwardMo
 			return nil, "", fmt.Errorf("read multipart: %w", err)
 		}
 
-		// Strip model and context fields — gateway-only, not forwarded to backend
+		// Strip model and context fields - gateway-only, not forwarded to backend
 		if part.FormName() == "model" || part.FormName() == "context" {
 			part.Close()
 			continue
