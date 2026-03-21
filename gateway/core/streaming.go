@@ -96,11 +96,11 @@ func (g *Gateway) StreamingHandlerWithPostProcess(postProcess func(context.Conte
 				continue
 			}
 
-			// Text message — check for done action or context
+			// Text message - check for done action or context
 			if msgType == websocket.MessageText {
 				var action streamAction
 				if err := json.Unmarshal(data, &action); err != nil {
-					// Not valid JSON action — treat as context if first text frame
+					// Not valid JSON action - treat as context if first text frame
 					if !contextRead {
 						contextJSON = string(data)
 						contextRead = true

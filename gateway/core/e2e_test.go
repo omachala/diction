@@ -155,6 +155,65 @@ func TestFullCleanupE2ERoundTrip(t *testing.T) {
 	}
 }
 
+// --- EncryptTranscript error paths ---
+
+func TestEncryptTranscript_InvalidBase64(t *testing.T) {
+	_, _, err := EncryptTranscript("hello", "not-valid-base64!!!")
+	if err == nil {
+		t.Fatal("expected error for invalid base64 client pubkey")
+	}
+}
+
+func TestEncryptTranscript_WrongKeySize(t *testing.T) {
+	// Valid base64 but only 16 bytes — X25519 requires exactly 32
+	shortKey := base64.RawURLEncoding.EncodeToString(make([]byte, 16))
+	_, _, err := EncryptTranscript("hello", shortKey)
+	if err == nil {
+		t.Fatal("expected error for wrong-size X25519 key")
+	}
+}
+
+// --- DecryptRequest error paths ---
+
+func TestDecryptRequest_InvalidClientPubBase64(t *testing.T) {
+	serverPriv, _ := ecdh.X25519().GenerateKey(rand.Reader)
+	_, err := DecryptRequest("dGVzdA", "not-valid-base64!!!", serverPriv)
+	if err == nil {
+		t.Fatal("expected error for invalid client pubkey base64")
+	}
+}
+
+func TestDecryptRequest_WrongSizeClientPub(t *testing.T) {
+	serverPriv, _ := ecdh.X25519().GenerateKey(rand.Reader)
+	shortKey := base64.RawURLEncoding.EncodeToString(make([]byte, 16))
+	_, err := DecryptRequest("dGVzdA", shortKey, serverPriv)
+	if err == nil {
+		t.Fatal("expected error for wrong-size client pubkey")
+	}
+}
+
+func TestDecryptRequest_InvalidCiphertextBase64(t *testing.T) {
+	serverPriv, _ := ecdh.X25519().GenerateKey(rand.Reader)
+	clientPriv, _ := ecdh.X25519().GenerateKey(rand.Reader)
+	clientPubB64 := base64.RawURLEncoding.EncodeToString(clientPriv.PublicKey().Bytes())
+	_, err := DecryptRequest("not-valid!!!", clientPubB64, serverPriv)
+	if err == nil {
+		t.Fatal("expected error for invalid ciphertext base64")
+	}
+}
+
+func TestDecryptRequest_CiphertextTooShort(t *testing.T) {
+	serverPriv, _ := ecdh.X25519().GenerateKey(rand.Reader)
+	clientPriv, _ := ecdh.X25519().GenerateKey(rand.Reader)
+	clientPubB64 := base64.RawURLEncoding.EncodeToString(clientPriv.PublicKey().Bytes())
+	// Only 4 bytes — shorter than GCM nonce (12 bytes)
+	shortCT := base64.RawURLEncoding.EncodeToString([]byte("tiny"))
+	_, err := DecryptRequest(shortCT, clientPubB64, serverPriv)
+	if err == nil {
+		t.Fatal("expected error for ciphertext shorter than nonce")
+	}
+}
+
 // --- test helpers ---
 
 // testClientEncrypt simulates iOS-side encryption:

@@ -137,7 +137,7 @@ func TestVerifyAppleJWS_CacheHit(t *testing.T) {
 }
 
 func TestVerifyAppleJWS_CacheExpiredEvicted(t *testing.T) {
-	// Seed an expired cache entry — should be deleted and re-verified (fails
+	// Seed an expired cache entry - should be deleted and re-verified (fails
 	// because the token itself is invalid).
 	fakeToken := "fake.jws.cache_evict_test"
 	tokenCache.Store(fakeToken, cachedToken{
@@ -220,7 +220,7 @@ func TestVerifyAppleJWS_BadX5cDER(t *testing.T) {
 }
 
 func TestVerifyAppleJWS_ChainVerifyFails(t *testing.T) {
-	// Two unrelated self-signed certs — x5c[0].CheckSignatureFrom(x5c[1]) fails.
+	// Two unrelated self-signed certs - x5c[0].CheckSignatureFrom(x5c[1]) fails.
 	key1, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	key2, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	tmpl := func(cn string) *x509.Certificate {
@@ -290,7 +290,7 @@ func TestVerifyAppleJWS_HappyPath(t *testing.T) {
 		t.Errorf("expected valid JWS to pass, got: %v", err)
 	}
 
-	// Should now be cached — second call with a garbage secret still passes.
+	// Should now be cached - second call with a garbage secret still passes.
 	if err := verifyAppleJWS(token, "one.diction"); err != nil {
 		t.Errorf("expected cached token to pass on second call: %v", err)
 	}
@@ -428,7 +428,7 @@ func TestVerifyAppleJWS_CacheExpiryClampedToSubscription(t *testing.T) {
 	_, caCert, leafKey, leafCert := buildTestPKI(t)
 	withTestCA(t, caCert)
 
-	// Expires in 1 minute — less than the 5-minute tokenCacheTTL
+	// Expires in 1 minute - less than the 5-minute tokenCacheTTL
 	payload := jwsPayload{
 		BundleID:    "one.diction",
 		ExpiresDate: time.Now().Add(1 * time.Minute).UnixMilli(),

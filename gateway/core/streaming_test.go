@@ -330,7 +330,7 @@ func TestStreamingHandler_NonDoneTextMessage(t *testing.T) {
 	defer conn.CloseNow()
 
 	conn.Write(ctx, websocket.MessageBinary, make([]byte, 3200))
-	// Send a text message with unknown action — should be ignored
+	// Send a text message with unknown action - should be ignored
 	conn.Write(ctx, websocket.MessageText, []byte(`{"action":"unknown"}`))
 	// Now send done
 	done, _ := json.Marshal(map[string]string{"action": "done"})
@@ -383,7 +383,7 @@ func TestStreamingHandler_InvalidTextIgnored(t *testing.T) {
 func TestStreamingHandler_HealthByAliasName(t *testing.T) {
 	// When model query param is an alias whose case differs from the backend Name
 	// (e.g. "SMALL" vs stored health key "small"), g.health.get(model) returns
-	// false — but the alias-scan loop should find the backend is healthy and allow
+	// false - but the alias-scan loop should find the backend is healthy and allow
 	// the upgrade. Covers the backendUp=true branch inside the health-check block.
 	srv, _ := startStreamingServer(t, "alias ok", http.StatusOK)
 
