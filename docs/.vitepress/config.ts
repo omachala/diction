@@ -10,6 +10,20 @@ const DEFAULT_KEYWORDS =
   'voice keyboard, speech to text, dictation, iPhone keyboard, whisper, self-hosted, on-device, transcription, open source, privacy, voice to text, dictate, offline dictation';
 const OG_IMAGE = `${SITE_URL}/og-image.png`;
 
+function getBreadcrumbList(relativePath: string, title: string): string {
+  const cleanPath = relativePath.replace(/\.md$/, '').replace(/\/index$/, '');
+  const parts = cleanPath.split('/').filter(Boolean);
+  const sectionLabels: Record<string, string> = { vs: 'Compare', features: 'Features' };
+  const items: object[] = [{ '@type': 'ListItem', position: 1, name: 'Diction', item: SITE_URL }];
+  if (parts.length === 1) {
+    items.push({ '@type': 'ListItem', position: 2, name: title, item: `${SITE_URL}/${parts[0]}` });
+  } else if (parts.length >= 2) {
+    items.push({ '@type': 'ListItem', position: 2, name: sectionLabels[parts[0]] || parts[0], item: `${SITE_URL}/${parts[0]}` });
+    items.push({ '@type': 'ListItem', position: 3, name: title, item: `${SITE_URL}/${cleanPath}` });
+  }
+  return JSON.stringify({ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: items });
+}
+
 export default defineConfig({
   vite: {
     plugins: [llmstxt()],
@@ -26,7 +40,7 @@ export default defineConfig({
     // Build canonical URL — match VitePress output format
     const canonicalUrl = `${SITE_URL}/${pageData.relativePath}`
       .replace(/index\.md$/, '')
-      .replace(/\.md$/, '.html');
+      .replace(/\.md$/, '');
 
     // Homepage gets the full branded title, other pages get "Page | Diction"
     const isHomePage = pageData.relativePath === 'index.md';
@@ -57,9 +71,19 @@ export default defineConfig({
       ['meta', { name: 'twitter:title', content: fullTitle }],
       ['meta', { name: 'twitter:description', content: pageDescription }],
     );
+
+    // BreadcrumbList for inner pages
+    if (!isHomePage) {
+      pageData.frontmatter.head.push(
+        ['script', { type: 'application/ld+json' }, getBreadcrumbList(pageData.relativePath, pageTitle || '')],
+      );
+    }
   },
 
   head: [
+    // Preconnect for performance
+    ['link', { rel: 'preconnect', href: 'https://www.googletagmanager.com' }],
+    ['link', { rel: 'dns-prefetch', href: 'https://www.googletagmanager.com' }],
     // Google Analytics 4
     ['script', { async: '', src: 'https://www.googletagmanager.com/gtag/js?id=G-PCV64Y7GFM' }],
     [
@@ -185,7 +209,56 @@ gtag('config', 'G-PCV64Y7GFM');`,
               text: 'Diction uses Whisper for higher accuracy, supports 99 languages, has no time limits, and lets you choose where audio is processed — on device, your server, or cloud. Apple Dictation has a 60-second limit and processes audio on Apple servers.',
             },
           },
+          {
+            '@type': 'Question',
+            name: 'What is AI Enhancement?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'After transcription, Diction can optionally clean up your text — removing filler words like "um" and "uh", fixing grammar, adding punctuation, and polishing the result. Only the text is sent to the AI model, never the audio. AI Enhancement is off by default.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'Does Diction work offline?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Yes. On-device mode works completely offline once the model is downloaded. No internet connection needed. Cloud and self-hosted modes require network access to reach the transcription server.',
+            },
+          },
         ],
+      }),
+    ],
+    // Structured data — WebSite with SearchAction
+    [
+      'script',
+      { type: 'application/ld+json' },
+      JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: SITE_NAME,
+        url: SITE_URL,
+        description: DEFAULT_DESCRIPTION,
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: {
+            '@type': 'EntryPoint',
+            urlTemplate: `${SITE_URL}/?q={search_term_string}`,
+          },
+          'query-input': 'required name=search_term_string',
+        },
+      }),
+    ],
+    // Structured data — Organization
+    [
+      'script',
+      { type: 'application/ld+json' },
+      JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        name: SITE_NAME,
+        url: SITE_URL,
+        logo: `${SITE_URL}/app-icon.png`,
+        sameAs: ['https://github.com/omachala/diction'],
       }),
     ],
     // Static Open Graph (fallbacks — dynamic ones override these)
@@ -197,13 +270,6 @@ gtag('config', 'G-PCV64Y7GFM');`,
     // Static Twitter (fallbacks)
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['meta', { name: 'twitter:image', content: OG_IMAGE }],
-    // Analytics
-    ['script', { async: '', src: 'https://www.googletagmanager.com/gtag/js?id=G-PCV64Y7GFM' }],
-    [
-      'script',
-      {},
-      `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-PCV64Y7GFM');`,
-    ],
   ],
 
   themeConfig: {

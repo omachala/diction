@@ -1,6 +1,7 @@
 ---
 title: "Features"
 description: Everything Diction can do. Context-aware dictation, AI Enhancement, text editing by voice, on-device and self-hosted transcription, 99 languages, and more.
+keywords: "voice keyboard features iphone, ios dictation features, speech to text features ios, context aware dictation, ai enhancement speech, voice keyboard iphone, whisper ios features"
 ---
 
 # Features

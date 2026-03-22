@@ -1,6 +1,7 @@
 ---
-title: Diction vs Superwhisper
-description: Diction vs Superwhisper compared. Purpose-built iOS keyboard vs Mac-first app with an iOS port. On-device, self-hosted, encrypted
+title: "Diction vs Superwhisper: iOS-Native Keyboard vs Mac-First Port"
+description: "Diction vs Superwhisper: purpose-built iOS keyboard vs Mac app ported to iOS. Self-hosted Whisper, AES-256 encryption, open-source server. No recording bugs."
+keywords: "superwhisper alternative, diction vs superwhisper, superwhisper ios alternative, superwhisper self hosted, ios voice keyboard, whisper ios keyboard, superwhisper iphone bugs"
 ---
 
 # Diction vs Superwhisper

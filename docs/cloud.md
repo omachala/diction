@@ -1,6 +1,7 @@
 ---
 title: "Diction One: Cloud Transcription"
 description: Diction One cloud transcription. Frontier speech models, high accuracy, zero setup. Audio processed and immediately discarded. AI Enhancement included.
+keywords: "diction one cloud, cloud transcription ios, ai voice keyboard iphone, best speech to text ios cloud, ai enhancement dictation, cloud dictation app iphone, voice to text cloud ios"
 ---
 
 # Diction One

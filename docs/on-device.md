@@ -1,6 +1,7 @@
 ---
 title: On-Device Transcription
 description: Diction on-device mode runs speech-to-text locally on your iPhone. Audio never leaves your device. No internet required. 99 languages.
+keywords: "offline speech to text iphone, on device dictation ios, whisper on device iphone, offline voice keyboard, private speech recognition iphone, no internet dictation ios, local speech recognition iphone"
 ---
 
 # On-Device Transcription
