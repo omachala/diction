@@ -4,7 +4,7 @@ Thanks for your interest in contributing to Diction!
 
 ## What's in This Repo
 
-This repository contains the **self-hosting infrastructure** and **documentation** for Diction. The iOS app source code is not included here — it's distributed via the App Store.
+This repository contains the **self-hosting infrastructure** and **documentation** for Diction. The iOS app source code is not included here - it's distributed via the App Store.
 
 ## How to Contribute
 

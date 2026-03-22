@@ -3,7 +3,7 @@ import llmstxt from 'vitepress-plugin-llms';
 
 const SITE_URL = 'https://diction.one';
 const SITE_NAME = 'Diction';
-const SITE_TITLE = 'Diction — Voice Keyboard for iPhone';
+const SITE_TITLE = 'Diction - Voice Keyboard for iPhone';
 const DEFAULT_DESCRIPTION =
   'Voice keyboard for iPhone with open-source server. Tap the mic, speak, text appears. On-device, self-hosted, or cloud. Zero tracking, no word limits, 99 languages.';
 const DEFAULT_KEYWORDS =
@@ -37,7 +37,7 @@ export default defineConfig({
 
   // Dynamic page-level SEO via transformPageData
   transformPageData(pageData) {
-    // Build canonical URL — match VitePress output format
+    // Build canonical URL - match VitePress output format
     const canonicalUrl = `${SITE_URL}/${pageData.relativePath}`
       .replace(/index\.md$/, '')
       .replace(/\.md$/, '');
@@ -57,7 +57,7 @@ export default defineConfig({
     // Add dynamic head tags
     pageData.frontmatter.head ??= [];
     pageData.frontmatter.head.push(
-      // Canonical URL — critical for SEO
+      // Canonical URL - critical for SEO
       ['link', { rel: 'canonical', href: canonicalUrl }],
       // Robots
       ['meta', { name: 'robots', content: 'index, follow' }],
@@ -94,17 +94,17 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-PCV64Y7GFM');`,
     ],
-    // Favicons — generated from app-icon.png
+    // Favicons - generated from app-icon.png
     ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32.png' }],
     ['link', { rel: 'icon', href: '/favicon.ico', sizes: '48x48' }],
     ['link', { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' }],
-    // Apple Smart Banner — shows "Open in App Store" bar on Safari
+    // Apple Smart Banner - shows "Open in App Store" bar on Safari
     ['meta', { name: 'apple-itunes-app', content: 'app-id=6759807364' }],
     // Theme color for mobile browsers
     ['meta', { name: 'theme-color', content: '#007AFF' }],
     // Language
     ['meta', { property: 'og:locale', content: 'en_US' }],
-    // Structured data — SoftwareApplication
+    // Structured data - SoftwareApplication
     [
       'script',
       { type: 'application/ld+json' },
@@ -145,7 +145,7 @@ gtag('config', 'G-PCV64Y7GFM');`,
         },
       }),
     ],
-    // Structured data — FAQPage
+    // Structured data - FAQPage
     [
       'script',
       { type: 'application/ld+json' },
@@ -174,7 +174,7 @@ gtag('config', 'G-PCV64Y7GFM');`,
             name: 'Is my voice data stored?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Never. On-device mode processes audio in memory and discards it immediately. Self-hosted mode sends audio only to your server. Diction One cloud processes and discards — no recordings retained, no model training.',
+              text: 'Never. On-device mode processes audio in memory and discards it immediately. Self-hosted mode sends audio only to your server. Diction One cloud processes and discards - no recordings retained, no model training.',
             },
           },
           {
@@ -182,7 +182,7 @@ gtag('config', 'G-PCV64Y7GFM');`,
             name: 'What is self-hosting?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'You run a Whisper speech-to-text server on your own hardware — a home server, NAS, or cloud VM. Diction connects to it directly. Your audio never touches any third-party service. One Docker Compose command to start.',
+              text: 'You run a Whisper speech-to-text server on your own hardware - a home server, NAS, or cloud VM. Diction connects to it directly. Your audio never touches any third-party service. One Docker Compose command to start.',
             },
           },
           {
@@ -206,7 +206,7 @@ gtag('config', 'G-PCV64Y7GFM');`,
             name: 'How is Diction different from Apple Dictation?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Diction uses Whisper for higher accuracy, supports 99 languages, has no time limits, and lets you choose where audio is processed — on device, your server, or cloud. Apple Dictation has a 60-second limit and processes audio on Apple servers.',
+              text: 'Diction uses Whisper for higher accuracy, supports 99 languages, has no time limits, and lets you choose where audio is processed - on device, your server, or cloud. Apple Dictation has a 60-second limit and processes audio on Apple servers.',
             },
           },
           {
@@ -228,7 +228,7 @@ gtag('config', 'G-PCV64Y7GFM');`,
         ],
       }),
     ],
-    // Structured data — WebSite with SearchAction
+    // Structured data - WebSite with SearchAction
     [
       'script',
       { type: 'application/ld+json' },
@@ -248,7 +248,7 @@ gtag('config', 'G-PCV64Y7GFM');`,
         },
       }),
     ],
-    // Structured data — Organization
+    // Structured data - Organization
     [
       'script',
       { type: 'application/ld+json' },
@@ -261,7 +261,7 @@ gtag('config', 'G-PCV64Y7GFM');`,
         sameAs: ['https://github.com/omachala/diction'],
       }),
     ],
-    // Static Open Graph (fallbacks — dynamic ones override these)
+    // Static Open Graph (fallbacks - dynamic ones override these)
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:site_name', content: SITE_NAME }],
     ['meta', { property: 'og:image', content: OG_IMAGE }],
@@ -348,6 +348,7 @@ gtag('config', 'G-PCV64Y7GFM');`,
 
     socialLinks: [
       { icon: 'github', link: 'https://github.com/omachala/diction' },
+      { icon: { svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0m5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701M9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249m5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249m-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095"/></svg>' }, link: 'https://www.reddit.com/r/dictionapp' },
     ],
 
     lastUpdated: {

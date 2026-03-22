@@ -29,9 +29,10 @@ features:
     title: On-Device
     details: Speech recognition that runs locally on your iPhone. No internet required. Audio never leaves your device.
   - icon:
-      src: /icon-server.svg
+      src: /icon-github.svg
     title: Self-Hosted
     details: Run licensed or industry-specific models on your own server. Your network, your data.
+    link: /features/self-hosting-setup
   - icon:
       src: /icon-shield.svg
     title: Private
@@ -39,7 +40,7 @@ features:
   - icon:
       src: /icon-globe.svg
     title: Your Language
-    details: Automatic multilingual speech recognition. Speak in your language, or translate to another — Diction handles both.
+    details: Automatic multilingual speech recognition. Speak in your language, or translate to another - Diction handles both.
   - icon:
       src: /icon-chat.svg
     title: AI Enhancement
@@ -94,7 +95,7 @@ Yes. On-device mode works without internet once the model is downloaded. Cloud a
 <summary>Is my voice data stored?</summary>
 <div>
 
-Never. On-device mode processes audio in memory and discards it immediately. Self-hosted mode sends audio only to your server — we have no access. Diction One cloud processes and discards. No recordings retained, no model training.
+Never. On-device mode processes audio in memory and discards it immediately. Self-hosted mode sends audio only to your server - we have no access. Diction One cloud processes and discards. No recordings retained, no model training.
 
 </div>
 </details>
@@ -103,7 +104,7 @@ Never. On-device mode processes audio in memory and discards it immediately. Sel
 <summary>What is AI Enhancement?</summary>
 <div>
 
-After transcription, Diction can optionally clean up your text — removing filler words, fixing grammar, and polishing the result. Only the text is sent to the AI, never the audio. Off by default.
+After transcription, Diction can optionally clean up your text - removing filler words, fixing grammar, and polishing the result. Only the text is sent to the AI, never the audio. Off by default.
 
 </div>
 </details>

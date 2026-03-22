@@ -98,7 +98,7 @@ function addBubble(type) {
   while (bubbles.length > 12) bubbles.shift();
 }
 
-// Seed bubbles — tall enough that ~6 fill the screen
+// Seed bubbles - tall enough that ~6 fill the screen
 bubbles.push(
   { id: bubbleId++, type: 'incoming', width: '55%', height: '78px' },
   { id: bubbleId++, type: 'outgoing', width: '70%', height: '90px' },
@@ -172,7 +172,7 @@ async function runTimeline() {
     await sleep(2500);
     if (!isMounted) return;
 
-    // Transcribing (quick — Diction is fast)
+    // Transcribing (quick - Diction is fast)
     mode = 'transcribing';
     startTime = performance.now() / 1000;
     await sleep(600);
@@ -185,7 +185,7 @@ async function runTimeline() {
     if (!isMounted) return;
     mode = 'idle';
 
-    // New outgoing (blue) bubble — user just dictated this
+    // New outgoing (blue) bubble - user just dictated this
     await sleep(300);
     if (!isMounted) return;
     addBubble('outgoing');
@@ -292,7 +292,7 @@ onUnmounted(() => {
   z-index: 10;
 }
 
-/* Chat UI — spacer pushes bubbles to bottom */
+/* Chat UI - spacer pushes bubbles to bottom */
 .chat-ui {
   display: flex;
   flex-direction: column;
@@ -328,7 +328,7 @@ onUnmounted(() => {
   border-bottom-right-radius: 4px;
 }
 
-/* Bubble enter — slide up from below like iMessage */
+/* Bubble enter - slide up from below like iMessage */
 .bubble-enter-active {
   transition: opacity 0.35s ease-out, transform 0.35s cubic-bezier(0.2, 0.8, 0.3, 1);
 }
@@ -388,7 +388,7 @@ onUnmounted(() => {
   letter-spacing: 0.5px;
 }
 
-/* Dot waveform — actual circles, not bars */
+/* Dot waveform - actual circles, not bars */
 .bar-waveform {
   position: absolute;
   inset: 0;

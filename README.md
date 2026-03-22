@@ -37,11 +37,11 @@
 ## Why Diction?
 
 - **Self-hosted.** `docker compose up` and paste the URL. Your server, your models, your data.
-- **Any Whisper-compatible model.** Point Diction at any endpoint. Medical, legal, accent-tuned — run whatever you want.
+- **Any Whisper-compatible model.** Point Diction at any endpoint. Medical, legal, accent-tuned - run whatever you want.
 - **End-to-end text encrypted.** AES-256-GCM text encryption with X25519 key exchange. Same encryption used by Signal and WireGuard.
 - **Zero tracking.** No analytics, no telemetry, no data collection. Audit the source yourself.
 - **On-device.** Whisper runs locally on your iPhone. No network, no server, nothing leaves the device.
-- **AI enhancement.** Optional LLM cleanup — only the transcript text is sent, never the audio.
+- **AI enhancement.** Optional LLM cleanup - only the transcript text is sent, never the audio.
 - **Free and unlimited.** On-device and self-hosted have no caps, no restrictions, no expiry.
 
 ## How It Works
