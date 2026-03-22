@@ -10,7 +10,7 @@ Both apps let you dictate into any text field on iOS. The difference is what hap
 
 ## The core difference
 
-Wispr Flow is 100% cloud. Your audio goes to their servers, gets transcribed, gets cleaned up by an AI model, and comes back. This works well — they've built solid infrastructure and the accuracy is good.
+Wispr Flow is 100% cloud. Your audio goes to their servers, gets transcribed, gets cleaned up by an AI model, and comes back. This works well - they've built solid infrastructure and the accuracy is good.
 
 Diction gives you a choice. On-device mode runs entirely on your iPhone with no network requests at all. Self-hosted mode sends audio to a server you control. Diction One cloud mode is available if you want it, but it's never forced on you.
 

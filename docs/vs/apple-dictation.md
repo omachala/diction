@@ -12,13 +12,13 @@ Apple Dictation is built into iOS. It's already on your phone. For many use case
 
 Press the microphone key on the system keyboard, speak, tap done. Works in most apps. Supports offline for some languages. No subscription required.
 
-It's convenient because it's already there. It's limited because Apple didn't build it for power users — it's a basic accessibility feature that's been around since iOS 5.
+It's convenient because it's already there. It's limited because Apple didn't build it for power users - it's a basic accessibility feature that's been around since iOS 5.
 
 ## Side-by-side
 
 | | Diction | Apple Dictation |
 |--|---------|-----------------|
-| Dedicated dictation keyboard | Yes | No — bolted onto system keyboard |
+| Dedicated dictation keyboard | Yes | No - bolted onto system keyboard |
 | On-device mode | Yes (WhisperKit) | Yes (Apple models) |
 | Self-hosted | Yes | No |
 | Cloud mode | Yes (Diction One) | Yes (default) |
@@ -31,7 +31,7 @@ It's convenient because it's already there. It's limited because Apple didn't bu
 
 ## The 30-second wall
 
-Apple Dictation stops after about 30 to 60 seconds. It's designed for short inputs: messages, quick searches, short notes. Long-form dictation — composing an email, writing a document, leaving a detailed comment — hits this wall.
+Apple Dictation stops after about 30 to 60 seconds. It's designed for short inputs: messages, quick searches, short notes. Long-form dictation - composing an email, writing a document, leaving a detailed comment - hits this wall.
 
 Diction doesn't have this limit. You dictate as long as you want. When you're done, it inserts the full text.
 
@@ -55,7 +55,7 @@ If you need dictation in one or two places and don't want an extra app, Apple Di
 
 ## When Diction is better
 
-Diction is better when you want to make dictation your primary input method. It takes over the keyboard completely — you tap the mic, speak, and the text appears in whatever app you're in. There's no switching modes, no finding the mic button, no 30-second cut.
+Diction is better when you want to make dictation your primary input method. It takes over the keyboard completely - you tap the mic, speak, and the text appears in whatever app you're in. There's no switching modes, no finding the mic button, no 30-second cut.
 
 Self-hosting is the biggest differentiator. If you run a home server, you can point Diction at your own Whisper instance. Apple doesn't offer anything equivalent.
 
