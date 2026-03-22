@@ -1,6 +1,7 @@
 ---
 title: Self-Hosted Transcription
 description: Run your own Whisper server and connect Diction to it. Audio stays on your network. Free, unlimited, open-source server. Docker Compose setup.
+keywords: "self hosted speech to text iphone, whisper docker ios keyboard, self hosted whisper ios, run whisper at home iphone, home server dictation ios, whisper server ios keyboard, docker whisper iphone"
 ---
 
 # Self-Hosted Transcription

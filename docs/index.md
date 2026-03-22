@@ -50,7 +50,7 @@ features:
     details: Cloud transcription with zero setup. Highest accuracy, lowest latency. Audio processed and immediately discarded.
 ---
 
-<div class="content-section faq-section" style="display: none;">
+<div class="content-section faq-section">
 
 ## Questions
 

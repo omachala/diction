@@ -1,6 +1,7 @@
 ---
-title: Diction vs Willow
-description: Diction vs Willow Voice compared. On-device transcription, self-hosting, end-to-end text encryption, and no word limits vs cloud-only dictation
+title: "Diction vs Willow Voice (2026): On-Device & Self-Hosted vs Cloud-Only"
+description: "Diction vs Willow Voice: fully offline on-device mode and self-hosted Whisper vs cloud-only. No word caps vs 2,000 words/week free tier. AES-256 text encryption."
+keywords: "willow voice alternative, diction vs willow, willow voice self hosted, ios voice keyboard offline, willow voice privacy, willow voice word limit, offline voice keyboard iphone"
 ---
 
 # Diction vs Willow

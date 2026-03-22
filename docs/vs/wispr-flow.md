@@ -1,6 +1,7 @@
 ---
-title: Diction vs Wispr Flow
-description: Diction vs Wispr Flow — compare privacy, pricing, and offline support for iOS voice dictation. Diction runs on-device or self-hosted. Wispr Flow requires cloud.
+title: "Diction vs Wispr Flow (2026): Self-Hosted vs Cloud Voice Keyboard"
+description: "Compare Diction vs Wispr Flow: on-device and self-hosted free vs $15/mo cloud-only. Open-source server, no word limits, full privacy control. Wispr Flow requires cloud."
+keywords: "wispr flow alternative, diction vs wispr flow, wispr flow self hosted alternative, wispr flow privacy issues, ios voice keyboard alternative, open source wispr flow, wispr flow free alternative"
 ---
 
 # Diction vs Wispr Flow

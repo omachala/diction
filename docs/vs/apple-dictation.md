@@ -1,6 +1,7 @@
 ---
-title: Diction vs Apple Dictation
-description: Diction vs Apple Dictation — compare offline support, language coverage, self-hosting, and privacy for iOS voice input. Both work offline, but Diction goes further.
+title: "Diction vs Apple Dictation: Whisper Accuracy vs Built-In iOS Speech"
+description: "Diction vs Apple Dictation: no 30-second limit, 100+ languages, self-hosted option, and Whisper accuracy vs Apple's built-in iOS speech recognition. Both work offline."
+keywords: "apple dictation alternative, better than apple dictation, replace apple dictation iphone, apple dictation accuracy, ios dictation app, apple dictation 30 second limit, whisper vs apple dictation"
 ---
 
 # Diction vs Apple Dictation
