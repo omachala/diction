@@ -40,6 +40,12 @@ If transcription fails for any reason, Diction keeps your audio safe. When you'r
 
 Diction takes resilience seriously. Your words are too important to lose to a bad connection.
 
+## Preferences
+
+Language, mic timeout, functional keys, auto start, hand layout. Every setting in one place.
+
+[Keyboard Preferences](/features/preferences)
+
 ## <Icon name="globe" /> 99 Languages
 
 On-device, self-hosted, and cloud modes all support the full set. No extra downloads needed for cloud and self-hosted. Switch languages in settings.
