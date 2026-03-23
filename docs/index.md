@@ -6,7 +6,7 @@ description: Voice keyboard for iPhone with open-source server. On-device, self-
 hero:
   name: Diction
   text: "Powerful<br>speech to text<br>iPhone keyboard"
-  tagline: "Your voice. Your data. On your device or self-hosted.<br>No limits · Private · Encrypted · Open source"
+  tagline: "Your voice. Your data. On your device or self-hosted.<br>No limits · Private · Encrypted · 99 languages"
   actions:
     - theme: brand
       text: Download for iOS
