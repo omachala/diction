@@ -63,3 +63,4 @@ Need help? Reach out:
 - **Email:** [support@diction.one](mailto:support@diction.one)
 - **GitHub:** [Open an issue](https://github.com/omachala/diction/issues)
 - **Reddit:** [r/dictionapp](https://www.reddit.com/r/dictionapp)
+- **X:** [@diction_one](https://x.com/diction_one)

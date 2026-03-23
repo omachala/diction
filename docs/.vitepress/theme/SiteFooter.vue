@@ -8,32 +8,45 @@
             <span class="brand-name">Diction</span>
           </a>
           <p class="brand-tagline">Voice keyboard for iPhone.</p>
+          <div class="social-icons">
+            <a href="https://github.com/omachala/diction" target="_blank" rel="noopener" aria-label="GitHub">
+              <img src="/icon-github.svg" alt="" width="20" height="20" class="social-icon" />
+            </a>
+            <a href="https://x.com/diction_one" target="_blank" rel="noopener" aria-label="X">
+              <img src="/icon-x.svg" alt="" width="18" height="18" class="social-icon" />
+            </a>
+            <a href="https://www.reddit.com/r/dictionapp" target="_blank" rel="noopener" aria-label="Reddit">
+              <img src="/icon-reddit.svg" alt="" width="20" height="20" class="social-icon" />
+            </a>
+          </div>
         </div>
 
         <div class="footer-col">
           <h4>Product</h4>
           <ul>
-            <li><a href="/features/">Features</a></li>
-            <li><a href="/on-device">On-Device</a></li>
-            <li><a href="/self-hosted">Self-Hosted</a></li>
-            <li><a href="/cloud">Diction One</a></li>
-            <li><a href="/encryption">Encryption</a></li>
+            <li><a href="/features/"><img src="/icon-features.svg" alt="" class="link-icon" />Features</a></li>
+            <li><a href="/on-device"><img src="/icon-phone.svg" alt="" class="link-icon" />On-Device</a></li>
+            <li><a href="/self-hosted"><img src="/icon-server.svg" alt="" class="link-icon" />Self-Hosted</a></li>
+            <li><a href="/cloud"><img src="/icon-cloud.svg" alt="" class="link-icon" />Diction One</a></li>
+            <li><a href="/encryption"><img src="/icon-lock.svg" alt="" class="link-icon" />Encryption</a></li>
           </ul>
         </div>
 
         <div class="footer-col">
           <h4>Resources</h4>
           <ul>
-            <li><a href="/support">Support</a></li>
-            <li><a href="https://github.com/omachala/diction" target="_blank" rel="noopener">GitHub</a></li>
+            <li><a href="/support"><img src="/icon-lifebuoy.svg" alt="" class="link-icon" />Support</a></li>
+            <li><a href="https://github.com/omachala/diction" target="_blank" rel="noopener"><img src="/icon-github.svg" alt="" class="link-icon" />GitHub</a></li>
+            <li><a href="https://www.reddit.com/r/dictionapp" target="_blank" rel="noopener"><img src="/icon-reddit.svg" alt="" class="link-icon" />Reddit</a></li>
+            <li><a href="https://x.com/diction_one" target="_blank" rel="noopener"><img src="/icon-x.svg" alt="" class="link-icon" />X / Twitter</a></li>
           </ul>
         </div>
 
         <div class="footer-col">
           <h4>Legal</h4>
           <ul>
-            <li><a href="/privacy">Privacy Policy</a></li>
-            <li><a href="/terms">Terms of Service</a></li>
+            <li><a href="/privacy"><img src="/icon-shield.svg" alt="" class="link-icon" />Privacy Policy</a></li>
+            <li><a href="/terms"><img src="/icon-scale.svg" alt="" class="link-icon" />Terms of Service</a></li>
           </ul>
         </div>
       </div>
@@ -117,6 +130,44 @@ const year = new Date().getFullYear();
   line-height: 1.5;
 }
 
+/* Social icons row */
+.social-icons {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.social-icons a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.social-icons a:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.dark .social-icons a:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.social-icon {
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+
+.social-icons a:hover .social-icon {
+  opacity: 1;
+}
+
+.dark .social-icon {
+  filter: invert(1);
+}
+
 /* Column headings */
 .footer-col h4 {
   font-size: 13px;
@@ -139,6 +190,9 @@ const year = new Date().getFullYear();
 }
 
 .footer-col a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 14px;
   color: var(--footer-link);
   text-decoration: none;
@@ -147,6 +201,23 @@ const year = new Date().getFullYear();
 
 .footer-col a:hover {
   color: var(--footer-link-hover);
+}
+
+/* Link icons */
+.link-icon {
+  width: 16px;
+  height: 16px;
+  opacity: 0.45;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+
+.footer-col a:hover .link-icon {
+  opacity: 0.7;
+}
+
+.dark .link-icon {
+  filter: invert(1);
 }
 
 /* Bottom bar */
