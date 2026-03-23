@@ -319,6 +319,7 @@ gtag('config', 'G-PCV64Y7GFM');`,
         {
           text: 'Guides',
           items: [
+            { text: 'Keyboard Preferences', link: '/features/preferences' },
             { text: 'Self-Hosting Setup', link: '/features/self-hosting-setup' },
             { text: 'Use Your Own Model', link: '/features/custom-model' },
           ],
