@@ -36,6 +36,7 @@
 
 ## Why Diction?
 
+- **Deep audio engineering.** State-of-the-art audio filtering, a fine-tuned speech recognition model, and context-aware processing — built by a real engineer who goes deep on one problem.
 - **Self-hosted.** `docker compose up` and paste the URL. Your server, your models, your data.
 - **Any Whisper-compatible model.** Point Diction at any endpoint. Medical, legal, accent-tuned - run whatever you want.
 - **End-to-end text encrypted.** AES-256-GCM text encryption with X25519 key exchange. Same encryption used by Signal and WireGuard.
@@ -128,7 +129,7 @@ Read the full [Privacy Policy](https://diction.one/privacy).
 
 On-device and self-hosted are completely free with no word limits.
 
-If you don't want to run a server, Diction One gives you cloud transcription without the setup. Audio is sent to the Diction endpoint, transcribed, and immediately discarded. Pricing and trial details are in the app.
+If you don't want to run a server, Diction One gives you a fine-tuned cloud model with advanced audio filters — without the setup. Audio is sent to the Diction endpoint, transcribed, and immediately discarded. Pricing and trial details are in the app.
 
 ## Requirements
 
