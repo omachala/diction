@@ -1,14 +1,14 @@
 ---
 title: "Diction One: Cloud Transcription"
-description: Diction One cloud transcription. Frontier speech models, high accuracy, zero setup. Audio processed and immediately discarded. AI Enhancement included.
+description: Diction One cloud transcription. Fine-tuned speech model, high accuracy, zero setup. Audio processed and immediately discarded. AI Enhancement included.
 keywords: "diction one cloud, cloud transcription ios, ai voice keyboard iphone, best speech to text ios cloud, ai enhancement dictation, cloud dictation app iphone, voice to text cloud ios"
 ---
 
 # Diction One
 
-Our cloud. Built for accuracy, speed, and scale. Always available, always improving. You speak. We handle everything else.
+Our cloud. A fine-tuned speech model with advanced audio filters, built for accuracy, speed, and scale. Always available, always improving. You speak. We handle everything else.
 
-No server to run. No model to download. Open the app, subscribe, and start dictating with frontier speech models.
+No server to run. No model to download. Open the app, subscribe, and start dictating.
 
 ## How It Works
 
@@ -19,7 +19,7 @@ No server to run. No model to download. Open the app, subscribe, and start dicta
 
 ## What You Get
 
-- **Frontier speech models**: the most accurate models available, hosted and maintained by us. We pick the best model for your language automatically.
+- **Fine-tuned speech model**: custom-trained for accuracy beyond standard Whisper, with advanced audio filters applied before transcription. Hosted and maintained by us. We pick the best model for your language automatically.
 - **AI Enhancement**: optional post-processing that cleans up your transcription. Removes filler words, fixes grammar, adds proper punctuation and capitalisation.
 - **99 languages**: full multilingual support. Switch languages in settings.
 - **Zero setup**: no server, no Docker, no downloads. Works immediately after subscribing.

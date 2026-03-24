@@ -285,6 +285,7 @@ gtag('config', 'G-PCV64Y7GFM');`,
     nav: [
       { text: 'Features', link: '/features' },
       { text: 'Docs', link: '/on-device' },
+      { text: 'About', link: '/about' },
       { text: 'Support', link: '/support' },
       {
         text: 'Download',
@@ -345,6 +346,7 @@ gtag('config', 'G-PCV64Y7GFM');`,
           items: [
             { text: 'Support', link: '/support' },
             { text: 'Release Notes', link: '/releases' },
+            { text: 'About', link: '/about' },
           ],
         },
       ],
