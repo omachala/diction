@@ -10,7 +10,6 @@ description: What's new in each Diction release. Full changelog for every App St
 *March 25, 2026*
 
 - Context-aware AI Enhancement. AI Enhancement now reads your cursor position and any selected text. Dictate into the middle of a sentence and the AI inserts correctly. Select text and dictate a replacement and it swaps it in. It understands where you are in the document.
-- Insights. A new screen showing how many words you have dictated and how much time Diction has saved you versus typing.
 - VAD indicator. A small pulse in the action bar lights up when Diction detects your voice. You can see exactly when it is listening.
 - Dominant hand setting. New preference to mirror the keyboard layout for left-handed use.
 - History redesign. History now has a tabbed view separating recent from all transcriptions. Search your history and tap any entry to copy it.
