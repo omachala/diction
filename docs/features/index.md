@@ -40,6 +40,12 @@ If transcription fails for any reason, Diction keeps your audio safe. When you'r
 
 Diction takes resilience seriously. Your words are too important to lose to a bad connection.
 
+## Transcription History
+
+Every dictation is saved. The history screen splits into two tabs: recent transcriptions and the full archive. Search works across all of them. Tap any entry to copy it instantly.
+
+If you dictated something ten minutes ago and need it again, you do not have to remember it or dig through your clipboard. Open history, find it, tap, done.
+
 ## Preferences
 
 Language, mic timeout, functional keys, auto start, hand layout. Every setting in one place.

@@ -10,7 +10,9 @@ Open the Diction app and tap **Preferences** to reach these settings. Every one 
 
 ## Language
 
-Pick the language you will be speaking. Diction supports 99 languages. The default is your device's primary language, but if you regularly switch between two languages, just change this before you start.
+Diction supports 99 languages. Auto-detect is on by default, so you can speak in any supported language without changing a setting. Diction figures out which language you are using and transcribes accordingly.
+
+If you prefer to lock it to a specific language, turn off auto-detect and pick one manually. This can improve accuracy when you always dictate in the same language.
 
 You do not need to download anything for cloud or self-hosted modes. On-device mode uses a single model that handles all supported languages.
 
