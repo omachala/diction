@@ -15,7 +15,9 @@ jobs:
           go-version-file: gateway/go.mod
       - name: Install ffmpeg
         timeout-minutes: 5
-        run: sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ffmpeg
+        run: |
+          sudo apt-get update -o Acquire::http::Timeout=30 -o Acquire::Retries=3
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ffmpeg
       - name: Run tests
         working-directory: gateway
         run: go test ./... -timeout 120s
