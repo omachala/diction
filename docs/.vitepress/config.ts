@@ -276,7 +276,6 @@ gtag('config', 'G-PCV64Y7GFM');`,
 
   themeConfig: {
     siteTitle: 'Diction',
-    logo: '/app-icon.png',
 
     search: {
       provider: 'local',
