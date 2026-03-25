@@ -9,15 +9,14 @@ description: What's new in each Diction release. Full changelog for every App St
 
 *March 25, 2026*
 
-- Context-aware AI Enhancement. AI Enhancement now reads your cursor position and any selected text. Dictate into the middle of a sentence and the AI inserts correctly. Select text and dictate a replacement and it swaps it in. It understands where you are in the document.
-- VAD indicator. A small pulse in the action bar lights up when Diction detects your voice. You can see exactly when it is listening.
-- Dominant hand setting. New preference to mirror the keyboard layout for left-handed use.
-- History redesign. History now has a tabbed view separating recent from all transcriptions. Search your history and tap any entry to copy it.
-- Recording resilience. When a transcription fails, Diction saves the audio and shows a retry strip on the keyboard. You can retry without re-dictating.
-- Keyboard Preferences. Settings reorganized with a dedicated Keyboard Preferences screen. Auto-detect language is now available and on by default.
-- Full Access guidance. If Diction does not have Full Access, you now see a clear explanation screen instead of a silent failure.
-- Mid-sentence insertion fix. Capitalization and spacing now work correctly when you dictate into the middle of existing text.
-- Cloud transcription fix. Fixed a bug where cloud transcriptions could silently fail to insert when multiple keyboard instances were active.
+- AI Enhancement now understands where you are in your document. Dictate into the middle of a sentence and it inserts correctly. Select text and tell Diction what to do with it, and it rewrites the selection in place.
+- A small pulse now lights up in the action bar when Diction hears your voice. You always know exactly when it is listening.
+- Added a dominant hand setting. If you prefer left-handed use, flip the keyboard layout so the controls are on your side.
+- Redesigned History with a tabbed view separating recent and all transcriptions. Search works across all of them, and tapping any entry copies it instantly.
+- Carefully revisited what happens when a transcription fails. We now save your audio automatically and show a retry button on the keyboard so you never have to say it twice.
+- Added a dedicated Keyboard Preferences screen. Easier to find keyboard settings, and auto-detect language is now on by default.
+- Added a clear explanation screen for when Full Access is missing. No more silent failures if the keyboard is not fully set up.
+- Fixed capitalization and spacing when dictating into the middle of existing text, and a rare issue where cloud transcriptions could fail silently when multiple keyboard instances were active.
 
 ## Diction 2.0
 
