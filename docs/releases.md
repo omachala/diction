@@ -9,15 +9,16 @@ description: What's new in each Diction release. Full changelog for every App St
 
 *March 25, 2026*
 
-- Speak to Edit. Select any text in your document, switch to Diction, and dictate an instruction: "make this shorter", "more formal", "fix the grammar". The AI rewrites the selected text in place. No copy-paste, no switching apps back and forth.
-- Tone presets. Set a writing style for each app. Casual for Messages, professional for email, technical for Notion. AI Enhancement picks up the tone automatically so you don't have to adjust anything between apps.
-- My Words. A new vocabulary screen in Preferences where you teach Diction names, acronyms, and technical terms it should always get right. Add them once and they stick.
-- Smarter AI Enhancement. Diction now builds context across your dictation session. If you've been talking about a specific topic, the AI cleanup understands the domain and makes better decisions for the next transcription.
-- Time saved. Insights now shows how much time Diction has saved you, calculated from your dictation speed versus typical typing speed.
-- Haptic feedback. Subtle taps when you start dictating, stop, and insert text. If you prefer silence, toggle it off in Preferences.
-- AirPods fix. Music no longer pauses when you start dictating with AirPods connected.
-- Better history search. Results now highlight the matching text so you can spot what you're looking for at a glance. Tap any entry to open the full transcript detail view.
+- Context-aware AI Enhancement. AI Enhancement now reads your cursor position and any selected text. Dictate into the middle of a sentence and the AI inserts correctly. Select text and dictate a replacement and it swaps it in. It understands where you are in the document.
+- Insights. A new screen showing how many words you have dictated and how much time Diction has saved you versus typing.
+- VAD indicator. A small pulse in the action bar lights up when Diction detects your voice. You can see exactly when it is listening.
+- Dominant hand setting. New preference to mirror the keyboard layout for left-handed use.
+- History redesign. History now has a tabbed view separating recent from all transcriptions. Search your history and tap any entry to copy it.
+- Recording resilience. When a transcription fails, Diction saves the audio and shows a retry strip on the keyboard. You can retry without re-dictating.
+- Keyboard Preferences. Settings reorganized with a dedicated Keyboard Preferences screen. Auto-detect language is now available and on by default.
+- Full Access guidance. If Diction does not have Full Access, you now see a clear explanation screen instead of a silent failure.
 - Mid-sentence insertion fix. Capitalization and spacing now work correctly when you dictate into the middle of existing text.
+- Cloud transcription fix. Fixed a bug where cloud transcriptions could silently fail to insert when multiple keyboard instances were active.
 
 ## Diction 2.0
 
