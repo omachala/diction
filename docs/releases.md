@@ -5,6 +5,20 @@ description: What's new in each Diction release. Full changelog for every App St
 
 # Release Notes
 
+## Diction 3.0
+
+*March 25, 2026*
+
+- Speak to Edit. Select any text in your document, switch to Diction, and dictate an instruction: "make this shorter", "more formal", "fix the grammar". The AI rewrites the selected text in place. No copy-paste, no switching apps back and forth.
+- Tone presets. Set a writing style for each app. Casual for Messages, professional for email, technical for Notion. AI Enhancement picks up the tone automatically so you don't have to adjust anything between apps.
+- My Words. A new vocabulary screen in Preferences where you teach Diction names, acronyms, and technical terms it should always get right. Add them once and they stick.
+- Smarter AI Enhancement. Diction now builds context across your dictation session. If you've been talking about a specific topic, the AI cleanup understands the domain and makes better decisions for the next transcription.
+- Time saved. Insights now shows how much time Diction has saved you, calculated from your dictation speed versus typical typing speed.
+- Haptic feedback. Subtle taps when you start dictating, stop, and insert text. If you prefer silence, toggle it off in Preferences.
+- AirPods fix. Music no longer pauses when you start dictating with AirPods connected.
+- Better history search. Results now highlight the matching text so you can spot what you're looking for at a glance. Tap any entry to open the full transcript detail view.
+- Mid-sentence insertion fix. Capitalization and spacing now work correctly when you dictate into the middle of existing text.
+
 ## Diction 2.0
 
 *March 15, 2026*
