@@ -31,15 +31,19 @@ When you connect Diction to your own server:
 
 When you use the hosted Diction One service:
 
-- **Audio is processed and immediately discarded.** We do not store recordings.
-- **Transcriptions are not retained.** Text is returned to your device and removed from server memory.
-- **No model training.** Your audio is never used to train, fine-tune, or improve any models.
+- **Audio is never saved.** Your audio is processed in memory and discarded the moment transcription completes. No recordings are written to disk at any point.
+- **Transcriptions are never stored.** The transcribed text is returned to your device and immediately removed from server memory. No transcription is saved, logged, cached, or retained in any form.
+- **No model training.** Your audio and transcriptions are never used to train, fine-tune, or improve any models.
 
-## What We Collect
+### Diction One Infrastructure Logging
+
+The Diction One cloud infrastructure collects system performance logs for debugging and monitoring. These logs include request latency, character counts, error types, and server load metrics. **No client data is ever logged or stored.** Your audio, transcriptions, and any text context sent for AI Enhancement are never written to logs.
+
+## What the App Collects
 
 **Nothing.**
 
-Diction does not collect, transmit, or store any personal data. Specifically:
+The Diction app does not collect, transmit, or store any personal data. Specifically:
 
 - No analytics or usage tracking of any kind
 - No behavioural monitoring

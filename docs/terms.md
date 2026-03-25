@@ -19,15 +19,21 @@ Diction transcribes speech to text. Three modes are available:
 
 The app and cloud service are provided "as is" without warranty. We may update, modify, or discontinue features at any time.
 
+## Free Trial
+
+Every new Diction install includes a **14-day free trial** of all Pro features. The trial starts automatically. No account, no sign-up, and no payment method required.
+
+During the trial you get full access to Diction One cloud transcription, AI Enhancement, and premium on-device models.
+
+When the trial ends, Diction continues working on the Free tier: on-device transcription with basic models and self-hosted mode. Both are unlimited with no restrictions. If you want to keep using Pro features, you can subscribe to Diction One at any time.
+
 ## Diction One Subscription
 
-Diction One is an optional paid service at **$5.99 per month** (USD), billed through Apple's App Store.
+Diction One is an optional paid subscription at **$5.99 per month** (USD), billed through Apple's App Store.
 
-- A **2-week free trial** is available for new subscribers.
 - Payment is charged to your Apple ID account at confirmation of purchase.
 - Your subscription **renews automatically** unless cancelled at least 24 hours before the end of the current billing period.
 - You can manage or cancel your subscription at any time in **Settings > Apple ID > Subscriptions** on your iPhone.
-- The free trial converts to a paid subscription automatically unless cancelled before the trial period ends.
 - Prices may vary by region due to Apple's local pricing.
 
 Refunds are handled by Apple according to their [standard terms](https://www.apple.com/legal/internet-services/itunes/).
