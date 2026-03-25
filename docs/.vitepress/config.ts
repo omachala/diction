@@ -326,13 +326,6 @@ gtag('config', 'G-PCV64Y7GFM');`,
           ],
         },
         {
-          text: 'Legal',
-          items: [
-            { text: 'Privacy Policy', link: '/privacy' },
-            { text: 'Terms of Service', link: '/terms' },
-          ],
-        },
-        {
           text: 'Compare',
           items: [
             { text: 'vs Wispr Flow', link: '/vs/wispr-flow' },
@@ -346,6 +339,13 @@ gtag('config', 'G-PCV64Y7GFM');`,
           items: [
             { text: 'Support', link: '/support' },
             { text: 'Release Notes', link: '/releases' },
+          ],
+        },
+        {
+          text: 'Legal',
+          items: [
+            { text: 'Privacy Policy', link: '/privacy' },
+            { text: 'Terms of Service', link: '/terms' },
           ],
         },
       ],
