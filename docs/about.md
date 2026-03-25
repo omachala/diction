@@ -8,7 +8,7 @@ keywords: "about diction, who built diction, diction developer, voice keyboard e
 
 Diction is an engineering project.
 
-I'm [Ondrej Machala](https://www.linkedin.com/in/ondrejmachala). Hands-on engineering lead. My 9-to-5 is building systems at the core of banking infrastructure. The kind where a bug doesn't mean a bad user review. It means real money moves in the wrong direction, or doesn't move at all. Privacy and reliability aren't things I put on a slide. They're constraints I engineer against every single day.
+I'm [Ondrej Machala](https://www.linkedin.com/in/ondrejmachala). Hands-on engineering lead at a major financial institution. The kind of environment where the reliability and privacy bar is set by regulators, not product managers. Systems don't go down. Data doesn't leak. Those aren't goals, they're the baseline.
 
 I use speech to text constantly. Commuting. On a walk with my son. Apple's built-in dictation is well known for being unreliable, and I needed something that works in any app. And I mean any app. I use terminal apps, SSH clients, things where the standard iOS keyboard already struggles. I was just missing something that solves the problem properly. A keyboard you tap, speak into, and it works. Every time, everywhere.
 
@@ -16,8 +16,10 @@ So I built it properly. Diction is under 15 MB. I wanted it lean and focused, on
 
 The same instincts I bring to banking systems are in Diction. No unnecessary data retention. No assumptions about the happy path. Defence in depth. Audio is processed and immediately discarded. The server is open source. You can read every line.
 
-On-device and self-hosted are free. If you don't want to run a server, there's Diction One. It runs on my own infrastructure with fine-tuned speech models and low-latency processing. Transcription text is encrypted with AES-256-GCM before it leaves the server. Context awareness carries terminology and names across your session. AI polishing cleans up the raw transcript before it hits your text field. The result is clean, ready-to-send text with no setup on your end. Priced like a developer built it, not like a startup needs to hit revenue targets.
+On-device and self-hosted are free. If you don't want to run a server, there's Diction One. It runs on my own infrastructure with fine-tuned speech models and low-latency processing. Transcription text is encrypted with AES-256-GCM before it leaves the server. Context awareness carries terminology and names across your session. AI polishing cleans up the raw transcript before it hits your text field. The result is clean, ready-to-send text with no setup on your end. Priced like a developer built it, not like someone raised a round.
 
 ---
 
-Find me on [GitHub](https://github.com/omachala) or [LinkedIn](https://www.linkedin.com/in/ondrejmachala). Questions and feedback welcome: [reach out.](/support)
+[Try it on the App Store](https://apps.apple.com/app/id6759807364)
+
+I'm curious how people actually use it. Commuting, meetings, writing, terminal work, something else entirely. And what's missing for you. If there's a use case Diction doesn't handle well, I want to know. Find me on [GitHub](https://github.com/omachala) or [LinkedIn](https://www.linkedin.com/in/ondrejmachala), or just [drop a message](/support).
