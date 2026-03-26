@@ -313,6 +313,7 @@ gtag('config', 'G-PCV64Y7GFM');`,
         {
           text: 'Security',
           items: [
+            { text: 'Privacy First', link: '/privacy-first' },
             { text: 'Encryption', link: '/encryption' },
           ],
         },

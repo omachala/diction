@@ -5,6 +5,8 @@ description: Diction privacy policy. The Diction app has zero analytics and zero
 
 # Privacy Policy
 
+Want to understand how Diction is designed to protect your data? [Read our Privacy First page.](/privacy-first)
+
 *Last updated: March 2026*
 
 Diction is a speech-to-text keyboard for iOS developed by Ondrej Machala. Your privacy is the foundation of how Diction is built, not a feature we bolt on later.
