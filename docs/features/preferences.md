@@ -49,3 +49,11 @@ Default: on.
 Moves the confirm button and the speech indicator to the side that matches your dominant hand. Right-handed layout puts the confirm button on the right. Left-handed puts it on the left.
 
 Default: Right.
+
+## Haptic Feedback
+
+The keyboard vibrates on key moments: mic start, mic stop, successful transcription, and errors. You feel the state change without looking at the screen. Useful when you are dictating while walking or glancing away.
+
+Turn it off in Preferences if you prefer silent operation.
+
+Default: on.

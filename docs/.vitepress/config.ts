@@ -297,7 +297,15 @@ gtag('config', 'G-PCV64Y7GFM');`,
           items: [
             { text: 'Overview', link: '/features/' },
             { text: 'Context-Aware Text Editing', link: '/features/context-aware' },
-            { text: 'AI Enhancement', link: '/features/ai-enhancement' },
+            {
+              text: 'AI Enhancement',
+              link: '/features/ai-enhancement',
+              items: [
+                { text: 'Tone Presets', link: '/features/tone-presets' },
+                { text: 'My Words', link: '/features/my-words' },
+              ],
+            },
+            { text: 'Transcription History', link: '/features/history' },
           ],
         },
         {

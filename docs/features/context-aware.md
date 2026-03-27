@@ -13,7 +13,7 @@ This turns Diction from a transcription tool into a voice-powered text editor.
 
 ## Insert Anywhere
 
-Place your cursor in the middle of a sentence and dictate. Diction reads the surrounding text and formats the insertion to fit -- correct capitalisation, punctuation, and tone.
+Place your cursor in the middle of a sentence and dictate. Diction reads the surrounding text and formats the insertion to fit. Capitalisation and spacing adapt automatically, so the result reads like you typed it in place.
 
 **Example: filling in a sentence**
 

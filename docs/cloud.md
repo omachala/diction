@@ -22,7 +22,7 @@ No server to run. No model to download. Open the app, subscribe, and start dicta
 ## What You Get
 
 - **Fine-tuned speech model**: custom-trained for accuracy beyond standard Whisper, with advanced audio filters applied before transcription. Hosted and maintained by us. We pick the best model for your language automatically.
-- **AI Enhancement**: optional post-processing that cleans up your transcription. Removes filler words, fixes grammar, adds proper punctuation and capitalisation.
+- **AI Enhancement**: optional post-processing that cleans up your transcription. Removes filler words, fixes grammar, adds proper punctuation and capitalisation. Set a tone per app with Tone Presets and add your own terms with My Words for better accuracy.
 - **99 languages**: full multilingual support. Switch languages in settings.
 - **Zero setup**: no server, no Docker, no downloads. Works immediately after subscribing.
 - **On-device fallback**: if the request fails for any reason, Diction automatically retries using a local model on your iPhone. Your dictation is never lost to a network issue.
@@ -42,6 +42,8 @@ The result: you dictate a quick thought and get a polished sentence. Dictate a p
 - Adds punctuation and capitalisation
 - Fixes grammar and sentence structure
 - Preserves your meaning and intent. It cleans up how you said it, not what you said.
+- Tone Presets: set Professional, Casual, Friendly, or a custom style per app. Diction remembers which tone to use where.
+- My Words: add names, jargon, and product terms so both transcription and cleanup get them right.
 
 ### What it does not do
 

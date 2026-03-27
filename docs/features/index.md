@@ -18,7 +18,7 @@ Diction reads the text around your cursor. When you dictate, the result fits nat
 
 ## <Icon name="bolt" /> [AI Enhancement](/features/ai-enhancement)
 
-Raw speech is messy. AI Enhancement removes filler words, fixes grammar, adds punctuation, and produces text that reads like you wrote it. Works together with context awareness to match the style and format of the surrounding text.
+Raw speech is messy. AI Enhancement removes filler words, fixes grammar, adds punctuation, and produces text that reads like you wrote it. Set a tone per app (Professional for email, Casual for messages) and add your own words to a custom dictionary so names and jargon come through correctly.
 
 [Read more](/features/ai-enhancement)
 
@@ -42,17 +42,35 @@ If transcription fails for any reason, Diction keeps your audio safe. When you'r
 
 Diction takes resilience seriously. Your words are too important to lose to a bad connection.
 
-## Transcription History
+## <Icon name="sparkles" /> [Tone Presets](/features/tone-presets)
 
-Every dictation is saved. The history screen splits into two tabs: recent transcriptions and the full archive. Search works across all of them. Tap any entry to copy it instantly.
+Set a writing style per app. Professional for email, Casual for messaging, Friendly for social, or write your own custom instruction. Diction remembers which tone goes with which app and applies it automatically. Same dictation, different output depending on where you are typing.
+
+[Read more](/features/tone-presets)
+
+## <Icon name="book-open" /> [My Words](/features/my-words)
+
+Add names, jargon, product terms, and anything that keeps getting misheard. Diction uses your custom words to improve both raw transcription and AI Enhancement accuracy. Add them once in the app, and they work across all your dictations.
+
+[Read more](/features/my-words)
+
+## <Icon name="chart-bar" /> Dictation Stats
+
+See how much you are actually dictating. Word count, number of dictations, total duration, and estimated time saved. A stats badge and charts on the main screen show your usage at a glance.
+
+## <Icon name="clock" /> [Transcription History](/features/history)
+
+Every dictation is saved. The history screen splits into two tabs: recent transcriptions and the full archive. Search highlights matching text so you find what you need fast. Tap any entry to open a full transcript detail view with the complete text.
 
 If you dictated something ten minutes ago and need it again, you do not have to remember it or dig through your clipboard. Open history, find it, tap, done.
 
-## Preferences
+[Read more](/features/history)
+
+## <Icon name="cog" /> [Preferences](/features/preferences)
 
 Language, mic timeout, functional keys, auto start, hand layout. Every setting in one place.
 
-[Keyboard Preferences](/features/preferences)
+[Read more](/features/preferences)
 
 ## <Icon name="globe" /> 99 Languages
 

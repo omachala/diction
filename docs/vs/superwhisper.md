@@ -21,6 +21,8 @@ iOS keyboard extensions run in a tight sandbox with strict memory limits and no 
 | Built for iOS | Yes, iOS-only | Mac-first, iOS added later |
 | iOS keyboard extension | Purpose-built | Ported |
 | Self-hosted | Yes | No |
+| Custom dictionary | Yes (My Words) | No |
+| Per-app tone presets | Yes | No |
 | End-to-end text encryption | AES-256 + X25519 | No |
 | Open-source server | Yes | No |
 | Free tier | On-device, no limits | 15 min recording limit |
@@ -48,7 +50,9 @@ Diction's on-device mode is free with no time limits, no word caps, no restricti
 
 If you dictate on iPhone, you want a keyboard built for iPhone. Not a Mac app squeezed into an iOS keyboard extension. Diction is purpose-built for the platform, with the constraints and polish that requires.
 
-Self-hosting, end-to-end text encryption, and an open-source server are things Superwhisper doesn't offer at any price.
+Diction also lets you add your own words to a custom dictionary and set a different writing tone per app. Names, jargon, and product terms come through correctly. Superwhisper has no equivalent for either.
+
+Self-hosting, text encryption, and an open-source server are things Superwhisper doesn't offer at any price.
 
 ---
 

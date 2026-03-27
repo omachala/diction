@@ -25,7 +25,7 @@ It's convenient because it's already there. It's limited because Apple didn't bu
 | Language support | 100+ (Whisper) | ~60 |
 | App Store | Yes | Built-in |
 | Open-source server | Yes | No |
-| Custom vocabulary | No (yet) | Limited |
+| Custom vocabulary | Yes (My Words) | Limited |
 | Continuous long-form | Yes | Cuts off after ~30-60 seconds |
 | Works in all apps | Yes | Most apps |
 
@@ -58,6 +58,8 @@ If you need dictation in one or two places and don't want an extra app, Apple Di
 Diction is better when you want to make dictation your primary input method. It takes over the keyboard completely - you tap the mic, speak, and the text appears in whatever app you're in. There's no switching modes, no finding the mic button, no 30-second cut.
 
 Self-hosting is the biggest differentiator. If you run a home server, you can point Diction at your own Whisper instance. Apple doesn't offer anything equivalent.
+
+Tone Presets let you set a writing style per app. Professional tone for email, casual for messages. Apple Dictation gives you the same raw output everywhere. My Words means names and jargon come through correctly, something Apple's limited vocabulary system has never done well.
 
 The open-source server means you can audit exactly what runs. Apple's transcription stack is a black box.
 

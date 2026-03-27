@@ -22,6 +22,8 @@ Diction gives you a choice. On-device mode runs entirely on your iPhone with no 
 | Self-hosted | Yes | No |
 | Cloud mode | Yes (optional) | Required |
 | iOS keyboard | Yes | Yes |
+| Custom dictionary | Yes (My Words) | No |
+| Per-app tone presets | Yes | No |
 | Open-source server | Yes | No |
 | Free tier | On-device is free forever | 2,000 words/week |
 | Paid plan | Diction One subscription | $15/month |
@@ -50,6 +52,8 @@ If you're on iPhone and want your audio to stay on your iPhone, Diction is the o
 If you're self-hosting infrastructure (Home Assistant, Nextcloud, Jellyfin, anything), adding a Whisper server takes minutes and Diction just points to it. You get unlimited dictation, no subscription, and complete data control.
 
 If you're in healthcare, legal, or anywhere that can't send audio to third-party servers, on-device or self-hosted is the practical answer.
+
+Diction also lets you set a different writing tone per app and add your own words to a custom dictionary. Wispr Flow has no equivalent. Your colleague's name and your product terms come through right the first time.
 
 If you don't want to pay $15/month for dictation, Diction's on-device mode is free with no caps.
 

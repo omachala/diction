@@ -7,6 +7,19 @@ description: What's new in each Diction release. Full changelog for every App St
 
 # Release Notes
 
+## Diction 4.0
+
+*March 2026*
+
+- Tone Presets let you set a writing style per app. Professional for email, Casual for messaging, or create your own. Diction remembers which tone to use where, so your work emails and group chats sound the way they should without changing a setting every time.
+- My Words. Add names, jargon, product terms, and anything else that keeps getting misheard. Diction uses your words to improve both raw transcription and AI Enhancement accuracy.
+- Dictation Stats track your word count, number of dictations, total duration, and estimated time saved. A stats badge and charts show your usage right on the main screen.
+- Haptic Feedback. The keyboard now vibrates on mic start, stop, successful transcription, and errors. You feel the state change without looking. Toggle it in Preferences.
+- History got sharper. Search now highlights matching text in results. Tap any entry to open the full transcript in a detail view instead of just copying. Keyboard dismissal in history is fixed.
+- Mid-sentence insertion is more accurate. Capitalization and spacing now adapt automatically when your cursor is between words, so dictating into the middle of a sentence produces the right result more often.
+- AI Enhancement now considers your recent dictations for terminology continuity across a session.
+- Various reliability and stability fixes.
+
 ## Diction 3.0
 
 *March 25, 2026*

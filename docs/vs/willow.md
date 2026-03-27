@@ -22,6 +22,8 @@ Diction lets you choose. On-device mode runs entirely on your iPhone with zero n
 | Self-hosted | Yes | No |
 | Cloud mode | Yes (optional) | Required |
 | iOS keyboard | Yes | Yes |
+| Custom dictionary | Yes (My Words) | No |
+| Per-app tone presets | Yes | No |
 | Open-source server | Yes | No |
 | End-to-end text encryption | AES-256 + X25519 | No |
 | Free tier | On-device is free, no limits | 2,000 words/week |
@@ -42,6 +44,8 @@ Diction's on-device mode is free with no word limits, no weekly caps, no restric
 ## Why Diction
 
 If your audio staying on your device matters to you, Diction is the clear choice. Willow's offline fallback is limited and there's no path to self-hosting. If you work in healthcare, legal, or any environment where audio can't leave your network, cloud-only is a non-starter.
+
+Diction's custom dictionary means names and jargon come through correctly, and per-app tone presets let your emails sound professional while your messages stay casual. Willow has neither.
 
 If you don't want to pay for dictation, Diction's on-device mode has no caps. Willow's free tier runs out after a few emails.
 

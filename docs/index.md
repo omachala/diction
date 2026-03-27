@@ -36,7 +36,7 @@ features:
   - icon:
       src: /icon-shield.svg
     title: Private
-    details: AES-256 end-to-end text encryption with X25519 key exchange. Zero analytics, zero tracking, zero data collection.
+    details: AES-256-GCM encryption with X25519 key exchange. The Diction app has zero analytics, zero tracking, zero data collection.
   - icon:
       src: /icon-globe.svg
     title: Your Language
@@ -44,7 +44,7 @@ features:
   - icon:
       src: /icon-chat.svg
     title: AI Enhancement
-    details: Turns natural speech into polished text. Automatic context-aware grammar and formatting upgrade.
+    details: Turns natural speech into polished text. Per-app tone presets, custom dictionary, context-aware grammar and formatting.
   - icon:
       src: /icon-cloud.svg
     title: Diction One
@@ -59,7 +59,7 @@ features:
 <summary>Is it really free?</summary>
 <div>
 
-On-device and self-hosted modes are completely free with basic models. No word limits, no daily caps. Pro unlocks premium on-device models for better accuracy, plus Diction One cloud. Free trial included.
+On-device and self-hosted modes are completely free. No word limits, no daily caps. Diction One unlocks cloud transcription with the highest accuracy, plus AI Enhancement with tone presets and a custom dictionary. Free trial included.
 
 </div>
 </details>
@@ -68,7 +68,16 @@ On-device and self-hosted modes are completely free with basic models. No word l
 <summary>How is it better than Apple Dictation?</summary>
 <div>
 
-Diction uses Whisper-based models that are significantly more accurate. No session time limits, no word caps. Works identically across all apps. Choose between on-device, cloud, or your own server.
+More accurate speech models, no session time limits, no word caps. AI Enhancement cleans up filler words and grammar automatically. Context-aware editing reads the text around your cursor so dictating mid-sentence produces correct capitalization and punctuation. Set a tone per app, add your own words for names and jargon, and search your full dictation history. Apple offers none of that.
+
+</div>
+</details>
+
+<details>
+<summary>Can I edit existing text by voice?</summary>
+<div>
+
+Yes. Diction reads the text around your cursor. Dictate into the middle of a sentence and it inserts with correct capitalization and punctuation. Select text and speak to replace it. Rewrite a sentence, fix a typo, or add to a paragraph, all without touching the screen.
 
 </div>
 </details>
@@ -86,7 +95,7 @@ Yes. On-device mode works without internet once the model is downloaded. Cloud a
 <summary>What languages does Diction support?</summary>
 <div>
 
-99 languages via Whisper. On-device base model handles most languages well. Cloud and self-hosted modes use larger models for even better accuracy across all supported languages.
+99 languages. On-device handles most languages well. Cloud and self-hosted use larger models for even better accuracy across all supported languages.
 
 </div>
 </details>
@@ -95,7 +104,7 @@ Yes. On-device mode works without internet once the model is downloaded. Cloud a
 <summary>Is my voice data stored?</summary>
 <div>
 
-Never. On-device mode processes audio in memory and discards it immediately. Self-hosted mode sends audio only to your server - we have no access. Diction One cloud processes and discards. No recordings retained, no model training.
+Never. On-device mode processes audio in memory and discards it immediately. Self-hosted mode sends audio only to your server. Diction One cloud processes and discards. No recordings retained, no model training.
 
 </div>
 </details>
@@ -104,7 +113,7 @@ Never. On-device mode processes audio in memory and discards it immediately. Sel
 <summary>What is AI Enhancement?</summary>
 <div>
 
-After transcription, Diction can optionally clean up your text - removing filler words, fixing grammar, and polishing the result. Only the text is sent to the AI, never the audio. Off by default.
+After transcription, Diction can optionally clean up your text. It removes filler words, fixes grammar, and polishes the result. Set a tone per app (Professional for email, Casual for chat) and add your own words to a custom dictionary so names and jargon come through right. Only the text is sent to the AI, never the audio.
 
 </div>
 </details>
@@ -122,7 +131,7 @@ Open the app, grant microphone permission, add Diction as a keyboard in iOS Sett
 <summary>What is self-hosting?</summary>
 <div>
 
-You run a Whisper speech-to-text server on your own hardware. Diction connects to it over your network. Your audio never touches any third-party service. The server ships as a Docker image. One command to start.
+You run a speech-to-text server on your own hardware. Diction connects to it over your network. Your audio never touches any third-party service. The server ships as a Docker image. One command to start.
 
 </div>
 </details>

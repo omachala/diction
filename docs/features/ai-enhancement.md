@@ -65,7 +65,21 @@ AI Enhancement is not running in isolation. It sees the text around your cursor 
 - Tone and formality match what you have already written
 - List formatting is continued when you are adding to a list
 
+AI Enhancement also considers your recent dictations for terminology continuity. If you used a specific term two dictations ago, it carries that context forward.
+
 [Read more about context-aware editing.](/features/context-aware)
+
+## Tone Presets
+
+Set a writing style per app. Professional for email, Casual for messages, or write your own custom instruction. Diction remembers which tone goes with which app and applies it automatically.
+
+[Read more about Tone Presets.](/features/tone-presets)
+
+## My Words
+
+Add names, jargon, and product terms that speech models keep getting wrong. Diction uses your custom words to improve both raw transcription and AI Enhancement accuracy.
+
+[Read more about My Words.](/features/my-words)
 
 ## How to Use It
 
