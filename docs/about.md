@@ -4,6 +4,8 @@ description: Diction is built by a hands-on engineering lead who works daily on 
 keywords: "about diction, who built diction, diction developer, voice keyboard engineer"
 ---
 
+<img src="/illustration-about.svg" alt="Engineer managing a project" class="illustration" style="max-width: 480px; margin: 0 auto 2rem; display: block;" />
+
 # About
 
 Diction is an engineering project.

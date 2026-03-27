@@ -3,6 +3,8 @@ title: "Context-Aware Text Editing"
 description: Diction reads the text around your cursor and adapts your dictation to fit. Insert into sentences, replace selected text, fix typos -- all by voice.
 ---
 
+<img src="/illustration-context-aware.svg" alt="Email and text editing" class="illustration" style="max-width: 480px; margin: 0 auto 2rem; display: block;" />
+
 # Context-Aware Text Editing
 
 Diction is not a blank-page dictation tool. It sees where your cursor is, reads the text before and after the insertion point, and understands what you have selected. When AI Enhancement is active, every dictation is shaped to fit the context it is landing in.

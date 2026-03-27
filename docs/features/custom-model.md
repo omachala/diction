@@ -3,6 +3,8 @@ title: Use Your Own Model
 description: Already running a speech-to-text server? Connect Diction to it. One env var, no extra containers needed. Works with any OpenAI-compatible speech endpoint.
 ---
 
+<img src="/illustration-custom-model.svg" alt="AI brain intelligence" class="illustration" style="max-width: 480px; margin: 0 auto 2rem; display: block;" />
+
 # Use Your Own Model
 
 Say you already have a speech model running on your homelab. A beefy GPU machine, a fine-tuned model for your language, a domain-specific model, or just a newer version than what ships in our stack. You found Diction, thought "this is exactly what I need," pointed the app at your server, and got a server error.

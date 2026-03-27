@@ -4,9 +4,11 @@ description: Diction One cloud transcription. Fine-tuned speech model, high accu
 keywords: "diction one cloud, cloud transcription ios, ai voice keyboard iphone, best speech to text ios cloud, ai enhancement dictation, cloud dictation app iphone, voice to text cloud ios"
 ---
 
+<img src="/illustration-cloud.svg" alt="Space illustration" class="illustration" style="max-width: 480px; margin: 0 auto 2rem; display: block;" />
+
 # Diction One
 
-Our cloud. A fine-tuned speech model with advanced audio filters, built for accuracy, speed, and scale. Always available, always improving. You speak. We handle everything else.
+A fine-tuned speech model with advanced audio filters, built for accuracy, speed, and scale. Always available, always improving. You speak. We handle everything else.
 
 No server to run. No model to download. Open the app, subscribe, and start dictating.
 
@@ -14,7 +16,7 @@ No server to run. No model to download. Open the app, subscribe, and start dicta
 
 1. Subscribe to Diction One in the app (free trial included).
 2. Switch to the Diction keyboard in any text field.
-3. Tap the mic and speak. Audio is sent to our cloud, transcribed, and the text is returned.
+3. Tap the mic and speak. Audio is transcribed and the text is returned.
 4. Audio is discarded immediately. Nothing is stored. Nothing is used for training.
 
 ## What You Get
@@ -23,8 +25,8 @@ No server to run. No model to download. Open the app, subscribe, and start dicta
 - **AI Enhancement**: optional post-processing that cleans up your transcription. Removes filler words, fixes grammar, adds proper punctuation and capitalisation.
 - **99 languages**: full multilingual support. Switch languages in settings.
 - **Zero setup**: no server, no Docker, no downloads. Works immediately after subscribing.
-- **On-device fallback**: if the cloud request fails for any reason, Diction automatically retries using a local model on your iPhone. Your dictation is never lost to a network issue.
-- **Audio immediately discarded**: we transcribe and it's gone. Nothing is recorded. Nothing is stored. Nothing is shared. Nothing is used to train models.
+- **On-device fallback**: if the request fails for any reason, Diction automatically retries using a local model on your iPhone. Your dictation is never lost to a network issue.
+- **Audio immediately discarded**: we transcribe and it is gone. Nothing is recorded. Nothing is stored. Nothing is shared. Nothing is used to train models.
 
 ## AI Enhancement
 

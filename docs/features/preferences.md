@@ -4,6 +4,8 @@ description: Every setting in Diction's Keyboard Preferences screen explained. L
 keywords: "diction settings, keyboard preferences, mic timeout, functional keys, language setting, left handed keyboard, auto start dictation"
 ---
 
+<img src="/illustration-preferences.svg" alt="App settings" class="illustration" style="max-width: 480px; margin: 0 auto 2rem; display: block;" />
+
 # Keyboard Preferences
 
 Open the Diction app and tap **Preferences** to reach these settings. Every one of them is stored in a shared space the keyboard reads too, so changes take effect the next time you open the keyboard.

@@ -4,6 +4,8 @@ description: How Diction protects your voice data. On-device processing, self-ho
 keywords: voice keyboard privacy, ios keyboard full access, self hosted dictation, on-device speech to text, open source voice gateway, encrypted transcriptions
 ---
 
+<img src="/illustration-privacy.svg" alt="Web security and data protection" class="illustration" style="max-width: 480px; margin: 0 auto 2rem; display: block;" />
+
 # Privacy First
 
 Voice keyboards are in a uniquely sensitive position. Every app you use, every message you type, every search you run, your keyboard is present for all of it. That kind of access demands more than a policy page.

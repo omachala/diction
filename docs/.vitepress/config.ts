@@ -282,9 +282,7 @@ gtag('config', 'G-PCV64Y7GFM');`,
     },
 
     nav: [
-      { text: 'Features', link: '/features' },
-      { text: 'Docs', link: '/on-device' },
-      { text: 'About', link: '/about' },
+      { text: 'Docs', link: '/features/' },
       { text: 'Support', link: '/support' },
       {
         text: 'Download',
@@ -346,6 +344,7 @@ gtag('config', 'G-PCV64Y7GFM');`,
           items: [
             { text: 'Privacy Policy', link: '/privacy' },
             { text: 'Terms of Service', link: '/terms' },
+            { text: 'About', link: '/about' },
           ],
         },
       ],

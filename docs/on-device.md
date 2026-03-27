@@ -4,6 +4,8 @@ description: Diction on-device mode runs speech-to-text locally on your iPhone. 
 keywords: "offline speech to text iphone, on device dictation ios, whisper on device iphone, offline voice keyboard, private speech recognition iphone, no internet dictation ios, local speech recognition iphone"
 ---
 
+<img src="/illustration-on-device.svg" alt="Mobile fingerprint verification" class="illustration" style="max-width: 480px; margin: 0 auto 2rem; display: block;" />
+
 # On-Device Transcription
 
 Your voice stays on your phone. On-device mode runs speech models locally on your iPhone. No internet, no servers, no data leaving your device. Ever.

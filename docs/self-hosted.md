@@ -4,6 +4,8 @@ description: Run your own Whisper server and connect Diction to it. Audio stays 
 keywords: "self hosted speech to text iphone, whisper docker ios keyboard, self hosted whisper ios, run whisper at home iphone, home server dictation ios, whisper server ios keyboard, docker whisper iphone"
 ---
 
+<img src="/illustration-self-hosted.svg" alt="Data servers" class="illustration" style="max-width: 480px; margin: 0 auto 2rem; display: block;" />
+
 # Self-Hosted Transcription
 
 Your server. Your models. Your rules. Point Diction at any Whisper-compatible server you run and your audio never leaves your network.

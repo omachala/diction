@@ -3,6 +3,8 @@ title: "Self-Hosting Setup Guide"
 description: Run your own Whisper speech-to-text server and connect Diction to it. Three commands to start. Works with any OpenAI-compatible endpoint.
 ---
 
+<img src="/illustration-self-hosting-setup.svg" alt="Controller" class="illustration" style="max-width: 480px; margin: 0 auto 2rem; display: block;" />
+
 # Self-Hosting Setup Guide
 
 Run a Whisper server on your own hardware. Your audio stays on your network. Three commands to start, works on any machine that runs Docker.

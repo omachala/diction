@@ -3,6 +3,8 @@ title: "AI Enhancement"
 description: AI Enhancement removes filler words, fixes grammar, adds punctuation, and produces polished text from natural speech. Available with Diction One.
 ---
 
+<img src="/illustration-ai-enhancement.svg" alt="AI enhancement" class="illustration" style="max-width: 480px; margin: 0 auto 2rem; display: block;" />
+
 # AI Enhancement
 
 When you speak, you don't speak in perfect sentences. You say "um", pause mid-thought, restart, skip punctuation, and trail off. That is normal. AI Enhancement takes the raw transcription and cleans it up before the text is inserted.

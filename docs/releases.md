@@ -3,6 +3,8 @@ title: Release Notes
 description: What's new in each Diction release. Full changelog for every App Store version
 ---
 
+<img src="/illustration-releases.svg" alt="Releases" class="illustration" style="max-width: 480px; margin: 0 auto 2rem; display: block;" />
+
 # Release Notes
 
 ## Diction 3.0

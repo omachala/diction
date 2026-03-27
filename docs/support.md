@@ -3,6 +3,8 @@ title: Support
 description: Get help with Diction voice keyboard for iPhone. Setup guide, troubleshooting, and contact information.
 ---
 
+<img src="/illustration-support.svg" alt="Video call support" class="illustration" style="max-width: 480px; margin: 0 auto 2rem; display: block;" />
+
 # Support
 
 ## Getting Started

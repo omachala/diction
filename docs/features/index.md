@@ -4,6 +4,8 @@ description: Everything Diction can do. Context-aware dictation, AI Enhancement,
 keywords: "voice keyboard features iphone, ios dictation features, speech to text features ios, context aware dictation, ai enhancement speech, voice keyboard iphone, whisper ios features"
 ---
 
+<img src="/illustration-features.svg" alt="User interface design" class="illustration" style="max-width: 480px; margin: 0 auto 2rem; display: block;" />
+
 # Features
 
 Diction is a voice keyboard for iPhone. One mic button. No QWERTY. Tap, speak, text appears. Here is everything it can do.

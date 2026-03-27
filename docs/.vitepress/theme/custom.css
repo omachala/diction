@@ -398,3 +398,8 @@
   padding-top: 2rem;
   margin-top: 2rem;
 }
+
+/* -- Illustrations -- */
+.dark img.illustration {
+  filter: invert(1) hue-rotate(180deg);
+}

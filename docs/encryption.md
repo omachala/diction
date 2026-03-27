@@ -3,6 +3,8 @@ title: Encrypted Transcriptions
 description: Diction protects every transcription with AES-256-GCM encryption and X25519 key exchange. The same standards used in WireGuard and Signal. Automatic. No configuration required.
 ---
 
+<img src="/illustration-encryption.svg" alt="File security and encryption" class="illustration" style="max-width: 480px; margin: 0 auto 2rem; display: block;" />
+
 # Your Words. Protected.
 
 Privacy is built into Diction at the protocol level. Not as a feature you enable. Not as a paid tier. As a default.
