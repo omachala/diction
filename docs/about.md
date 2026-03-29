@@ -10,7 +10,7 @@ keywords: "about diction, who built diction, diction developer, voice keyboard e
 
 Diction is an engineering project.
 
-I'm [Ondrej Machala](https://www.linkedin.com/in/ondrejmachala). Hands-on engineering lead at a major financial institution. The kind of environment where the reliability and privacy bar is set by regulators, not product managers. Systems don't go down. Data doesn't leak. Those aren't goals, they're the baseline.
+I'm a hands-on engineering lead at a major financial institution. The kind of environment where the reliability and privacy bar is set by regulators, not product managers. Systems don't go down. Data doesn't leak. Those aren't goals, they're the baseline.
 
 I use speech to text constantly. Commuting. On a walk with my son. Apple's built-in dictation is well known for being unreliable, and I needed something that works in any app. And I mean any app. I use terminal apps, SSH clients, things where the standard iOS keyboard already struggles. I was just missing something that solves the problem properly. A keyboard you tap, speak into, and it works. Every time, everywhere.
 

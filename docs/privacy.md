@@ -9,7 +9,7 @@ Want to understand how Diction is designed to protect your data? [Read our Priva
 
 *Last updated: March 2026*
 
-Diction is a speech-to-text keyboard for iOS developed by Ondrej Machala. Your privacy is the foundation of how Diction is built, not a feature we bolt on later.
+Diction is a speech-to-text keyboard for iOS. Your privacy is the foundation of how Diction is built, not a feature we bolt on later.
 
 The Diction **app** contains **zero analytics and zero tracking code**. No data is collected, transmitted, or sold by the app. Your App Store privacy label reads "Data Not Collected." That is accurate.
 

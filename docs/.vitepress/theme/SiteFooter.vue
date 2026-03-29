@@ -52,7 +52,7 @@
       </div>
 
       <div class="footer-bottom">
-        <span>&copy; {{ year }} Ondrej Machala</span>
+        <span>&copy; {{ year }} DICTION</span>
       </div>
     </div>
   </footer>
