@@ -4,7 +4,7 @@ description: Diction One cloud transcription. Fine-tuned speech model, high accu
 keywords: "diction one cloud, cloud transcription ios, ai voice keyboard iphone, best speech to text ios cloud, ai enhancement dictation, cloud dictation app iphone, voice to text cloud ios"
 ---
 
-<img src="/illustration-cloud.svg" alt="Space illustration" class="illustration" style="max-width: 480px; margin: 0 auto 2rem; display: block;" />
+<img src="/illustration-cloud.svg" alt="Cloud technology with microchip" class="illustration" style="max-width: 480px; margin: 0 auto 2rem; display: block;" />
 
 # Diction One
 

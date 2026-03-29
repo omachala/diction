@@ -190,7 +190,7 @@
 }
 
 .VPHero .text {
-  font-size: 62px !important;
+  font-size: 72px !important;
   line-height: 1.15 !important;
 }
 
@@ -267,7 +267,7 @@
 }
 
 .VPFeatures .VPFeature .title {
-  font-size: 24px !important;
+  font-size: 28px !important;
 }
 
 /* -- Feature cards -- white bg with lift on hover -- */
@@ -397,6 +397,54 @@
   border-top: none !important;
   padding-top: 2rem;
   margin-top: 2rem;
+}
+
+/* -- Homepage bottom CTA -- */
+.cta-bottom {
+  text-align: center;
+  padding: 5rem 1.5rem 6rem;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.cta-bottom h2 {
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 800;
+  line-height: 1.1;
+  border-top: none !important;
+  margin: 0 0 2rem;
+  letter-spacing: -0.03em;
+}
+
+.cta-bottom p {
+  font-size: 1.6rem;
+  color: var(--vp-c-text-2);
+  line-height: 1.7;
+  margin: 0 auto 2.5rem;
+  max-width: 560px;
+}
+
+.cta-bottom .VPHero {
+  background: none !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+}
+
+.cta-bottom .VPHero .actions {
+  justify-content: center;
+}
+
+.cta-bottom .VPButton {
+  text-decoration: none !important;
+}
+
+@media (max-width: 640px) {
+  .cta-bottom h2 {
+    font-size: 2.4rem;
+  }
+  .cta-bottom p {
+    font-size: 1.15rem;
+  }
 }
 
 /* -- Illustrations -- */

@@ -3,6 +3,8 @@ title: Terms of Service
 description: Diction terms of service. Voice keyboard for iPhone with on-device, self-hosted, and cloud transcription modes.
 ---
 
+<img src="/illustration-terms.svg" alt="Robot handshake partnership" class="illustration" style="max-width: 480px; margin: 0 auto 2rem; display: block;" />
+
 # Terms of Service
 
 *Last updated: March 2026*

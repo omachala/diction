@@ -3,6 +3,8 @@ title: Privacy Policy
 description: Diction privacy policy. The Diction app has zero analytics and zero tracking. Your voice data is never stored.
 ---
 
+<img src="/illustration-privacy-policy.svg" alt="Robot handshake partnership" class="illustration" style="max-width: 480px; margin: 0 auto 2rem; display: block;" />
+
 # Privacy Policy
 
 Want to understand how Diction is designed to protect your data? [Read our Privacy First page.](/privacy-first)

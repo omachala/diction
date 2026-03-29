@@ -51,98 +51,14 @@ features:
     details: Cloud transcription with zero setup. Highest accuracy, lowest latency. Audio processed and immediately discarded.
 ---
 
-<div class="content-section faq-section">
+<script setup>
+import VPButton from 'vitepress/dist/client/theme-default/components/VPButton.vue'
+</script>
 
-## Questions
-
-<details>
-<summary>Is it really free?</summary>
-<div>
-
-On-device and self-hosted modes are completely free. No word limits, no daily caps. Diction One unlocks cloud transcription with the highest accuracy, plus AI Enhancement with tone presets and a custom dictionary. Free trial included.
-
-</div>
-</details>
-
-<details>
-<summary>How is it better than Apple Dictation?</summary>
-<div>
-
-More accurate speech models, no session time limits, no word caps. AI Enhancement cleans up filler words and grammar automatically. Context-aware editing reads the text around your cursor so dictating mid-sentence produces correct capitalization and punctuation. Set a tone per app, add your own words for names and jargon, and search your full dictation history. Apple offers none of that.
-
-</div>
-</details>
-
-<details>
-<summary>Can I edit existing text by voice?</summary>
-<div>
-
-Yes. Diction reads the text around your cursor. Dictate into the middle of a sentence and it inserts with correct capitalization and punctuation. Select text and speak to replace it. Rewrite a sentence, fix a typo, or add to a paragraph, all without touching the screen.
-
-</div>
-</details>
-
-<details>
-<summary>Does it work offline?</summary>
-<div>
-
-Yes. On-device mode works without internet once the model is downloaded. Cloud and self-hosted modes require network access.
-
-</div>
-</details>
-
-<details>
-<summary>What languages does Diction support?</summary>
-<div>
-
-99 languages. On-device handles most languages well. Cloud and self-hosted use larger models for even better accuracy across all supported languages.
-
-</div>
-</details>
-
-<details>
-<summary>Is my voice data stored?</summary>
-<div>
-
-Never. On-device mode processes audio in memory and discards it immediately. Self-hosted mode sends audio only to your server. Diction One cloud processes and discards. No recordings retained, no model training.
-
-</div>
-</details>
-
-<details>
-<summary>What is AI Enhancement?</summary>
-<div>
-
-After transcription, Diction can optionally clean up your text. It removes filler words, fixes grammar, and polishes the result. Set a tone per app (Professional for email, Casual for chat) and add your own words to a custom dictionary so names and jargon come through right. Only the text is sent to the AI, never the audio.
-
-</div>
-</details>
-
-<details>
-<summary>How do I set it up?</summary>
-<div>
-
-Open the app, grant microphone permission, add Diction as a keyboard in iOS Settings, enable Full Access, and start dictating. Under a minute from download to first transcription. [Detailed steps here.](/support)
-
-</div>
-</details>
-
-<details>
-<summary>What is self-hosting?</summary>
-<div>
-
-You run a speech-to-text server on your own hardware. Diction connects to it over your network. Your audio never touches any third-party service. The server ships as a Docker image. One command to start.
-
-</div>
-</details>
-
-<details>
-<summary>Why does it need Full Access?</summary>
-<div>
-
-iOS requires Full Access for any keyboard extension that uses the network. Diction needs it to send audio to your server or Diction One for transcription. Diction has no QWERTY keys to log, does not read your clipboard, and does not access contacts or any other personal data.
-
-</div>
-</details>
-
+<div class="cta-bottom">
+<h2>Enough said.<br>Your move.</h2>
+<p>We could keep going but at this point we're just holding you back. Go talk to your phone.</p>
+<div class="VPHero"><div class="actions">
+<VPButton tag="a" text="Download for iOS" href="https://apps.apple.com/app/id6759807364" theme="brand" />
+</div></div>
 </div>
