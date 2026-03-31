@@ -532,6 +532,54 @@ func TestStreamingHandler_DefaultModel(t *testing.T) {
 	}
 }
 
+func TestStreamingHandler_ContextAfterAudio_Dropped(t *testing.T) {
+	// Context sent AFTER first audio binary frame should be silently dropped.
+	// streaming.go:95 sets contextRead=true on any binary frame, so subsequent
+	// non-action text frames are ignored. If iOS client ever reorders frames,
+	// context vanishes with no error.
+	var receivedContext string
+	postProcess := func(ctx context.Context, text, contextJSON string) (string, error) {
+		receivedContext = contextJSON
+		return "cleaned: " + text, nil
+	}
+	srv := startStreamingServerWithPostProcess(t, "raw audio", postProcess)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	conn, _, err := websocket.Dial(ctx, wsURL(srv, "enhance=true"), nil)
+	if err != nil {
+		t.Fatalf("dial: %v", err)
+	}
+	defer conn.CloseNow()
+
+	// Send audio FIRST (sets contextRead = true)
+	conn.Write(ctx, websocket.MessageBinary, make([]byte, 3200))
+
+	// Send context AFTER audio — should be silently dropped
+	contextJSON := `{"before":"hello ","after":" world"}`
+	conn.Write(ctx, websocket.MessageText, []byte(contextJSON))
+
+	// Send done
+	done, _ := json.Marshal(map[string]string{"action": "done"})
+	conn.Write(ctx, websocket.MessageText, done)
+
+	_, data, err := conn.Read(ctx)
+	if err != nil {
+		t.Fatalf("read: %v", err)
+	}
+	var result struct {
+		Text string `json:"text"`
+	}
+	json.Unmarshal(data, &result)
+	if result.Text != "cleaned: raw audio" {
+		t.Errorf("want 'cleaned: raw audio', got %q", result.Text)
+	}
+	if receivedContext != "" {
+		t.Errorf("context sent after audio should be dropped, got %q", receivedContext)
+	}
+}
+
 func TestStreamingHandler_FirstTextFrameAsContext(t *testing.T) {
 	var receivedContext string
 	postProcess := func(ctx context.Context, text, contextJSON string) (string, error) {

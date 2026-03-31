@@ -29,9 +29,11 @@ func parseBoundary(contentType string) string {
 }
 
 // rewriteMultipart rewrites the multipart body:
-// - Strips the "model" field (routing is done); if forwardModel is non-empty, injects it for the backend
+// - Strips the "model" and "context" fields (routing/post-processing done gateway-side)
+// - If forwardModel is non-empty, injects it for the backend
+// - If whisperPrompt is non-empty, injects it as a "prompt" field for Whisper vocabulary hinting
 // - If convertToWAV is true, converts the audio file to 16kHz mono WAV via ffmpeg (for backends that only accept WAV)
-func rewriteMultipart(body []byte, boundary string, convertToWAV bool, forwardModel string) ([]byte, string, error) {
+func rewriteMultipart(body []byte, boundary string, convertToWAV bool, forwardModel string, whisperPrompt string) ([]byte, string, error) {
 	reader := multipart.NewReader(bytes.NewReader(body), boundary)
 
 	var buf bytes.Buffer
@@ -100,6 +102,12 @@ func rewriteMultipart(body []byte, boundary string, convertToWAV bool, forwardMo
 		}
 	}
 
+	if whisperPrompt != "" {
+		if err := writer.WriteField("prompt", whisperPrompt); err != nil {
+			return nil, "", fmt.Errorf("write prompt field: %w", err)
+		}
+	}
+
 	if err := writer.Close(); err != nil {
 		return nil, "", fmt.Errorf("close multipart writer: %w", err)
 	}
@@ -146,6 +154,33 @@ func convertToWAVBytes(audioData []byte, filename string) ([]byte, error) {
 	}
 
 	return wavData, nil
+}
+
+// buildWhisperPrompt extracts custom words from the transcription context JSON and formats
+// them as a Whisper prompt field. Whisper uses this as vocabulary hint during transcription,
+// improving accuracy for unusual terms, jargon, and proper nouns before LLM cleanup runs.
+func buildWhisperPrompt(contextJSON string) string {
+	if contextJSON == "" {
+		return ""
+	}
+	var ctx struct {
+		CustomWords []struct {
+			Word string `json:"word"`
+		} `json:"customWords"`
+	}
+	if err := json.Unmarshal([]byte(contextJSON), &ctx); err != nil || len(ctx.CustomWords) == 0 {
+		return ""
+	}
+	words := make([]string, 0, len(ctx.CustomWords))
+	for _, cw := range ctx.CustomWords {
+		if cw.Word != "" {
+			words = append(words, cw.Word)
+		}
+	}
+	if len(words) == 0 {
+		return ""
+	}
+	return strings.Join(words, ", ")
 }
 
 // extractFormField reads a single field value from a multipart body without consuming it.
@@ -201,11 +236,19 @@ func (g *Gateway) TranscriptionHandlerWithPostProcess(postProcess func(context.C
 			return
 		}
 
-		// Rewrite multipart body: strip model field (routing is done), convert audio if needed
+		// Extract context and build Whisper vocabulary prompt from custom words
+		var contextJSON string
+		var whisperPrompt string
+		if boundary != "" {
+			contextJSON = extractFormField(body, boundary, "context")
+			whisperPrompt = buildWhisperPrompt(contextJSON)
+		}
+
+		// Rewrite multipart body: strip model/context fields (routing done), convert audio if needed, inject Whisper prompt
 		proxyBody := body
 		proxyContentType := contentType
 		if boundary != "" {
-			converted, newCT, err := rewriteMultipart(body, boundary, backend.NeedsWAV, backend.ForwardModel)
+			converted, newCT, err := rewriteMultipart(body, boundary, backend.NeedsWAV, backend.ForwardModel, whisperPrompt)
 			if err != nil {
 				log.Printf("Multipart rewrite failed for %s: %v", backend.Name, err)
 				http.Error(w, `{"error":"request processing failed"}`, http.StatusInternalServerError)
@@ -213,12 +256,6 @@ func (g *Gateway) TranscriptionHandlerWithPostProcess(postProcess func(context.C
 			}
 			proxyBody = converted
 			proxyContentType = newCT
-		}
-
-		// Extract context from multipart form field (stripped during rewrite)
-		var contextJSON string
-		if boundary != "" {
-			contextJSON = extractFormField(body, boundary, "context")
 		}
 
 		// Capture E2E client key before proxy (X-Diction-E2E header carries client ephemeral X25519 pubkey)
@@ -267,6 +304,9 @@ func (g *Gateway) TranscriptionHandlerWithPostProcess(postProcess func(context.C
 				}
 
 				transcript := transcription.Text
+				if g.OnTranscription != nil {
+					g.OnTranscription(backend.Name, whisperMs, len(transcript), enhanceEnabled, e2eClientKey != "")
+				}
 
 				// LLM post-processing (if requested)
 				if postProcess != nil && enhanceEnabled {

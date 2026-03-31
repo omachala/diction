@@ -72,10 +72,10 @@ func LoadStaticKey(b64 string) (*ecdh.PrivateKey, error) {
 }
 
 // DecryptRequest decrypts a client-encrypted request body using the server static key.
-// Uses ECDH(server_static_priv, client_ephemeral_pub) + HKDF("diction-cleanup-req-v1").
+// info is the HKDF info string that must match what the iOS client used to encrypt.
 // ctB64 is base64url-encoded nonce(12) + ciphertext + tag(16).
 // clientPubB64 is the base64url-encoded client ephemeral X25519 public key from X-Diction-E2E header.
-func DecryptRequest(ctB64, clientPubB64 string, serverStaticKey *ecdh.PrivateKey) ([]byte, error) {
+func DecryptRequest(ctB64, clientPubB64 string, serverStaticKey *ecdh.PrivateKey, info string) ([]byte, error) {
 	clientPubBytes, err := base64.RawURLEncoding.DecodeString(clientPubB64)
 	if err != nil {
 		return nil, fmt.Errorf("decode client pubkey: %w", err)
@@ -90,7 +90,7 @@ func DecryptRequest(ctB64, clientPubB64 string, serverStaticKey *ecdh.PrivateKey
 		return nil, fmt.Errorf("ecdh: %w", err)
 	}
 
-	key := hkdfSHA256(shared, nil, []byte("diction-cleanup-req-v1"), 32)
+	key := hkdfSHA256(shared, nil, []byte(info), 32)
 
 	ctData, err := base64.RawURLEncoding.DecodeString(ctB64)
 	if err != nil {
