@@ -9,16 +9,17 @@ description: What's new in each Diction release. Full changelog for every App St
 
 ## Diction 4.0
 
-*March 2026*
+*April 2026*
 
-- Tone Presets let you set a writing style per app. Professional for email, Casual for messaging, or create your own. Diction remembers which tone to use where, so your work emails and group chats sound the way they should without changing a setting every time.
-- My Words. Add names, jargon, product terms, and anything else that keeps getting misheard. Diction uses your words to improve both raw transcription and AI Enhancement accuracy.
-- Dictation Stats track your word count, number of dictations, total duration, and estimated time saved. A stats badge and charts show your usage right on the main screen.
-- Haptic Feedback. The keyboard now vibrates on mic start, stop, successful transcription, and errors. You feel the state change without looking. Toggle it in Preferences.
-- History got sharper. Search now highlights matching text in results. Tap any entry to open the full transcript in a detail view instead of just copying. Keyboard dismissal in history is fixed.
-- Mid-sentence insertion is more accurate. Capitalization and spacing now adapt automatically when your cursor is between words, so dictating into the middle of a sentence produces the right result more often.
-- AI Enhancement now considers your recent dictations for terminology continuity across a session.
-- Various reliability and stability fixes.
+- Speak to Edit. Select any text, say what you want changed, and it's done. Works for simple replacements and editing instructions like "translate to Czech" or "make this shorter."
+- Your custom words now improve transcription accuracy directly. Names and jargon get recognized correctly even without AI Enhancement.
+- Dictate for as long as you need. Improved reliability for long recordings, no more cut-off transcripts.
+- Profile lets you tell Diction who you are and how you write, so AI Enhancement matches your style.
+- New guided onboarding walks you through setup step by step instead of throwing dialogs at you on first launch.
+- Improved on-device model setup. Smoother download, faster preparation, automatically ready when done.
+- The mic no longer activates when you open the app manually. Orange dot only when you're actually dictating.
+- Improved AI Enhancement accuracy across apps.
+- Various UI polish across the keyboard, history, tones, and settings.
 
 ## Diction 3.0
 
