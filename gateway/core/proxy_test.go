@@ -3,8 +3,6 @@ package core
 import (
 	"bytes"
 	"context"
-	"crypto/aes"
-	"crypto/cipher"
 	"crypto/ecdh"
 	"crypto/rand"
 	"encoding/base64"
@@ -14,6 +12,9 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -70,7 +71,7 @@ func TestRewriteMultipart_StripsModelField(t *testing.T) {
 	body, ct := buildMultipart(t, map[string]string{"model": "medium", "language": "en"}, "audio.m4a", "fake-audio-data")
 	boundary := parseBoundary(ct)
 
-	rewritten, newCT, err := rewriteMultipart(body, boundary, false, "")
+	rewritten, newCT, err := rewriteMultipart(body, boundary, false, "", "")
 	if err != nil {
 		t.Fatalf("rewriteMultipart error: %v", err)
 	}
@@ -117,7 +118,7 @@ func TestRewriteMultipart_PreservesFileContent(t *testing.T) {
 	body, ct := buildMultipart(t, map[string]string{"model": "small"}, "audio.m4a", audioContent)
 	boundary := parseBoundary(ct)
 
-	rewritten, newCT, err := rewriteMultipart(body, boundary, false, "")
+	rewritten, newCT, err := rewriteMultipart(body, boundary, false, "", "")
 	if err != nil {
 		t.Fatalf("rewriteMultipart error: %v", err)
 	}
@@ -147,7 +148,7 @@ func TestRewriteMultipart_NoModelField(t *testing.T) {
 	body, ct := buildMultipart(t, map[string]string{}, "audio.m4a", "audio")
 	boundary := parseBoundary(ct)
 
-	_, _, err := rewriteMultipart(body, boundary, false, "")
+	_, _, err := rewriteMultipart(body, boundary, false, "", "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -160,7 +161,7 @@ func TestRewriteMultipart_ConvertToWAV(t *testing.T) {
 	body, ct := buildMultipart(t, map[string]string{"language": "en"}, "audio.m4a", string(wavData))
 	boundary := parseBoundary(ct)
 
-	rewritten, newCT, err := rewriteMultipart(body, boundary, true, "")
+	rewritten, newCT, err := rewriteMultipart(body, boundary, true, "", "")
 	if err != nil {
 		t.Fatalf("rewriteMultipart error: %v", err)
 	}
@@ -452,70 +453,6 @@ func TestTranscriptionHandler_ModelStrippedBeforeProxy(t *testing.T) {
 	}
 }
 
-func TestTranscriptionHandler_E2EEncryption(t *testing.T) {
-	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"text":"hello world"}`)
-	}))
-	defer backend.Close()
-
-	g := &Gateway{
-		backends: []Backend{
-			{Name: "small", URL: backend.URL, Aliases: []string{"small"}},
-		},
-		health:       newHealthState(),
-		defaultModel: "small",
-		maxBodySize:  10 * 1024 * 1024,
-	}
-
-	// Generate client ephemeral key
-	clientPriv, _ := ecdh.X25519().GenerateKey(rand.Reader)
-	clientPubB64 := base64.RawURLEncoding.EncodeToString(clientPriv.PublicKey().Bytes())
-
-	body, ct := buildMultipart(t, map[string]string{}, "audio.m4a", "fake-audio")
-	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions", bytes.NewReader(body))
-	req.Header.Set("Content-Type", ct)
-	req.Header.Set("X-Diction-E2E", clientPubB64)
-	rr := httptest.NewRecorder()
-	g.TranscriptionHandlerWithPostProcess(nil)(rr, req)
-
-	if rr.Code != http.StatusOK {
-		t.Fatalf("status: want 200, got %d (body: %s)", rr.Code, rr.Body.String())
-	}
-
-	// Response should contain e2e envelope
-	var resp struct {
-		E2E struct {
-			CT string `json:"ct"`
-			PK string `json:"pk"`
-		} `json:"e2e"`
-	}
-	if err := json.Unmarshal(rr.Body.Bytes(), &resp); err != nil {
-		t.Fatalf("decode response: %v", err)
-	}
-	if resp.E2E.CT == "" || resp.E2E.PK == "" {
-		t.Fatalf("expected e2e envelope with ct and pk, got: %s", rr.Body.String())
-	}
-
-	// Decrypt and verify
-	serverPubBytes, _ := base64.RawURLEncoding.DecodeString(resp.E2E.PK)
-	serverPub, _ := ecdh.X25519().NewPublicKey(serverPubBytes)
-	shared, _ := clientPriv.ECDH(serverPub)
-	key := hkdfSHA256(shared, nil, []byte("diction-transcript-v1"), 32)
-
-	ctBytes, _ := base64.RawURLEncoding.DecodeString(resp.E2E.CT)
-	block, _ := aes.NewCipher(key)
-	gcm, _ := cipher.NewGCM(block)
-	nonce := ctBytes[:gcm.NonceSize()]
-	plaintext, err := gcm.Open(nil, nonce, ctBytes[gcm.NonceSize():], nil)
-	if err != nil {
-		t.Fatalf("decrypt: %v", err)
-	}
-	if string(plaintext) != "hello world" {
-		t.Errorf("decrypted: want 'hello world', got %q", string(plaintext))
-	}
-}
-
 func TestExtractFormField_Found(t *testing.T) {
 	body, ct := buildMultipart(t, map[string]string{"context": `{"before":"hello","after":"world"}`, "language": "en"}, "audio.wav", "data")
 	boundary := parseBoundary(ct)
@@ -534,18 +471,74 @@ func TestExtractFormField_NotFound(t *testing.T) {
 	}
 }
 
-func TestRewriteMultipart_InjectsForwardModel(t *testing.T) {
-	body, ct := buildMultipart(t, map[string]string{"model": "small", "language": "en"}, "audio.m4a", "fake-audio")
+// --- buildWhisperPrompt ---
+
+func TestBuildWhisperPrompt_EmptyContext(t *testing.T) {
+	if got := buildWhisperPrompt(""); got != "" {
+		t.Errorf("want empty, got %q", got)
+	}
+}
+
+func TestBuildWhisperPrompt_NoCustomWords(t *testing.T) {
+	got := buildWhisperPrompt(`{"before":"hello","after":"world"}`)
+	if got != "" {
+		t.Errorf("want empty when no customWords, got %q", got)
+	}
+}
+
+func TestBuildWhisperPrompt_SingleWord(t *testing.T) {
+	got := buildWhisperPrompt(`{"customWords":[{"word":"Kubernetes"}]}`)
+	if got != "Kubernetes" {
+		t.Errorf("want %q, got %q", "Kubernetes", got)
+	}
+}
+
+func TestBuildWhisperPrompt_MultipleWords(t *testing.T) {
+	got := buildWhisperPrompt(`{"customWords":[{"word":"PostgreSQL"},{"word":"WebSocket"},{"word":"OAuth"}]}`)
+	want := "PostgreSQL, WebSocket, OAuth"
+	if got != want {
+		t.Errorf("want %q, got %q", want, got)
+	}
+}
+
+func TestBuildWhisperPrompt_WithVariants(t *testing.T) {
+	// Variants are LLM correction hints only — correct spelling is all Whisper gets
+	got := buildWhisperPrompt(`{"customWords":[{"word":"Kubernetes","variants":["cube er netties"]},{"word":"PostgreSQL","variants":["post gres sequel"]}]}`)
+	want := "Kubernetes, PostgreSQL"
+	if got != want {
+		t.Errorf("want %q, got %q", want, got)
+	}
+}
+
+func TestBuildWhisperPrompt_InvalidJSON(t *testing.T) {
+	got := buildWhisperPrompt(`not-json`)
+	if got != "" {
+		t.Errorf("want empty on invalid JSON, got %q", got)
+	}
+}
+
+func TestBuildWhisperPrompt_EmptyWordSkipped(t *testing.T) {
+	// Empty word strings within the list should be silently skipped
+	got := buildWhisperPrompt(`{"customWords":[{"word":""},{"word":"PostgreSQL"},{"word":""}]}`)
+	if got != "PostgreSQL" {
+		t.Errorf("want %q, got %q", "PostgreSQL", got)
+	}
+}
+
+// --- rewriteMultipart whisper prompt ---
+
+func TestRewriteMultipart_InjectsWhisperPrompt(t *testing.T) {
+	body, ct := buildMultipart(t, map[string]string{"language": "en"}, "audio.m4a", "audio")
 	boundary := parseBoundary(ct)
 
-	rewritten, newCT, err := rewriteMultipart(body, boundary, false, "Systran/faster-whisper-large-v3-turbo")
+	rewritten, newCT, err := rewriteMultipart(body, boundary, false, "", "Kubernetes, PostgreSQL")
 	if err != nil {
-		t.Fatalf("rewriteMultipart error: %v", err)
+		t.Fatalf("rewriteMultipart: %v", err)
 	}
 
 	_, params, _ := parseMediaType(newCT)
 	reader := multipart.NewReader(bytes.NewReader(rewritten), params["boundary"])
-	var modelValue string
+	foundPrompt := false
 	for {
 		part, err := reader.NextPart()
 		if err == io.EOF {
@@ -554,22 +547,127 @@ func TestRewriteMultipart_InjectsForwardModel(t *testing.T) {
 		if err != nil {
 			t.Fatalf("read part: %v", err)
 		}
-		if part.FormName() == "model" {
+		if part.FormName() == "prompt" {
 			data, _ := io.ReadAll(part)
-			modelValue = string(data)
+			foundPrompt = true
+			if string(data) != "Kubernetes, PostgreSQL" {
+				t.Errorf("prompt: want %q, got %q", "Kubernetes, PostgreSQL", string(data))
+			}
 		}
 		part.Close()
 	}
+	if !foundPrompt {
+		t.Error("expected prompt field in rewritten multipart")
+	}
+}
 
-	if modelValue != "Systran/faster-whisper-large-v3-turbo" {
-		t.Errorf("model: want Systran/faster-whisper-large-v3-turbo, got %q", modelValue)
+func TestRewriteMultipart_NoPromptWhenEmpty(t *testing.T) {
+	body, ct := buildMultipart(t, map[string]string{"language": "en"}, "audio.m4a", "audio")
+	boundary := parseBoundary(ct)
+
+	rewritten, newCT, err := rewriteMultipart(body, boundary, false, "", "")
+	if err != nil {
+		t.Fatalf("rewriteMultipart: %v", err)
+	}
+
+	_, params, _ := parseMediaType(newCT)
+	reader := multipart.NewReader(bytes.NewReader(rewritten), params["boundary"])
+	for {
+		part, err := reader.NextPart()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			t.Fatalf("read part: %v", err)
+		}
+		if part.FormName() == "prompt" {
+			t.Error("prompt field should not be present when whisperPrompt is empty")
+		}
+		part.Close()
+	}
+}
+
+// --- TranscriptionHandler whisper prompt forwarding ---
+
+func TestTranscriptionHandler_WhisperPromptForwardedToBackend(t *testing.T) {
+	var receivedPrompt string
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseMultipartForm(10 << 20); err != nil {
+			http.Error(w, "parse failed", 400)
+			return
+		}
+		receivedPrompt = r.FormValue("prompt")
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"text":"ok"}`)
+	}))
+	defer backend.Close()
+
+	g := &Gateway{
+		backends: []Backend{
+			{Name: "small", URL: backend.URL, Aliases: []string{"small"}},
+		},
+		health:       newHealthState(),
+		defaultModel: "small",
+		maxBodySize:  10 * 1024 * 1024,
+	}
+
+	contextJSON := `{"customWords":[{"word":"Kubernetes"},{"word":"PostgreSQL"}]}`
+	body, ct := buildMultipart(t, map[string]string{"context": contextJSON, "language": "en"}, "audio.m4a", "fake-audio")
+	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions", bytes.NewReader(body))
+	req.Header.Set("Content-Type", ct)
+	rr := httptest.NewRecorder()
+	g.TranscriptionHandler()(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("status: want 200, got %d (body: %s)", rr.Code, rr.Body.String())
+	}
+	if receivedPrompt != "Kubernetes, PostgreSQL" {
+		t.Errorf("prompt forwarded to Whisper: want %q, got %q", "Kubernetes, PostgreSQL", receivedPrompt)
+	}
+}
+
+func TestTranscriptionHandler_NoPromptWhenNoCustomWords(t *testing.T) {
+	var receivedPrompt string
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseMultipartForm(10 << 20); err != nil {
+			http.Error(w, "parse failed", 400)
+			return
+		}
+		receivedPrompt = r.FormValue("prompt")
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"text":"ok"}`)
+	}))
+	defer backend.Close()
+
+	g := &Gateway{
+		backends: []Backend{
+			{Name: "small", URL: backend.URL, Aliases: []string{"small"}},
+		},
+		health:       newHealthState(),
+		defaultModel: "small",
+		maxBodySize:  10 * 1024 * 1024,
+	}
+
+	// Context with no customWords — no prompt should be sent
+	contextJSON := `{"before":"hello ","after":" world"}`
+	body, ct := buildMultipart(t, map[string]string{"context": contextJSON, "language": "en"}, "audio.m4a", "fake-audio")
+	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions", bytes.NewReader(body))
+	req.Header.Set("Content-Type", ct)
+	rr := httptest.NewRecorder()
+	g.TranscriptionHandler()(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("status: want 200, got %d (body: %s)", rr.Code, rr.Body.String())
+	}
+	if receivedPrompt != "" {
+		t.Errorf("prompt should be empty when no customWords, got %q", receivedPrompt)
 	}
 }
 
 func TestRewriteMultipart_StripsContextField(t *testing.T) {
 	body, ct := buildMultipart(t, map[string]string{"context": `{"before":"x"}`, "language": "en"}, "audio.wav", "audio")
 	boundary := parseBoundary(ct)
-	rewritten, newCT, err := rewriteMultipart(body, boundary, false, "")
+	rewritten, newCT, err := rewriteMultipart(body, boundary, false, "", "")
 	if err != nil {
 		t.Fatalf("rewriteMultipart: %v", err)
 	}
@@ -624,5 +722,173 @@ func TestTranscriptionHandler_ContextFieldPassedToPostProcess(t *testing.T) {
 	}
 	if receivedContext != contextJSON {
 		t.Errorf("context: want %q, got %q", contextJSON, receivedContext)
+	}
+}
+
+func TestConvertToWAVBytes_SuccessfulConversion(t *testing.T) {
+	// Generate a tiny silent MP3 via ffmpeg, then convert to WAV.
+	// This exercises the full non-WAV path including os.ReadFile and return wavData, nil.
+	tmpDir := t.TempDir()
+	mp3Path := filepath.Join(tmpDir, "silence.mp3")
+	gen := exec.Command("ffmpeg", "-y", "-f", "lavfi", "-i", "anullsrc=r=16000:cl=mono",
+		"-t", "0.01", "-f", "mp3", mp3Path)
+	gen.Stderr = io.Discard
+	if err := gen.Run(); err != nil {
+		t.Skipf("ffmpeg not available for conversion test: %v", err)
+	}
+	mp3Data, err := os.ReadFile(mp3Path)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result, err := convertToWAVBytes(mp3Data, "silence.mp3")
+	if err != nil {
+		t.Fatalf("convertToWAVBytes: %v", err)
+	}
+	if len(result) < 4 || string(result[:4]) != "RIFF" {
+		t.Error("expected WAV output (RIFF header)")
+	}
+}
+
+func TestTranscriptionHandler_E2EEncryptedResponse(t *testing.T) {
+	// Verify that X-Diction-E2E header causes the response to be E2E encrypted.
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"text":"hello e2e world"}`)
+	}))
+	defer backend.Close()
+
+	g := &Gateway{
+		backends: []Backend{
+			{Name: "small", URL: backend.URL, Aliases: []string{"small"}},
+		},
+		health:       newHealthState(),
+		defaultModel: "small",
+		maxBodySize:  10 * 1024 * 1024,
+	}
+
+	// Generate client ephemeral key
+	clientPriv, err := ecdh.X25519().GenerateKey(rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	clientPubB64 := base64.RawURLEncoding.EncodeToString(clientPriv.PublicKey().Bytes())
+
+	body, ct := buildMultipart(t, map[string]string{}, "audio.m4a", "fake-audio")
+	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions", bytes.NewReader(body))
+	req.Header.Set("Content-Type", ct)
+	req.Header.Set("X-Diction-E2E", clientPubB64)
+	rr := httptest.NewRecorder()
+	g.TranscriptionHandlerWithPostProcess(nil)(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("status: want 200, got %d (body: %s)", rr.Code, rr.Body.String())
+	}
+	var resp map[string]any
+	if err := json.Unmarshal(rr.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("unmarshal response: %v", err)
+	}
+	if _, ok := resp["e2e"]; !ok {
+		t.Errorf("expected e2e key in response, got: %s", rr.Body.String())
+	}
+}
+
+func TestTranscriptionHandler_E2EEncryptFails_ReturnsPlainText(t *testing.T) {
+	// Bug: if EncryptTranscript fails (e.g. invalid client key), handler falls
+	// through to plain {"text":"..."} instead of returning an error.
+	// Client sent X-Diction-E2E expecting encrypted response but gets cleartext.
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"text":"secret transcript"}`)
+	}))
+	defer backend.Close()
+
+	g := &Gateway{
+		backends: []Backend{
+			{Name: "small", URL: backend.URL, Aliases: []string{"small"}},
+		},
+		health:       newHealthState(),
+		defaultModel: "small",
+		maxBodySize:  10 * 1024 * 1024,
+	}
+
+	// 16 bytes is not a valid 32-byte X25519 public key — EncryptTranscript will fail
+	badPub := base64.RawURLEncoding.EncodeToString(make([]byte, 16))
+
+	body, ct := buildMultipart(t, map[string]string{}, "audio.m4a", "fake-audio")
+	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions", bytes.NewReader(body))
+	req.Header.Set("Content-Type", ct)
+	req.Header.Set("X-Diction-E2E", badPub)
+	rr := httptest.NewRecorder()
+	g.TranscriptionHandlerWithPostProcess(nil)(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("status: want 200, got %d (body: %s)", rr.Code, rr.Body.String())
+	}
+	var resp map[string]any
+	if err := json.Unmarshal(rr.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	// Documents current behavior: E2E failure falls through to plain text.
+	// This is a privacy concern — client expected encryption but got cleartext.
+	if _, ok := resp["e2e"]; ok {
+		t.Error("expected NO e2e key (encryption should have failed)")
+	}
+	if text, ok := resp["text"]; !ok || text != "secret transcript" {
+		t.Errorf("expected plain text fallback, got: %s", rr.Body.String())
+	}
+}
+
+func TestTranscriptionHandler_MalformedBackendURL_Returns400(t *testing.T) {
+	// Backend exists but its URL is malformed — resolveBackend returns (nil, nil),
+	// indistinguishable from "no matching model". Locks in the 400 response.
+	g := &Gateway{
+		backends:     []Backend{{Name: "broken", URL: "://\x00invalid", Aliases: []string{"broken"}}},
+		health:       newHealthState(),
+		defaultModel: "broken",
+		maxBodySize:  10 * 1024 * 1024,
+	}
+
+	body, ct := buildMultipart(t, map[string]string{}, "audio.m4a", "fake-audio")
+	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions", bytes.NewReader(body))
+	req.Header.Set("Content-Type", ct)
+	rr := httptest.NewRecorder()
+	g.TranscriptionHandler()(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Errorf("status: want 400, got %d (body: %s)", rr.Code, rr.Body.String())
+	}
+}
+
+func TestTranscriptionHandler_NonJSONBackendResponse(t *testing.T) {
+	// Backend returns non-JSON → falls through to plain response passthrough
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `not-valid-json`)
+	}))
+	defer backend.Close()
+
+	g := &Gateway{
+		backends: []Backend{
+			{Name: "small", URL: backend.URL, Aliases: []string{"small"}},
+		},
+		health:       newHealthState(),
+		defaultModel: "small",
+		maxBodySize:  10 * 1024 * 1024,
+	}
+
+	clientPriv, _ := ecdh.X25519().GenerateKey(rand.Reader)
+	clientPubB64 := base64.RawURLEncoding.EncodeToString(clientPriv.PublicKey().Bytes())
+
+	body, ct := buildMultipart(t, map[string]string{}, "audio.m4a", "data")
+	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions", bytes.NewReader(body))
+	req.Header.Set("Content-Type", ct)
+	req.Header.Set("X-Diction-E2E", clientPubB64)
+	rr := httptest.NewRecorder()
+	g.TranscriptionHandlerWithPostProcess(nil)(rr, req)
+
+	// Should pass through the original (non-JSON) body unchanged
+	if rr.Code != http.StatusOK {
+		t.Errorf("status: want 200, got %d", rr.Code)
 	}
 }

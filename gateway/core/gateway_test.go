@@ -209,80 +209,6 @@ func TestCatchAllHandler_Unknown(t *testing.T) {
 	}
 }
 
-// --- CustomBackendFromEnv ---
-
-func TestCustomBackendFromEnv_NotSet(t *testing.T) {
-	os.Unsetenv("CUSTOM_BACKEND_URL")
-	if b := CustomBackendFromEnv(); b != nil {
-		t.Error("expected nil when CUSTOM_BACKEND_URL is not set")
-	}
-}
-
-func TestCustomBackendFromEnv_WithURL(t *testing.T) {
-	os.Setenv("CUSTOM_BACKEND_URL", "http://192.168.1.50:8000")
-	os.Setenv("CUSTOM_BACKEND_MODEL", "faster-whisper-large-v3")
-	os.Setenv("CUSTOM_BACKEND_NEEDS_WAV", "true")
-	os.Setenv("CUSTOM_BACKEND_AUTH", "Bearer sk-test")
-	defer func() {
-		os.Unsetenv("CUSTOM_BACKEND_URL")
-		os.Unsetenv("CUSTOM_BACKEND_MODEL")
-		os.Unsetenv("CUSTOM_BACKEND_NEEDS_WAV")
-		os.Unsetenv("CUSTOM_BACKEND_AUTH")
-	}()
-
-	b := CustomBackendFromEnv()
-	if b == nil {
-		t.Fatal("expected non-nil backend")
-	}
-	if b.Name != "custom" {
-		t.Errorf("name: want custom, got %s", b.Name)
-	}
-	if b.URL != "http://192.168.1.50:8000" {
-		t.Errorf("url: want http://192.168.1.50:8000, got %s", b.URL)
-	}
-	if b.ForwardModel != "faster-whisper-large-v3" {
-		t.Errorf("forward model: want faster-whisper-large-v3, got %s", b.ForwardModel)
-	}
-	if !b.NeedsWAV {
-		t.Error("expected NeedsWAV=true")
-	}
-	if b.AuthHeader != "Bearer sk-test" {
-		t.Errorf("auth: want 'Bearer sk-test', got %s", b.AuthHeader)
-	}
-	if !b.SkipHealthCheck {
-		t.Error("expected SkipHealthCheck=true for custom backend")
-	}
-}
-
-// --- NewGateway with custom backend ---
-
-func TestNewGateway_CustomBackendOverridesDefault(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	}))
-	defer srv.Close()
-
-	os.Setenv("CUSTOM_BACKEND_URL", srv.URL)
-	defer os.Unsetenv("CUSTOM_BACKEND_URL")
-
-	g := NewGateway(Config{
-		Backends: []Backend{
-			{Name: "small", URL: srv.URL, Aliases: []string{"small"}},
-		},
-		DefaultModel: "small",
-		MaxBodySize:  1 << 20,
-	})
-
-	// Custom backend should be prepended and become the default
-	u, b := g.resolveBackend("custom")
-	if u == nil || b == nil {
-		t.Fatal("expected custom backend to be resolvable")
-	}
-	if g.defaultModel != "custom" {
-		t.Errorf("defaultModel: want custom, got %s", g.defaultModel)
-	}
-}
-
 // --- DefaultBackends ---
 
 func TestDefaultBackends_NonEmpty(t *testing.T) {
@@ -326,5 +252,70 @@ func TestNewGateway_CreatesWithBackends(t *testing.T) {
 	u, b := g.resolveBackend("test")
 	if u == nil || b == nil {
 		t.Error("expected backend to be resolvable after NewGateway")
+	}
+}
+
+func TestCustomBackendFromEnv_Nil(t *testing.T) {
+	os.Unsetenv("CUSTOM_BACKEND_URL")
+	if b := CustomBackendFromEnv(); b != nil {
+		t.Errorf("expected nil when CUSTOM_BACKEND_URL unset, got %+v", b)
+	}
+}
+
+func TestCustomBackendFromEnv_Set(t *testing.T) {
+	os.Setenv("CUSTOM_BACKEND_URL", "http://my-custom:9000")
+	os.Setenv("CUSTOM_BACKEND_MODEL", "my-model")
+	os.Setenv("CUSTOM_BACKEND_NEEDS_WAV", "true")
+	os.Setenv("CUSTOM_BACKEND_AUTH", "Bearer sk-test")
+	defer func() {
+		os.Unsetenv("CUSTOM_BACKEND_URL")
+		os.Unsetenv("CUSTOM_BACKEND_MODEL")
+		os.Unsetenv("CUSTOM_BACKEND_NEEDS_WAV")
+		os.Unsetenv("CUSTOM_BACKEND_AUTH")
+	}()
+
+	b := CustomBackendFromEnv()
+	if b == nil {
+		t.Fatal("expected non-nil backend when CUSTOM_BACKEND_URL is set")
+	}
+	if b.URL != "http://my-custom:9000" {
+		t.Errorf("URL: want http://my-custom:9000, got %s", b.URL)
+	}
+	if b.ForwardModel != "my-model" {
+		t.Errorf("ForwardModel: want my-model, got %s", b.ForwardModel)
+	}
+	if !b.NeedsWAV {
+		t.Error("NeedsWAV: want true")
+	}
+	if b.AuthHeader != "Bearer sk-test" {
+		t.Errorf("AuthHeader: want 'Bearer sk-test', got %s", b.AuthHeader)
+	}
+	if !b.SkipHealthCheck {
+		t.Error("SkipHealthCheck: want true for custom backend")
+	}
+}
+
+func TestNewGateway_WithCustomBackend(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+
+	os.Setenv("CUSTOM_BACKEND_URL", srv.URL)
+	defer os.Unsetenv("CUSTOM_BACKEND_URL")
+
+	g := NewGateway(Config{
+		Backends:     DefaultBackends(),
+		DefaultModel: "small",
+		MaxBodySize:  1 << 20,
+	})
+
+	// Custom backend should be prepended and become the default model
+	u, b := g.resolveBackend("custom")
+	if u == nil || b == nil {
+		t.Error("custom backend should be resolvable via 'custom' alias")
+	}
+	if g.defaultModel != "custom" {
+		t.Errorf("defaultModel: want custom, got %s", g.defaultModel)
 	}
 }

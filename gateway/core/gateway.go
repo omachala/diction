@@ -21,6 +21,12 @@ type Gateway struct {
 	health       *healthState
 	defaultModel string
 	maxBodySize  int64
+
+	// OnTranscription is an optional hook called after each successful transcription.
+	// model is the backend name, whisperMs is inference latency, chars is transcript length.
+	// enhance and e2e indicate whether LLM post-processing and E2E encryption were requested.
+	// Leave nil in community builds.
+	OnTranscription func(model string, whisperMs int64, chars int, enhance, e2e bool)
 }
 
 // NewGateway creates a Gateway and starts the background health checker.
