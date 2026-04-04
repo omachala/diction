@@ -1,6 +1,6 @@
 <script setup>
 import DefaultTheme from 'vitepress/theme';
-import HeroDemo from './HeroDemo.vue';
+import HeroVideo from './HeroVideo.vue';
 import SiteFooter from './SiteFooter.vue';
 
 const { Layout } = DefaultTheme;
@@ -9,7 +9,7 @@ const { Layout } = DefaultTheme;
 <template>
   <Layout>
     <template #home-hero-image>
-      <HeroDemo />
+      <HeroVideo />
     </template>
     <template #layout-bottom>
       <SiteFooter />
