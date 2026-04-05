@@ -1,90 +1,127 @@
 ---
 title: "Self-Hosting Setup Guide"
-description: Run your own Whisper speech-to-text server and connect Diction to it. Three commands to start. Works with any OpenAI-compatible endpoint.
+description: Run your own Whisper speech-to-text server and connect Diction to it. Two setup paths, direct or with the Diction streaming gateway. Works on any machine with Docker.
 ---
 
 <img src="/illustration-self-hosting-setup.svg" alt="Controller" class="illustration" style="max-width: 480px; margin: 0 auto 2rem; display: block;" />
 
 # Self-Hosting Setup Guide
 
-Run a Whisper server on your own hardware. Your audio stays on your network. Three commands to start, works on any machine that runs Docker.
+Run your own Whisper server, point the Diction app at it, start dictating. Your audio never touches our infrastructure.
 
-## Quick Start
+Diction speaks the OpenAI transcription API (`POST /v1/audio/transcriptions`). Any server that implements it works. You have two ways to set it up, depending on how much you care about latency.
 
-```bash
-git clone https://github.com/omachala/diction.git
-cd diction
-docker compose up -d whisper-small
+## Path 1: Whisper only (simplest)
+
+The minimal setup. One container. No gateway, no extra moving parts.
+
+```yaml
+# docker-compose.yml
+services:
+  whisper:
+    image: fedirz/faster-whisper-server:latest-cpu
+    ports:
+      - "8000:8000"
+    environment:
+      WHISPER__MODEL: Systran/faster-whisper-small
+      WHISPER__INFERENCE_DEVICE: cpu
 ```
 
-That's it. Whisper is now running at `http://<your-server-ip>:9002`.
-
-Open the Diction app, switch to **Self-Hosted**, paste the URL, and start dictating.
-
-## Choosing a Model
-
-The Docker Compose setup includes several models at different sizes. Pick the one that fits your hardware:
-
-| Model | Port | RAM | Speed | Best for |
-|-------|------|-----|-------|----------|
-| `whisper-tiny` | 9001 | ~350 MB | ~1-2s | Low-power hardware, quick tests |
-| `whisper-small` | 9002 | ~800 MB | ~3-4s | Recommended starting point |
-| `whisper-medium` | 9003 | ~1.8 GB | ~8-12s | Better accuracy, needs more RAM |
-| `whisper-large` | 9004 | ~3.5 GB | ~20-30s | Best accuracy, needs serious hardware |
-| `whisper-distil-large` | 9005 | ~2 GB | ~4-6s | Near-large accuracy, much faster |
-
-Start any model with:
-
 ```bash
-docker compose up -d whisper-small    # or whisper-tiny, whisper-medium, etc.
+docker compose up -d
 ```
 
-You can run multiple models at the same time on different ports.
+Open the Diction app, switch to **Self-Hosted**, paste `http://your-server:8000`. A green dot confirms the endpoint is reachable. Start dictating.
 
-## Connecting the App
+**The trade-off:** no streaming. The app waits until you stop speaking, uploads the whole recording to your server, and waits for Whisper to transcribe it. On short phrases that's fine. On longer dictations you'll see a visible pause after you tap stop.
+
+If that's acceptable, you're done. Skip to [Choosing a model](#choosing-a-model).
+
+## Path 2: Whisper + the Diction gateway (streaming)
+
+Adds our open-source gateway in front of whisper. The gateway exposes a WebSocket endpoint the Diction app uses to stream audio live as you speak. By the time you stop talking, the transcript is mostly ready.
+
+```yaml
+# docker-compose.yml
+services:
+  gateway:
+    image: ghcr.io/omachala/diction-gateway:latest
+    ports:
+      - "8080:8080"
+    environment:
+      DEFAULT_MODEL: small
+    depends_on:
+      - whisper-small
+
+  whisper-small:
+    image: fedirz/faster-whisper-server:latest-cpu
+    environment:
+      WHISPER__MODEL: Systran/faster-whisper-small
+      WHISPER__INFERENCE_DEVICE: cpu
+```
+
+```bash
+docker compose up -d
+```
+
+Paste `http://your-server:8080` into the Diction app's **Self-Hosted** tab. Short phrases feel about the same as Path 1. Longer dictations are noticeably faster. The longer you talk, the bigger the gap.
+
+The Diction gateway is fully open source. It runs as a pure proxy and streaming layer. It does not talk to our servers, does not require a subscription, and does not send any telemetry.
+
+## Choosing a model
+
+Both paths support any model. Pick based on your hardware and what you're dictating.
+
+| Model ID | Params | RAM | Notes |
+|----------|--------|-----|-------|
+| `Systran/faster-whisper-small` | 244M | ~850 MB | Recommended starting point. Fast on CPU, fine for most dictations. |
+| `Systran/faster-whisper-medium` | 769M | ~2.1 GB | Better with accents and background noise. Slow on CPU, good on GPU. |
+| `deepdml/faster-whisper-large-v3-turbo-ct2` | 809M | ~2.3 GB | Highest accuracy. Manageable on modern CPUs, near-instant on GPU. |
+
+Swap the model by changing `WHISPER__MODEL` in the service. For Path 2 (gateway), also update `DEFAULT_MODEL` on the gateway service and make sure the whisper service is named to match: `whisper-small`, `whisper-medium`, or `whisper-large-turbo`.
+
+You can run multiple models at the same time in the same compose file. The gateway will route to whichever one you set as the default.
+
+## Connecting the app
 
 1. Open the Diction app
 2. Switch to the **Self-Hosted** tab
-3. Paste your server URL into the **Endpoint URL** field:
+3. Paste your server URL into **Endpoint URL**:
 
 ```
-http://192.168.1.100:9002
+http://192.168.1.100:8080
 ```
 
-Replace `192.168.1.100` with your server's actual IP address. A green dot in the app confirms the endpoint is reachable.
+Replace the address with your server's actual IP. A green dot next to the endpoint confirms it's reachable. Tap the mic and start dictating.
 
-## No Public IP?
+## No public IP?
 
-You do not need to open ports on your router. Several free options let you connect your phone to a home server from anywhere:
+You don't need to open ports on your router. Several free options connect your phone to a home server from anywhere:
 
-- **[Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)** -- free, outbound-only connection. No port forwarding needed.
-- **[Tailscale](https://tailscale.com/)** -- free WireGuard mesh VPN. Install on server and phone, connect from anywhere.
-- **[ngrok](https://ngrok.com/)** -- instant public URL, useful for quick testing.
+- **[Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)**. Free, outbound-only connection. No port forwarding.
+- **[Tailscale](https://tailscale.com/)**. Free WireGuard mesh VPN. Install on server and phone, connect from anywhere.
+- **[ngrok](https://ngrok.com/)**. Instant public URL. Great for quick testing.
 
-## Any Whisper Endpoint Works
+## Optional: API key
 
-Diction is not locked to our Docker setup. It works with any [OpenAI-compatible](https://platform.openai.com/docs/api-reference/audio/createTranscription) speech-to-text endpoint:
+If your server is behind an API key (common with reverse proxies or hosted endpoints), enter it in the **API Key** field in the app's Self-Hosted settings. It's sent as a `Bearer` token with every request.
 
-- [faster-whisper-server](https://github.com/fedirz/faster-whisper-server) (what the Docker Compose setup uses)
-- [whisper.cpp](https://github.com/ggerganov/whisper.cpp) with the HTTP server
+## Any Whisper endpoint works
+
+Neither path locks you to our containers. Both the Diction app (Path 1) and the gateway (Path 2) talk the standard OpenAI transcription API. Anything that accepts `POST /v1/audio/transcriptions` with a file upload and returns a JSON transcript works:
+
+- [faster-whisper-server](https://github.com/fedirz/faster-whisper-server) (used in both paths above)
+- [whisper.cpp](https://github.com/ggerganov/whisper.cpp) HTTP server
 - OpenAI's own Whisper API
 - Any future model that speaks the same protocol
 
-If it accepts `POST /v1/audio/transcriptions` with a file upload and returns a JSON transcript, Diction can use it.
-
-## Optional: API Key
-
-If your server is behind an API key (common with reverse proxies or hosted endpoints), enter it in the **API Key** field in the Self-Hosted settings. It is sent as a Bearer token with every request.
+Already running one? See [Use Your Own Model](/features/custom-model).
 
 ## Requirements
 
-- Any machine that can run Docker (home server, NAS, cloud VM, Raspberry Pi for tiny models)
-- iPhone on the same network, or reachable via tunnel/VPN
+- Any machine that runs Docker (home server, NAS, cloud VM, Raspberry Pi for tiny models)
+- iPhone on the same network, or reachable via tunnel or VPN
 
-## Already running your own model?
+## Full configuration
 
-If you have a Whisper-compatible server running separately and want to connect Diction to it without spinning up any of the containers above, see [Use Your Own Model](/features/custom-model).
-
-## Full Documentation
-
-The complete Docker Compose configuration, model details, and advanced setup options are in the [GitHub repository](https://github.com/omachala/diction).
+The complete compose file with multiple model profiles, and all gateway environment variables, is in the [public GitHub repository](https://github.com/omachala/diction).

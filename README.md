@@ -36,13 +36,12 @@
 
 ## Why Diction?
 
-- **Deep audio engineering.** State-of-the-art audio filtering, a fine-tuned speech recognition model, and context-aware processing — built by a real engineer who goes deep on one problem.
-- **Self-hosted.** `docker compose up` and paste the URL. Your server, your models, your data.
-- **Any Whisper-compatible model.** Point Diction at any endpoint. Medical, legal, accent-tuned - run whatever you want.
-- **End-to-end text encrypted.** AES-256-GCM text encryption with X25519 key exchange. Same encryption used by Signal and WireGuard.
-- **Zero tracking.** No analytics, no telemetry, no data collection. Audit the source yourself.
+- **Deep audio engineering.** State-of-the-art audio filtering, a fine-tuned speech recognition model, and context-aware processing, built by a real engineer who goes deep on one problem.
+- **Self-hosted in one command.** `docker compose up` and paste the URL. Your server, your models, your data.
+- **Works with any Whisper server.** Diction speaks the OpenAI transcription API directly. Point it at any endpoint that implements it, with or without our gateway.
+- **Transcripts encrypted in transit.** AES-256-GCM with X25519 key exchange between the app and the gateway. Same primitives used by Signal and WireGuard.
+- **Zero tracking in the app.** No analytics, no telemetry, no data collection. Audit the source yourself.
 - **On-device.** Whisper runs locally on your iPhone. No network, no server, nothing leaves the device.
-- **AI enhancement.** Optional LLM cleanup - only the transcript text is sent, never the audio.
 - **Free and unlimited.** On-device and self-hosted have no caps, no restrictions, no expiry.
 
 ## How It Works
@@ -53,7 +52,30 @@ Install the app, add the keyboard, and start dictating. On-device transcription 
 
 ### Self-Hosted
 
-Save this as `docker-compose.yml` and run `docker compose up -d`:
+Diction speaks the OpenAI transcription API (`POST /v1/audio/transcriptions`) directly. Any server that implements it works. There are three ways to set it up, depending on what you already have running and how much you care about latency.
+
+#### Path 1: Whisper only (simplest)
+
+One container, no gateway, no extra moving parts. Save this as `docker-compose.yml`:
+
+```yaml
+services:
+  whisper:
+    image: fedirz/faster-whisper-server:latest-cpu
+    ports:
+      - "8000:8000"
+    environment:
+      WHISPER__MODEL: Systran/faster-whisper-small
+      WHISPER__INFERENCE_DEVICE: cpu
+```
+
+Run `docker compose up -d`, paste `http://your-server:8000` into the Diction app's **Self-Hosted** tab, done.
+
+The trade-off: no streaming. The app uploads your recording after you stop talking and waits for whisper to transcribe it. Short phrases feel fine. On longer dictations you'll see a visible pause between the moment you stop and the text appearing.
+
+#### Path 2: Whisper + the Diction gateway (recommended)
+
+Add our open-source gateway in front of whisper. It exposes a WebSocket endpoint that lets the app stream audio as you speak, so the transcript is mostly ready the moment you stop.
 
 ```yaml
 services:
@@ -61,6 +83,10 @@ services:
     image: ghcr.io/omachala/diction-gateway:latest
     ports:
       - "8080:8080"
+    environment:
+      DEFAULT_MODEL: small
+    depends_on:
+      - whisper-small
 
   whisper-small:
     image: fedirz/faster-whisper-server:latest-cpu
@@ -69,24 +95,17 @@ services:
       WHISPER__INFERENCE_DEVICE: cpu
 ```
 
-Your server needs to be reachable from your phone. See [No Public IP?](#no-public-ip) for options like Cloudflare Tunnel, Tailscale, or ngrok.
+Run `docker compose up -d`, point the app at `http://your-server:8080`. Short phrases feel about the same as Path 1. Longer dictations are noticeably faster. The longer you talk, the bigger the gap.
 
-Once reachable, open the Diction app, go to **Self-Hosted**, paste your server URL. Done.
+Your server needs to be reachable from your phone. See [No Public IP?](#no-public-ip) for Cloudflare Tunnel, Tailscale, and ngrok options.
 
-#### More models
+#### Path 3: You already have a Whisper server
 
-Swap or add models to your compose file. The gateway handles routing and streaming between them.
+If you already run one (a fine-tuned model, bigger hardware, something domain-specific), you have the same two choices.
 
-| Model | Parameters | RAM |
-|-------|-----------|-----|
-| `whisper-small` | 244M | ~850 MB |
-| `whisper-medium` | 769M | ~2.1 GB |
-| `whisper-large-v3` | 1.5B | ~3.9 GB |
-| `whisper-large-v3-turbo` | 809M | ~2.3 GB |
+**Point Diction straight at it.** Paste your existing server's URL into the app. If your server speaks `POST /v1/audio/transcriptions`, you're done. No extra containers.
 
-#### Bring your own model
-
-Already running a speech model on your homelab? You don't need to run ours. Set `CUSTOM_BACKEND_URL` to point the gateway at your existing server:
+**Or wrap it with the gateway** to get streaming on top of your existing setup:
 
 ```yaml
 services:
@@ -95,13 +114,25 @@ services:
     ports:
       - "8080:8080"
     environment:
-      CUSTOM_BACKEND_URL: http://my-server:8000
-      CUSTOM_BACKEND_MODEL: your-model-name  # model name your server expects
+      CUSTOM_BACKEND_URL: http://your-existing-server:8000
+      CUSTOM_BACKEND_MODEL: your-model-name
 ```
 
-If your server only accepts WAV audio, add `CUSTOM_BACKEND_NEEDS_WAV: "true"` and the gateway converts automatically. For servers behind an API key, add `CUSTOM_BACKEND_AUTH: "Bearer sk-xxx"`.
+Behind an API key? Add `CUSTOM_BACKEND_AUTH: "Bearer sk-xxx"`. Server only accepts WAV? Add `CUSTOM_BACKEND_NEEDS_WAV: "true"` and the gateway converts with ffmpeg before forwarding. Full reference: [Use Your Own Model](https://diction.one/features/custom-model).
 
-Works with any server that implements `POST /v1/audio/transcriptions`. See the [full guide](https://diction.one/features/custom-model) for more examples.
+#### Models
+
+Swap `WHISPER__MODEL` in your compose file:
+
+| Model ID | Params | RAM |
+|----------|--------|-----|
+| `Systran/faster-whisper-small` | 244M | ~850 MB |
+| `Systran/faster-whisper-medium` | 769M | ~2.1 GB |
+| `deepdml/faster-whisper-large-v3-turbo-ct2` | 809M | ~2.3 GB |
+
+Larger models are more accurate but need more RAM. On a GPU, even the large turbo feels instant. On CPU, small is the sweet spot for everyday dictation.
+
+> If you use Path 2 or 3 with a model other than `small`, set `DEFAULT_MODEL` on the gateway to match (`small`, `medium`, or `large-v3-turbo`) and use the service name the gateway expects: `whisper-small`, `whisper-medium`, or `whisper-large-turbo`.
 
 ## No Public IP?
 

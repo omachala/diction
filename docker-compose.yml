@@ -1,10 +1,31 @@
-# docker compose up -d gateway whisper-small
+# Diction self-hosted stack.
+#
+# Two ways to run transcription:
+#
+#   1. Gateway + whisper (recommended)
+#      Point the Diction app at http://<host>:8080
+#      Streaming over WebSocket. Words come back while you're still talking.
+#
+#   2. Whisper only (simplest)
+#      Add `ports: ["8000:8000"]` to one of the whisper services and point the
+#      Diction app straight at http://<host>:8000. No gateway needed.
+#      Works via the app's HTTP fallback path. No streaming, so longer
+#      dictations have a visible wait after you tap stop.
+#
+# Start the default stack (gateway + small model):
+#   docker compose up -d
+#
+# Opt into larger models via compose profiles:
+#   docker compose --profile medium up -d
+#   docker compose --profile large up -d
+#
+# Valid DEFAULT_MODEL values: small, medium, large-v3-turbo
 #
 # Gateway endpoints:
-#   POST /v1/audio/transcriptions   - transcribe audio
-#   WS   /v1/audio/stream           - stream audio in real time
-#   GET  /v1/models                 - list available models
-#   GET  /health                    - health check
+#   POST /v1/audio/transcriptions   transcribe uploaded audio
+#   WS   /v1/audio/stream           stream audio in real time
+#   GET  /v1/models                 list available models
+#   GET  /health                    health check
 
 services:
 
@@ -44,6 +65,7 @@ services:
     image: fedirz/faster-whisper-server:latest-cpu
     container_name: diction-whisper-medium
     restart: unless-stopped
+    profiles: ["medium"]
     volumes:
       - whisper-models:/root/.cache/huggingface
     environment:
@@ -56,14 +78,15 @@ services:
       retries: 3
       start_period: 120s
 
-  whisper-large:
+  whisper-large-turbo:
     image: fedirz/faster-whisper-server:latest-cpu
-    container_name: diction-whisper-large
+    container_name: diction-whisper-large-turbo
     restart: unless-stopped
+    profiles: ["large"]
     volumes:
       - whisper-models:/root/.cache/huggingface
     environment:
-      WHISPER__MODEL: Systran/faster-whisper-large-v3
+      WHISPER__MODEL: deepdml/faster-whisper-large-v3-turbo-ct2
       WHISPER__INFERENCE_DEVICE: cpu
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:8000/health"]
