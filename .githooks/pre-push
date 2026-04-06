@@ -57,7 +57,7 @@ while read local_ref local_sha remote_ref remote_sha; do
     fi
 
     for pattern in "${SECRET_PATTERNS[@]}"; do
-      match=$(echo "$added_lines" | grep -E "$pattern" || true)
+      match=$(echo "$added_lines" | grep -E -- "$pattern" || true)
       if [ -n "$match" ]; then
         subject=$(git log -1 --format="%s" "$sha")
         echo "✗ Push rejected: potential secret detected in commit $sha ($subject)"
