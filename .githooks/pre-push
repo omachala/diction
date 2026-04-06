@@ -1,31 +1,74 @@
 #!/usr/bin/env bash
-# Block pushing any commit that contains Co-Authored-By lines.
-# Catches --no-verify bypasses of the commit-msg hook.
+# Pre-push guards:
+#   1. Block Co-Authored-By lines
+#   2. Scan diffs for leaked secrets (API keys, tokens, private keys)
+#
+# Only checks branch pushes — tags are skipped.
 
 set -euo pipefail
 
+# Patterns that indicate a leaked secret in added lines.
+SECRET_PATTERNS=(
+  'AKIA[0-9A-Z]{16}'                          # AWS access key
+  '-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----'  # Private keys
+  'ghp_[0-9a-zA-Z]{36}'                       # GitHub PAT (classic)
+  'github_pat_[0-9a-zA-Z_]{82}'               # GitHub PAT (fine-grained)
+  'sk-[0-9a-zA-Z]{20}T3BlbkFJ[0-9a-zA-Z]{20}' # OpenAI API key
+  'xox[bpsar]-[0-9a-zA-Z-]{10,}'              # Slack token
+  'sk_live_[0-9a-zA-Z]{24,}'                  # Stripe secret key
+  'SG\.[0-9a-zA-Z_-]{22}\.[0-9a-zA-Z_-]{43}' # SendGrid API key
+)
+
 while read local_ref local_sha remote_ref remote_sha; do
+  # Skip deletes
   if [ "$local_sha" = "0000000000000000000000000000000000000000" ]; then
     continue
   fi
 
-  if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
-    range="$local_sha"
+  # Skip tags
+  case "$local_ref" in refs/tags/*) continue ;; esac
+
+  if [ "$remote_sha" != "0000000000000000000000000000000000000000" ] && git cat-file -e "$remote_sha" 2>/dev/null; then
+    commits=$(git log "$remote_sha..$local_sha" --format="%H")
   else
-    range="$remote_sha..$local_sha"
+    commits=$(git log "$local_sha" --not --remotes=origin --format="%H")
   fi
 
-  bad=$(git log "$range" --format="%H %s" | while read sha subject; do
+  # --- Check 1: Co-Authored-By lines ---
+  bad=""
+  for sha in $commits; do
     if git show -s --format="%B" "$sha" | grep -qi "^Co-Authored-By:"; then
-      echo "  $sha $subject"
+      subject=$(git log -1 --format="%s" "$sha")
+      bad="$bad  $sha $subject\n"
     fi
-  done)
+  done
 
   if [ -n "$bad" ]; then
     echo "✗ Push rejected: the following commits contain Co-Authored-By lines:"
-    echo "$bad"
+    echo -e "$bad"
     exit 1
   fi
+
+  # --- Check 2: Secret scanning ---
+  for sha in $commits; do
+    added_lines=$(git diff-tree -p "$sha" | grep -E '^\+[^+]' || true)
+    if [ -z "$added_lines" ]; then
+      continue
+    fi
+
+    for pattern in "${SECRET_PATTERNS[@]}"; do
+      match=$(echo "$added_lines" | grep -E "$pattern" || true)
+      if [ -n "$match" ]; then
+        subject=$(git log -1 --format="%s" "$sha")
+        echo "✗ Push rejected: potential secret detected in commit $sha ($subject)"
+        echo "  Pattern: $pattern"
+        echo "  Match:   $(echo "$match" | head -1 | cut -c1-120)"
+        echo ""
+        echo "  If this is a false positive, review the match and use --no-verify to bypass."
+        exit 1
+      fi
+    done
+  done
 done
 
 exit 0
