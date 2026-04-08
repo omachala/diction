@@ -1,7 +1,28 @@
+<script setup>
+import { ref, onMounted } from 'vue'
+
+const videoEl = ref(null)
+
+onMounted(() => {
+  const v = videoEl.value
+  if (!v) return
+
+  const play = () => v.play().catch(() => {})
+
+  if (v.readyState >= 2) {
+    play()
+  } else {
+    v.addEventListener('canplay', play, { once: true })
+    v.load()
+  }
+})
+</script>
+
 <template>
   <div class="hero-video-wrapper">
     <div class="hero-video">
       <video
+        ref="videoEl"
         autoplay
         muted
         loop
