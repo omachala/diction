@@ -85,8 +85,6 @@ services:
       - "8080:8080"
     environment:
       DEFAULT_MODEL: small
-    depends_on:
-      - whisper-small
 
   whisper-small:
     image: fedirz/faster-whisper-server:latest-cpu
@@ -133,6 +131,48 @@ Swap `WHISPER__MODEL` in your compose file:
 Larger models are more accurate but need more RAM. On a GPU, even the large turbo feels instant. On CPU, small is the sweet spot for everyday dictation.
 
 > If you use Path 2 or 3 with a model other than `small`, set `DEFAULT_MODEL` on the gateway to match (`small`, `medium`, or `large-v3-turbo`) and use the service name the gateway expects: `whisper-small`, `whisper-medium`, or `whisper-large-turbo`.
+
+#### Parakeet (alternative to Whisper)
+
+[Parakeet TDT](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v2) is NVIDIA's speech-to-text engine. More accurate and faster than Whisper for European languages, with lower RAM requirements. The trade-off: it supports 25 languages instead of Whisper's 99.
+
+| | Whisper Large-v3 | Parakeet TDT 0.6B v3 |
+|---|---|---|
+| WER (English) | 7.4% | 6.34% |
+| Speed | Baseline | ~10x faster |
+| RAM (INT8) | ~3-4 GB | ~2 GB |
+| Languages | 99 | 25 European |
+
+If you mostly dictate in a European language, Parakeet is the better engine. Save this as `docker-compose.yml`:
+
+```yaml
+services:
+  gateway:
+    image: ghcr.io/omachala/diction-gateway:latest
+    ports:
+      - "8080:8080"
+    environment:
+      DEFAULT_MODEL: parakeet-v3
+
+  parakeet:
+    image: ghcr.io/achetronic/parakeet:latest-int8
+```
+
+Run `docker compose up -d`, point the app at `http://your-server:8080`.
+
+Models are baked into the image, so there's no download delay on first start.
+
+**Supported languages:** English, Bulgarian, Croatian, Czech, Danish, Dutch, Estonian, Finnish, French, German, Greek, Hungarian, Italian, Latvian, Lithuanian, Maltese, Polish, Portuguese, Romanian, Slovak, Slovenian, Spanish, Swedish, Russian, Ukrainian.
+
+For non-European languages (Asian, Arabic, etc.) use Whisper instead.
+
+The full compose file in this repo includes Parakeet as a profile:
+
+```bash
+docker compose --profile parakeet up -d
+```
+
+Set `DEFAULT_MODEL: parakeet-v3` on the gateway to match.
 
 ## AI Enhancement (BYO LLM)
 

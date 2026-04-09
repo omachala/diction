@@ -2,7 +2,8 @@
 #
 # Two ways to run transcription:
 #
-#   1. Gateway + whisper (recommended)
+#   1. Gateway + speech engine (recommended)
+#      Pick a profile and start: docker compose --profile <profile> up -d
 #      Point the Diction app at http://<host>:8080
 #      Streaming over WebSocket. Words come back while you're still talking.
 #
@@ -12,14 +13,17 @@
 #      Works via the app's HTTP fallback path. No streaming, so longer
 #      dictations have a visible wait after you tap stop.
 #
-# Start the default stack (gateway + small model):
-#   docker compose up -d
-#
-# Opt into larger models via compose profiles:
+# Pick a profile (user always picks one explicitly):
+#   docker compose --profile small up -d
 #   docker compose --profile medium up -d
 #   docker compose --profile large up -d
+#   docker compose --profile parakeet up -d
 #
-# Valid DEFAULT_MODEL values: small, medium, large-v3-turbo
+# Set DEFAULT_MODEL on the gateway to match your chosen profile:
+#   small     → DEFAULT_MODEL: small
+#   medium    → DEFAULT_MODEL: medium
+#   large     → DEFAULT_MODEL: large-v3-turbo
+#   parakeet  → DEFAULT_MODEL: parakeet-v3
 #
 # Gateway endpoints:
 #   POST /v1/audio/transcriptions   transcribe uploaded audio
@@ -45,8 +49,6 @@ services:
       # LLM_API_KEY: sk-...
       # LLM_MODEL: gpt-4o-mini
       # LLM_PROMPT: "You are a transcript cleaner. Fix grammar, remove filler words (um, uh, er), and correct STT errors. Return only the cleaned text."
-    depends_on:
-      - whisper-small
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/health"]
       interval: 30s
@@ -57,6 +59,7 @@ services:
     image: fedirz/faster-whisper-server:latest-cpu
     container_name: diction-whisper-small
     restart: unless-stopped
+    profiles: ["small"]
     volumes:
       - whisper-models:/root/.cache/huggingface
     environment:
@@ -102,6 +105,18 @@ services:
       timeout: 5s
       retries: 3
       start_period: 120s
+
+  parakeet:
+    image: ghcr.io/achetronic/parakeet:latest-int8
+    container_name: diction-parakeet
+    restart: unless-stopped
+    profiles: ["parakeet"]
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/5092"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
   ollama:
     image: ollama/ollama

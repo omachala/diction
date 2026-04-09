@@ -1,6 +1,6 @@
 ---
 title: Self-Hosted Transcription
-description: Run your own Whisper server and connect Diction to it. Audio stays on your network. Free, unlimited, open-source server. Two setup paths, direct or with streaming.
+description: Run your own speech-to-text server and connect Diction to it. Audio stays on your network. Free, unlimited, open-source. Three setup paths including a faster engine for European languages
 keywords: "self hosted speech to text iphone, whisper docker ios keyboard, self hosted whisper ios, run whisper at home iphone, home server dictation ios, whisper server ios keyboard, docker whisper iphone"
 ---
 
@@ -16,7 +16,7 @@ Good for: regulated industries where audio cannot go to the cloud, people who al
 
 Diction speaks the OpenAI transcription API directly. If your server accepts `POST /v1/audio/transcriptions`, Diction can talk to it. That's the whole contract.
 
-You have two ways to run it.
+You have three ways to run it.
 
 ### The simple way: whisper only
 
@@ -25,16 +25,20 @@ One container, no extras. Start any OpenAI-compatible Whisper server, point the 
 ```bash
 git clone https://github.com/omachala/diction.git
 cd diction
-docker compose up -d
+docker compose --profile small up -d
 ```
 
-The default compose file starts our gateway plus a small Whisper model. If you want the absolute minimum and don't mind a short pause after you stop speaking, run just the whisper container and skip the gateway entirely. Details in the [setup guide](/features/self-hosting-setup).
+Pick a profile that matches the engine you want (`small`, `medium`, `large`, or `parakeet`). The compose file starts our gateway plus your chosen speech engine. If you want the absolute minimum and don't mind a short pause after you stop speaking, run just the Whisper container and skip the gateway entirely. Details in the [setup guide](/features/self-hosting-setup).
 
 ### The fast way: whisper plus the Diction gateway
 
 Run our open-source gateway in front of whisper. It adds a WebSocket layer, so the app can stream your audio live while you're still talking. By the time you tap stop, the transcript is already coming back. The longer the dictation, the bigger the gap. Short phrases barely change.
 
-Same compose file, same command, same URL paste into the app. The default stack already includes both services.
+Same compose file, same profile command, same URL paste into the app.
+
+### The alternative: a faster engine for European languages
+
+Whisper supports 99 languages, but if you mostly dictate in a European language there's a faster option. NVIDIA's speech engine is more accurate, roughly 10x faster, and uses less RAM. It supports 25 European languages. The setup guide covers both engines.
 
 Full walkthrough: [Self-Hosting Setup Guide](/features/self-hosting-setup). Already running your own Whisper server? [Use Your Own Model](/features/custom-model).
 
