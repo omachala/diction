@@ -134,6 +134,70 @@ Larger models are more accurate but need more RAM. On a GPU, even the large turb
 
 > If you use Path 2 or 3 with a model other than `small`, set `DEFAULT_MODEL` on the gateway to match (`small`, `medium`, or `large-v3-turbo`) and use the service name the gateway expects: `whisper-small`, `whisper-medium`, or `whisper-large-turbo`.
 
+## AI Enhancement (BYO LLM)
+
+The gateway has a built-in hook for LLM-based transcript cleanup. Bring your own model — Ollama, any OpenAI-compatible API, or a cloud provider — and the gateway will run your transcripts through it automatically when the app sends `?enhance=true`.
+
+### How it works
+
+```
+iPhone → POST /v1/audio/transcriptions?enhance=true
+  → Gateway → Whisper/Parakeet → raw transcript
+  → POST {LLM_BASE_URL}/chat/completions
+      system: LLM_PROMPT
+      user: <raw transcript>
+  → return cleaned text
+```
+
+If LLM is not configured, `?enhance=true` is silently ignored and the raw transcript is returned as usual.
+
+### Configuration
+
+Set these environment variables on the gateway:
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `LLM_BASE_URL` | Yes | OpenAI-compatible endpoint (e.g. `http://ollama:11434/v1`) |
+| `LLM_MODEL` | Yes | Model identifier (e.g. `gemma2:9b`) |
+| `LLM_API_KEY` | No | Bearer token. Any string for local, real key for cloud providers |
+| `LLM_PROMPT` | No | System prompt. Write your own for your model and use case. Supports file paths (e.g. `/config/prompt.txt` via volume mount) |
+
+LLM is enabled when both `LLM_BASE_URL` and `LLM_MODEL` are set. If either is missing, the feature is off.
+
+### Quickstart with Ollama
+
+```bash
+docker compose --profile ollama up -d
+docker exec diction-ollama ollama pull gemma2:9b
+```
+
+Then uncomment the `LLM_*` variables in `docker-compose.yml` and restart the gateway:
+
+```bash
+docker compose restart gateway
+```
+
+### Model recommendations
+
+| Model | Size | RAM | Notes |
+|-------|------|-----|-------|
+| Gemma 2 9B | 9B | ~6 GB | Best editing quality at small size |
+| Qwen 2.5 7B | 7B | ~5 GB | Strong instruction following |
+| Llama 3.1 8B | 8B | ~5 GB | Most popular, well-tested |
+| Gemma 3 4B | 4B | ~3 GB | Limited hardware |
+
+Models under 7B tend to struggle with text correction — they answer questions about the text rather than correcting it. 7B+ is the sweet spot.
+
+### Example prompt
+
+```
+You are a transcript cleaner. Fix grammar, punctuation, and capitalization.
+Remove filler words (um, uh, er, like, you know). Correct common
+speech-to-text errors. Return only the cleaned text, nothing else.
+```
+
+For longer or more complex prompts, use a file: set `LLM_PROMPT=/config/prompt.txt` and mount your prompt file into the container.
+
 ## No Public IP?
 
 You don't need to open ports on your router:

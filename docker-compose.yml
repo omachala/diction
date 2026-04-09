@@ -37,6 +37,13 @@ services:
       - "8080:8080"
     environment:
       DEFAULT_MODEL: small
+      # --- AI Enhancement (BYO LLM) ---
+      # Uncomment and configure to enable AI transcript cleanup.
+      # See README for setup guide and model recommendations.
+      # LLM_BASE_URL: http://ollama:11434/v1
+      # LLM_API_KEY: ollama
+      # LLM_MODEL: gemma2:9b
+      # LLM_PROMPT: "You are a transcript cleaner. Fix grammar, remove filler words (um, uh, er), and correct STT errors. Return only the cleaned text."
     depends_on:
       - whisper-small
     healthcheck:
@@ -95,6 +102,16 @@ services:
       retries: 3
       start_period: 120s
 
+  ollama:
+    image: ollama/ollama
+    container_name: diction-ollama
+    restart: unless-stopped
+    profiles: ["ollama"]
+    volumes:
+      - ollama-data:/root/.ollama
+
 volumes:
   whisper-models:
     name: diction-whisper-models
+  ollama-data:
+    name: diction-ollama-data

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/hmac"
@@ -526,6 +527,15 @@ func buildMux() (http.Handler, string, error) {
 		MaxBodySize:  maxBodySize,
 	})
 
+	// LLM post-processing (BYO LLM for self-hosters)
+	llm := llmConfigFromEnv()
+	var postProcess func(context.Context, string, string) (string, error)
+	if llm.Enabled {
+		postProcess = func(ctx context.Context, transcript, contextJSON string) (string, error) {
+			return llm.process(ctx, transcript)
+		}
+	}
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/health", gw.HealthHandler())
 	mux.HandleFunc("/v1/models", gw.ModelsHandler())
@@ -533,14 +543,14 @@ func buildMux() (http.Handler, string, error) {
 		handleTrial(w, r, trials, trialSecret, trialDuration)
 	})
 	mux.HandleFunc("/v1/audio/transcriptions", authMiddleware(
-		gw.TranscriptionHandler(), authEnabled, bundleID, trialSecret,
+		gw.TranscriptionHandlerWithPostProcess(postProcess), authEnabled, bundleID, trialSecret,
 	))
 	mux.HandleFunc("/v1/audio/stream", authMiddleware(
-		gw.StreamingHandler(), authEnabled, bundleID, trialSecret,
+		gw.StreamingHandlerWithPostProcess(postProcess), authEnabled, bundleID, trialSecret,
 	))
 	mux.HandleFunc("/", gw.CatchAllHandler())
 
-	log.Printf("Diction Gateway starting on :%s (default_model=%s, auth=%v, trial=%v)", port, defaultModel, authEnabled, len(trialSecret) > 0)
+	log.Printf("Diction Gateway starting on :%s (default_model=%s, auth=%v, trial=%v, llm=%v)", port, defaultModel, authEnabled, len(trialSecret) > 0, llm.Enabled)
 	return mux, port, nil
 }
 

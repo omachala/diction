@@ -716,3 +716,45 @@ func TestBuildMux_RoutesRegistered(t *testing.T) {
 		t.Errorf("/health: want 200, got %d", resp.StatusCode)
 	}
 }
+
+// --- LLM wiring in buildMux ---
+
+func TestBuildMux_LLM_Disabled(t *testing.T) {
+	os.Unsetenv("LLM_BASE_URL")
+	os.Unsetenv("LLM_MODEL")
+	os.Unsetenv("LLM_API_KEY")
+	os.Unsetenv("LLM_PROMPT")
+	os.Setenv("TRIAL_DB_PATH", t.TempDir()+"/trials.json")
+	defer os.Unsetenv("TRIAL_DB_PATH")
+
+	mux, _, err := buildMux()
+	if err != nil {
+		t.Fatalf("buildMux: %v", err)
+	}
+	if mux == nil {
+		t.Fatal("expected non-nil mux")
+	}
+	// No crash when LLM env vars are absent — postProcess is nil.
+}
+
+func TestBuildMux_LLM_Enabled(t *testing.T) {
+	os.Setenv("LLM_BASE_URL", "http://localhost:99999/v1")
+	os.Setenv("LLM_MODEL", "test-model")
+	os.Setenv("LLM_PROMPT", "Fix grammar.")
+	os.Setenv("TRIAL_DB_PATH", t.TempDir()+"/trials.json")
+	defer func() {
+		os.Unsetenv("LLM_BASE_URL")
+		os.Unsetenv("LLM_MODEL")
+		os.Unsetenv("LLM_PROMPT")
+		os.Unsetenv("TRIAL_DB_PATH")
+	}()
+
+	mux, _, err := buildMux()
+	if err != nil {
+		t.Fatalf("buildMux: %v", err)
+	}
+	if mux == nil {
+		t.Fatal("expected non-nil mux with LLM enabled")
+	}
+	// Gateway starts without error when LLM env vars are set.
+}
