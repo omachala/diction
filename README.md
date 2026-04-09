@@ -136,57 +136,70 @@ Larger models are more accurate but need more RAM. On a GPU, even the large turb
 
 ## AI Enhancement (BYO LLM)
 
-The gateway has a built-in hook for LLM-based transcript cleanup. Bring your own model — Ollama, any OpenAI-compatible API, or a cloud provider — and the gateway will run your transcripts through it automatically when the app sends `?enhance=true`.
+You say "so um basically the meeting went well and uh they agreed to the timeline." Your server turns that into "The meeting went well. They agreed to the timeline."
+
+The gateway can pass transcripts through any LLM before returning them. OpenAI, Groq, Anthropic, Ollama on the same machine, or any provider that speaks the OpenAI chat completions format. You write the prompt. You pick the model.
+
+If no LLM is configured, nothing changes. Transcripts come back raw, same as before.
 
 ### How it works
 
 ```
-iPhone → POST /v1/audio/transcriptions?enhance=true
-  → Gateway → Whisper/Parakeet → raw transcript
-  → POST {LLM_BASE_URL}/chat/completions
-      system: LLM_PROMPT
-      user: <raw transcript>
-  → return cleaned text
+iPhone → gateway → Whisper → raw transcript
+  → your LLM (chat/completions)
+  → cleaned text back to the app
 ```
 
-If LLM is not configured, `?enhance=true` is silently ignored and the raw transcript is returned as usual.
+The app sends `?enhance=true` on the request. The gateway sends your transcript to `{LLM_BASE_URL}/chat/completions` with your system prompt, and returns whatever the LLM sends back.
 
 ### Configuration
 
-Set these environment variables on the gateway:
+Four environment variables on the gateway:
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `LLM_BASE_URL` | Yes | OpenAI-compatible endpoint (e.g. `http://ollama:11434/v1`) |
-| `LLM_MODEL` | Yes | Model identifier (e.g. `gemma2:9b`) |
-| `LLM_API_KEY` | No | Bearer token. Any string for local, real key for cloud providers |
-| `LLM_PROMPT` | No | System prompt. Write your own for your model and use case. Supports file paths (e.g. `/config/prompt.txt` via volume mount) |
+| `LLM_BASE_URL` | Yes | OpenAI-compatible endpoint (e.g. `https://api.openai.com/v1`) |
+| `LLM_MODEL` | Yes | Model identifier (e.g. `gpt-4o-mini`) |
+| `LLM_API_KEY` | No | Bearer token. Your OpenAI/Groq/etc. key, or any string for local Ollama |
+| `LLM_PROMPT` | No | System prompt. Supports file paths (e.g. `/config/prompt.txt` via volume mount) |
 
-LLM is enabled when both `LLM_BASE_URL` and `LLM_MODEL` are set. If either is missing, the feature is off.
+Both `LLM_BASE_URL` and `LLM_MODEL` must be set. If either is missing, the feature is off.
 
-### Quickstart with Ollama
+### Quickstart with OpenAI
+
+Set these on the gateway service in your `docker-compose.yml`:
+
+```yaml
+environment:
+  LLM_BASE_URL: https://api.openai.com/v1
+  LLM_API_KEY: sk-...
+  LLM_MODEL: gpt-4o-mini
+  LLM_PROMPT: "You are a transcript cleaner. Fix grammar, punctuation, and capitalization. Remove filler words. Correct speech-to-text errors. Return only the cleaned text."
+```
+
+Restart the gateway and you're done. Works with any OpenAI-compatible provider. Swap the base URL for Groq (`https://api.groq.com/openai/v1`), Together, Fireworks, or anything else that speaks the same format.
+
+### Local with Ollama
+
+If you'd rather keep everything on your network, the compose file includes an Ollama profile:
 
 ```bash
 docker compose --profile ollama up -d
 docker exec diction-ollama ollama pull gemma2:9b
 ```
 
-Then uncomment the `LLM_*` variables in `docker-compose.yml` and restart the gateway:
+Uncomment the `LLM_*` variables in `docker-compose.yml`, restart the gateway, and transcripts run through your local model. No API key, no external calls.
 
-```bash
-docker compose restart gateway
-```
-
-### Model recommendations
+#### Model recommendations for local
 
 | Model | Size | RAM | Notes |
 |-------|------|-----|-------|
-| Gemma 2 9B | 9B | ~6 GB | Best editing quality at small size |
+| Gemma 2 9B | 9B | ~6 GB | Best editing quality at this size |
 | Qwen 2.5 7B | 7B | ~5 GB | Strong instruction following |
 | Llama 3.1 8B | 8B | ~5 GB | Most popular, well-tested |
 | Gemma 3 4B | 4B | ~3 GB | Limited hardware |
 
-Models under 7B tend to struggle with text correction — they answer questions about the text rather than correcting it. 7B+ is the sweet spot.
+Models under 7B tend to answer questions about the text instead of correcting it. 7B or larger works best.
 
 ### Example prompt
 
@@ -196,7 +209,7 @@ Remove filler words (um, uh, er, like, you know). Correct common
 speech-to-text errors. Return only the cleaned text, nothing else.
 ```
 
-For longer or more complex prompts, use a file: set `LLM_PROMPT=/config/prompt.txt` and mount your prompt file into the container.
+For longer prompts, use a file: set `LLM_PROMPT=/config/prompt.txt` and mount it into the container.
 
 ## No Public IP?
 

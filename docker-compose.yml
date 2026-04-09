@@ -39,10 +39,11 @@ services:
       DEFAULT_MODEL: small
       # --- AI Enhancement (BYO LLM) ---
       # Uncomment and configure to enable AI transcript cleanup.
+      # Works with OpenAI, Groq, Ollama, or any OpenAI-compatible provider.
       # See README for setup guide and model recommendations.
-      # LLM_BASE_URL: http://ollama:11434/v1
-      # LLM_API_KEY: ollama
-      # LLM_MODEL: gemma2:9b
+      # LLM_BASE_URL: https://api.openai.com/v1
+      # LLM_API_KEY: sk-...
+      # LLM_MODEL: gpt-4o-mini
       # LLM_PROMPT: "You are a transcript cleaner. Fix grammar, remove filler words (um, uh, er), and correct STT errors. Return only the cleaned text."
     depends_on:
       - whisper-small
