@@ -31,6 +31,7 @@ type streamAction struct {
 
 type streamResult struct {
 	Text string `json:"text"`
+	Mode string `json:"mode,omitempty"`
 }
 
 // StreamingHandler returns the handler for WS /v1/audio/stream.
@@ -48,18 +49,22 @@ func (g *Gateway) StreamingHandler() http.HandlerFunc {
 
 // StreamingHandlerWithPostProcess is like StreamingHandler but calls postProcess
 // on the transcript when ?enhance=true is requested. Pass nil for no post-processing.
-// postProcess receives (ctx, transcript, contextJSON).
-func (g *Gateway) StreamingHandlerWithPostProcess(postProcess func(context.Context, string, string) (string, error)) http.HandlerFunc {
+// postProcess receives (ctx, transcript, contextJSON, intent) and returns (resultText, mode, error).
+func (g *Gateway) StreamingHandlerWithPostProcess(postProcess func(context.Context, string, string, string) (string, string, error)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Resolve backend before upgrade
-		model := g.defaultModel
+		// Resolve backend before upgrade — route to best model for the language
+		language := r.URL.Query().Get("language")
+		model := g.ModelForLanguage(language)
 		target, backend := g.resolveBackend(model)
 		if target == nil || (!backend.SkipHealthCheck && !g.health.get(model)) {
 			http.Error(w, `{"error":"backend unavailable"}`, http.StatusServiceUnavailable)
 			return
 		}
-
-		language := r.URL.Query().Get("language")
+		if g.fallbackModel != "" {
+			log.Printf("Route: language=%s → model=%s", language, model)
+		}
+		w.Header().Set("X-Diction-Route-Lang", language)
+		w.Header().Set("X-Diction-Route-Model", model)
 
 		conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
 			InsecureSkipVerify: true, // allow any origin for now
@@ -136,15 +141,18 @@ func (g *Gateway) StreamingHandlerWithPostProcess(postProcess func(context.Conte
 		}
 
 		// Apply post-processing if provided (e.g. ?enhance=true)
+		var mode string
 		if postProcess != nil && r.URL.Query().Get("enhance") == "true" && text != "" {
-			if cleaned, err := postProcess(ctx, text, contextJSON); err == nil {
-				text = cleaned
+			intent := r.URL.Query().Get("intent")
+			if resultText, resultMode, err := postProcess(ctx, text, contextJSON, intent); err == nil {
+				text = resultText
+				mode = resultMode
 			} else {
 				log.Printf("ws post-process: %v", err)
 			}
 		}
 
-		result, _ := json.Marshal(streamResult{Text: text})
+		result, _ := json.Marshal(streamResult{Text: text, Mode: mode})
 		if err := conn.Write(ctx, websocket.MessageText, result); err != nil {
 			log.Printf("ws write result: %v", err)
 			return
@@ -186,7 +194,11 @@ func (g *Gateway) proxyToBackend(ctx context.Context, target *url.URL, pcm []byt
 	writer.Close()
 
 	// POST to backend
-	backendURL := target.String() + "/v1/audio/transcriptions"
+	transcriptionPath := "/v1/audio/transcriptions"
+	if backend.TargetPath != "" {
+		transcriptionPath = backend.TargetPath
+	}
+	backendURL := target.String() + transcriptionPath
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, backendURL, &body)
 	if err != nil {
 		return "", fmt.Errorf("create request: %w", err)

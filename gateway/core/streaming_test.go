@@ -414,7 +414,7 @@ func TestStreamingHandler_HealthByAliasName(t *testing.T) {
 	}
 }
 
-func startStreamingServerWithPostProcess(t *testing.T, whisperResponse string, postProcess func(context.Context, string, string) (string, error)) *httptest.Server {
+func startStreamingServerWithPostProcess(t *testing.T, whisperResponse string, postProcess func(context.Context, string, string, string) (string, string, error)) *httptest.Server {
 	t.Helper()
 	whisper := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -438,8 +438,8 @@ func startStreamingServerWithPostProcess(t *testing.T, whisperResponse string, p
 }
 
 func TestStreamingHandler_WithPostProcess_Success(t *testing.T) {
-	postProcess := func(ctx context.Context, text, contextJSON string) (string, error) {
-		return "cleaned: " + text, nil
+	postProcess := func(ctx context.Context, text, contextJSON, intent string) (string, string, error) {
+		return "cleaned: " + text, "transcribe", nil
 	}
 	srv := startStreamingServerWithPostProcess(t, "raw audio", postProcess)
 
@@ -471,8 +471,8 @@ func TestStreamingHandler_WithPostProcess_Success(t *testing.T) {
 
 func TestStreamingHandler_WithPostProcess_ErrorFallback(t *testing.T) {
 	// postProcess error → raw transcript returned unchanged
-	postProcess := func(ctx context.Context, text, contextJSON string) (string, error) {
-		return "", fmt.Errorf("llm error")
+	postProcess := func(ctx context.Context, text, contextJSON, intent string) (string, string, error) {
+		return "", "", fmt.Errorf("llm error")
 	}
 	srv := startStreamingServerWithPostProcess(t, "raw audio", postProcess)
 
@@ -538,9 +538,9 @@ func TestStreamingHandler_ContextAfterAudio_Dropped(t *testing.T) {
 	// non-action text frames are ignored. If iOS client ever reorders frames,
 	// context vanishes with no error.
 	var receivedContext string
-	postProcess := func(ctx context.Context, text, contextJSON string) (string, error) {
+	postProcess := func(ctx context.Context, text, contextJSON, intent string) (string, string, error) {
 		receivedContext = contextJSON
-		return "cleaned: " + text, nil
+		return "cleaned: " + text, "transcribe", nil
 	}
 	srv := startStreamingServerWithPostProcess(t, "raw audio", postProcess)
 
@@ -582,9 +582,9 @@ func TestStreamingHandler_ContextAfterAudio_Dropped(t *testing.T) {
 
 func TestStreamingHandler_FirstTextFrameAsContext(t *testing.T) {
 	var receivedContext string
-	postProcess := func(ctx context.Context, text, contextJSON string) (string, error) {
+	postProcess := func(ctx context.Context, text, contextJSON, intent string) (string, string, error) {
 		receivedContext = contextJSON
-		return "cleaned: " + text, nil
+		return "cleaned: " + text, "transcribe", nil
 	}
 	srv := startStreamingServerWithPostProcess(t, "raw audio", postProcess)
 
@@ -621,5 +621,75 @@ func TestStreamingHandler_FirstTextFrameAsContext(t *testing.T) {
 	}
 	if receivedContext != contextJSON {
 		t.Errorf("context: want %q, got %q", contextJSON, receivedContext)
+	}
+}
+
+func TestStreamingHandler_WithPostProcess_ModeInResponse(t *testing.T) {
+	postProcess := func(ctx context.Context, text, contextJSON, intent string) (string, string, error) {
+		if intent == "edit" {
+			return "edited text", "edit", nil
+		}
+		return "cleaned: " + text, "transcribe", nil
+	}
+	srv := startStreamingServerWithPostProcess(t, "raw audio", postProcess)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Test with intent=edit
+	conn, _, err := websocket.Dial(ctx, wsURL(srv, "enhance=true&intent=edit"), nil)
+	if err != nil {
+		t.Fatalf("dial: %v", err)
+	}
+	defer conn.CloseNow()
+
+	conn.Write(ctx, websocket.MessageBinary, make([]byte, 3200))
+	done, _ := json.Marshal(map[string]string{"action": "done"})
+	conn.Write(ctx, websocket.MessageText, done)
+
+	_, data, err := conn.Read(ctx)
+	if err != nil {
+		t.Fatalf("read: %v", err)
+	}
+	var result struct {
+		Text string `json:"text"`
+		Mode string `json:"mode"`
+	}
+	json.Unmarshal(data, &result)
+	if result.Text != "edited text" {
+		t.Errorf("text: want 'edited text', got %q", result.Text)
+	}
+	if result.Mode != "edit" {
+		t.Errorf("mode: want 'edit', got %q", result.Mode)
+	}
+}
+
+func TestStreamingHandler_NoEnhance_NoModeField(t *testing.T) {
+	// Without ?enhance=true, mode should be omitted (empty)
+	srv, _ := startStreamingServer(t, "plain text", http.StatusOK)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	conn, _, err := websocket.Dial(ctx, wsURL(srv, ""), nil)
+	if err != nil {
+		t.Fatalf("dial: %v", err)
+	}
+	defer conn.CloseNow()
+
+	conn.Write(ctx, websocket.MessageBinary, make([]byte, 3200))
+	done, _ := json.Marshal(map[string]string{"action": "done"})
+	conn.Write(ctx, websocket.MessageText, done)
+
+	_, data, err := conn.Read(ctx)
+	if err != nil {
+		t.Fatalf("read: %v", err)
+	}
+
+	// Verify mode is NOT in the JSON (omitempty)
+	var raw map[string]interface{}
+	json.Unmarshal(data, &raw)
+	if _, exists := raw["mode"]; exists {
+		t.Error("mode field should be omitted when enhance is not used")
 	}
 }

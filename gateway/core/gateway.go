@@ -10,17 +10,21 @@ import (
 
 // Config holds all gateway configuration.
 type Config struct {
-	Backends     []Backend
-	DefaultModel string
-	MaxBodySize  int64
+	Backends      []Backend
+	DefaultModel  string
+	FallbackModel string
+	EnglishModel  string
+	MaxBodySize   int64
 }
 
 // Gateway holds runtime state: backends, health, config.
 type Gateway struct {
-	backends     []Backend
-	health       *healthState
-	defaultModel string
-	maxBodySize  int64
+	backends      []Backend
+	health        *healthState
+	defaultModel  string
+	fallbackModel string
+	englishModel  string
+	maxBodySize   int64
 
 	// OnTranscription is an optional hook called after each successful transcription.
 	// model is the backend name, whisperMs is inference latency, chars is transcript length.
@@ -39,10 +43,12 @@ func NewGateway(cfg Config) *Gateway {
 		defaultModel = "custom"
 	}
 	g := &Gateway{
-		backends:     backends,
-		health:       newHealthState(),
-		defaultModel: defaultModel,
-		maxBodySize:  cfg.MaxBodySize,
+		backends:      backends,
+		health:        newHealthState(),
+		defaultModel:  defaultModel,
+		fallbackModel: cfg.FallbackModel,
+		englishModel:  cfg.EnglishModel,
+		maxBodySize:   cfg.MaxBodySize,
 	}
 	g.startHealthChecker()
 	return g

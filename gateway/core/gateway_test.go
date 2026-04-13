@@ -14,7 +14,7 @@ func testGateway() *Gateway {
 		backends: []Backend{
 			{Name: "small", URL: "http://whisper-small:8000", Aliases: []string{"small", "Systran/faster-whisper-small"}},
 			{Name: "medium", URL: "http://whisper-medium:8000", Aliases: []string{"medium", "Systran/faster-whisper-medium"}},
-			{Name: "parakeet-v3", URL: "http://parakeet:5092", Aliases: []string{"parakeet-v3", "parakeet"}},
+			{Name: "canary-v2", URL: "http://canary:9000", Aliases: []string{"canary-v2", "canary"}, NeedsWAV: true, TargetPath: "/inference"},
 		},
 		health:       newHealthState(),
 		defaultModel: "small",
