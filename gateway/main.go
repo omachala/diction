@@ -529,10 +529,11 @@ func buildMux() (http.Handler, string, error) {
 
 	// LLM post-processing (BYO LLM for self-hosters)
 	llm := llmConfigFromEnv()
-	var postProcess func(context.Context, string, string) (string, error)
+	var postProcess func(context.Context, string, string, string) (string, string, error)
 	if llm.Enabled {
-		postProcess = func(ctx context.Context, transcript, contextJSON string) (string, error) {
-			return llm.process(ctx, transcript)
+		postProcess = func(ctx context.Context, transcript, contextJSON, intent string) (string, string, error) {
+			result, err := llm.process(ctx, transcript)
+			return result, "", err
 		}
 	}
 
