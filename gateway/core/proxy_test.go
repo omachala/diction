@@ -289,6 +289,82 @@ func TestTranscriptionHandler_BodyTooLarge(t *testing.T) {
 	}
 }
 
+func TestTranscriptionHandler_FallbackModelRouteLogs(t *testing.T) {
+	// When a fallbackModel is configured the gateway logs the route decision.
+	// This test exercises the log.Printf branch (line 244) that is only reached
+	// when g.fallbackModel != "".
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"text":"routed"}`)
+	}))
+	defer backend.Close()
+
+	g := &Gateway{
+		backends: []Backend{
+			{Name: "canary-v2", URL: backend.URL, Aliases: []string{"canary-v2"}},
+			{Name: "large-v3-turbo", URL: backend.URL, Aliases: []string{"large-v3-turbo"}},
+		},
+		health:        newHealthState(),
+		defaultModel:  "canary-v2",
+		fallbackModel: "large-v3-turbo",
+		maxBodySize:   10 * 1024 * 1024,
+	}
+	g.health.set("canary-v2", true)
+
+	body, ct := buildMultipart(t, map[string]string{"language": "en"}, "audio.m4a", "fake-audio")
+	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions", bytes.NewReader(body))
+	req.Header.Set("Content-Type", ct)
+	rr := httptest.NewRecorder()
+	g.TranscriptionHandler()(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("status: want 200, got %d", rr.Code)
+	}
+}
+
+func TestTranscriptionHandler_OnTranscriptionCallback(t *testing.T) {
+	// OnTranscription hook is called when the response is rewritten (enhance=true path).
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"text":"callback test"}`)
+	}))
+	defer backend.Close()
+
+	var gotModel string
+	var gotChars int
+	g := &Gateway{
+		backends: []Backend{
+			{Name: "small", URL: backend.URL, Aliases: []string{"small"}},
+		},
+		health:       newHealthState(),
+		defaultModel: "small",
+		maxBodySize:  10 * 1024 * 1024,
+		OnTranscription: func(model string, _ int64, chars int, _, _ bool) {
+			gotModel = model
+			gotChars = chars
+		},
+	}
+	g.health.set("small", true)
+
+	body, ct := buildMultipart(t, map[string]string{}, "audio.m4a", "fake-audio")
+	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions?enhance=true", bytes.NewReader(body))
+	req.Header.Set("Content-Type", ct)
+	rr := httptest.NewRecorder()
+	g.TranscriptionHandlerWithPostProcess(func(_ context.Context, text, _, _ string) (string, string, error) {
+		return text, "transcribe", nil
+	})(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("status: want 200, got %d", rr.Code)
+	}
+	if gotModel != "small" {
+		t.Errorf("OnTranscription model: want small, got %q", gotModel)
+	}
+	if gotChars == 0 {
+		t.Errorf("OnTranscription chars: want >0, got 0")
+	}
+}
+
 func TestTranscriptionHandler_ProxiesToBackend(t *testing.T) {
 	// Start a fake whisper backend
 	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -364,8 +440,8 @@ func TestTranscriptionHandler_WithPostProcess_Success(t *testing.T) {
 		maxBodySize:  10 * 1024 * 1024,
 	}
 
-	postProcess := func(ctx context.Context, text, contextJSON string) (string, error) {
-		return "cleaned: " + text, nil
+	postProcess := func(ctx context.Context, text, contextJSON, intent string) (string, string, error) {
+		return "cleaned: " + text, "transcribe", nil
 	}
 
 	body, ct := buildMultipart(t, map[string]string{"model": "small"}, "audio.m4a", "fake-audio")
@@ -399,8 +475,8 @@ func TestTranscriptionHandler_WithPostProcess_ErrorFallback(t *testing.T) {
 		maxBodySize:  10 * 1024 * 1024,
 	}
 
-	postProcess := func(ctx context.Context, text, contextJSON string) (string, error) {
-		return "", fmt.Errorf("llm error")
+	postProcess := func(ctx context.Context, text, contextJSON, intent string) (string, string, error) {
+		return "", "", fmt.Errorf("llm error")
 	}
 
 	body, ct := buildMultipart(t, map[string]string{"model": "small"}, "audio.m4a", "fake-audio")
@@ -522,6 +598,14 @@ func TestBuildWhisperPrompt_EmptyWordSkipped(t *testing.T) {
 	got := buildWhisperPrompt(`{"customWords":[{"word":""},{"word":"PostgreSQL"},{"word":""}]}`)
 	if got != "PostgreSQL" {
 		t.Errorf("want %q, got %q", "PostgreSQL", got)
+	}
+}
+
+func TestBuildWhisperPrompt_AllWordsEmpty(t *testing.T) {
+	// customWords present but every Word field is "" — should return ""
+	got := buildWhisperPrompt(`{"customWords":[{"word":""},{"word":""}]}`)
+	if got != "" {
+		t.Errorf("want empty string when all words are blank, got %q", got)
 	}
 }
 
@@ -705,9 +789,9 @@ func TestTranscriptionHandler_ContextFieldPassedToPostProcess(t *testing.T) {
 	}
 
 	var receivedContext string
-	postProcess := func(ctx context.Context, text, contextJSON string) (string, error) {
+	postProcess := func(ctx context.Context, text, contextJSON, intent string) (string, string, error) {
 		receivedContext = contextJSON
-		return text, nil
+		return text, "", nil
 	}
 
 	contextJSON := `{"before":"hello ","after":" world","selected":"test"}`
@@ -890,5 +974,45 @@ func TestTranscriptionHandler_NonJSONBackendResponse(t *testing.T) {
 	// Should pass through the original (non-JSON) body unchanged
 	if rr.Code != http.StatusOK {
 		t.Errorf("status: want 200, got %d", rr.Code)
+	}
+}
+
+func TestTranscriptionHandler_TargetPath(t *testing.T) {
+	// Backends with TargetPath (e.g. canary-v2) must use that path instead of /v1/audio/transcriptions.
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/inference" {
+			http.Error(w, "wrong path: "+r.URL.Path, http.StatusNotFound)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"text":"hello","timestamps":null}`))
+	}))
+	defer backend.Close()
+
+	g := &Gateway{
+		backends: []Backend{
+			{Name: "canary-v2", URL: backend.URL, Aliases: []string{"canary-v2"}, NeedsWAV: false, TargetPath: "/inference"},
+		},
+		health:       newHealthState(),
+		defaultModel: "canary-v2",
+		maxBodySize:  10 * 1024 * 1024,
+	}
+	g.health.set("canary-v2", true)
+
+	body, ct := buildMultipart(t, map[string]string{}, "audio.wav", "RIFF"+string(make([]byte, 36)))
+	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions", bytes.NewReader(body))
+	req.Header.Set("Content-Type", ct)
+	rr := httptest.NewRecorder()
+	g.TranscriptionHandler()(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("status: want 200, got %d: %s", rr.Code, rr.Body.String())
+	}
+	if !bytes.Contains(rr.Body.Bytes(), []byte(`"hello"`)) {
+		t.Errorf("expected transcript 'hello' in response, got: %s", rr.Body.String())
+	}
+	// Canary's "timestamps":null must be stripped — gateway contract is {"text":"..."}
+	if bytes.Contains(rr.Body.Bytes(), []byte("timestamps")) {
+		t.Errorf("timestamps field leaked into response: %s", rr.Body.String())
 	}
 }

@@ -208,8 +208,8 @@ func (g *Gateway) TranscriptionHandler() http.HandlerFunc {
 
 // TranscriptionHandlerWithPostProcess is like TranscriptionHandler but calls postProcess
 // on the transcript when ?enhance=true is requested. Pass nil for no post-processing.
-// postProcess receives (ctx, transcript, contextJSON).
-func (g *Gateway) TranscriptionHandlerWithPostProcess(postProcess func(context.Context, string, string) (string, error)) http.HandlerFunc {
+// postProcess receives (ctx, transcript, contextJSON, intent) and returns (resultText, mode, error).
+func (g *Gateway) TranscriptionHandlerWithPostProcess(postProcess func(context.Context, string, string, string) (string, string, error)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			http.Error(w, `{"error":"method not allowed"}`, http.StatusMethodNotAllowed)
@@ -227,14 +227,24 @@ func (g *Gateway) TranscriptionHandlerWithPostProcess(postProcess func(context.C
 			return
 		}
 
-		// Resolve backend
+		// Resolve backend — route to best model for the request's language
 		contentType := r.Header.Get("Content-Type")
 		boundary := parseBoundary(contentType)
-		target, backend := g.resolveBackend(g.defaultModel)
+		language := ""
+		if boundary != "" {
+			language = extractFormField(body, boundary, "language")
+		}
+		model := g.ModelForLanguage(language)
+		target, backend := g.resolveBackend(model)
 		if target == nil {
 			http.Error(w, `{"error":"backend unavailable"}`, http.StatusBadRequest)
 			return
 		}
+		if g.fallbackModel != "" {
+			log.Printf("Route: language=%s → model=%s", language, model)
+		}
+		w.Header().Set("X-Diction-Route-Lang", language)
+		w.Header().Set("X-Diction-Route-Model", model)
 
 		// Extract context and build Whisper vocabulary prompt from custom words
 		var contextJSON string
@@ -268,7 +278,11 @@ func (g *Gateway) TranscriptionHandlerWithPostProcess(postProcess func(context.C
 			Director: func(req *http.Request) {
 				req.URL.Scheme = target.Scheme
 				req.URL.Host = target.Host
-				req.URL.Path = "/v1/audio/transcriptions"
+				path := "/v1/audio/transcriptions"
+				if backend.TargetPath != "" {
+					path = backend.TargetPath
+				}
+				req.URL.Path = path
 				req.Host = target.Host
 				req.Header.Set("Content-Type", proxyContentType)
 				req.Body = io.NopCloser(bytes.NewReader(proxyBody))
@@ -281,7 +295,11 @@ func (g *Gateway) TranscriptionHandlerWithPostProcess(postProcess func(context.C
 				whisperMs := time.Since(whisperStart).Milliseconds()
 				resp.Header.Set("X-Diction-Whisper-Ms", fmt.Sprintf("%d", whisperMs))
 
-				needsRewrite := (postProcess != nil && enhanceEnabled) || e2eClientKey != ""
+				// Backends with a custom TargetPath (e.g. Canary) may return extra fields
+				// (e.g. "timestamps":null) that aren't part of the gateway contract — always
+				// normalize their response body to {"text":"..."}.
+				needsNormalize := backend.TargetPath != ""
+				needsRewrite := (postProcess != nil && enhanceEnabled) || e2eClientKey != "" || needsNormalize
 				if !needsRewrite || resp.StatusCode != http.StatusOK {
 					return nil
 				}
@@ -309,15 +327,18 @@ func (g *Gateway) TranscriptionHandlerWithPostProcess(postProcess func(context.C
 				}
 
 				// LLM post-processing (if requested)
+				var mode string
 				if postProcess != nil && enhanceEnabled {
+					intent := r.URL.Query().Get("intent")
 					llmStart := time.Now()
-					cleaned, err := postProcess(resp.Request.Context(), transcript, contextJSON)
+					resultText, resultMode, err := postProcess(resp.Request.Context(), transcript, contextJSON, intent)
 					llmMs := time.Since(llmStart).Milliseconds()
 					resp.Header.Set("X-Diction-LLM-Ms", fmt.Sprintf("%d", llmMs))
 					if err != nil {
 						log.Printf("post-process error (returning raw): %v", err)
 					} else {
-						transcript = cleaned
+						transcript = resultText
+						mode = resultMode
 					}
 				}
 
@@ -328,9 +349,13 @@ func (g *Gateway) TranscriptionHandlerWithPostProcess(postProcess func(context.C
 						log.Printf("e2e encrypt error: %v", err)
 						// Fall through to plain response
 					} else {
-						newBody, _ := json.Marshal(map[string]any{
+						result := map[string]any{
 							"e2e": map[string]string{"ct": ct, "pk": pk},
-						})
+						}
+						if mode != "" {
+							result["mode"] = mode
+						}
+						newBody, _ := json.Marshal(result)
 						resp.Body = io.NopCloser(bytes.NewReader(newBody))
 						resp.ContentLength = int64(len(newBody))
 						resp.Header.Set("Content-Length", fmt.Sprintf("%d", len(newBody)))
@@ -339,7 +364,11 @@ func (g *Gateway) TranscriptionHandlerWithPostProcess(postProcess func(context.C
 				}
 
 				// Plain response (no E2E or E2E failed)
-				newBody, _ := json.Marshal(map[string]string{"text": transcript})
+				result := map[string]string{"text": transcript}
+				if mode != "" {
+					result["mode"] = mode
+				}
+				newBody, _ := json.Marshal(result)
 				resp.Body = io.NopCloser(bytes.NewReader(newBody))
 				resp.ContentLength = int64(len(newBody))
 				resp.Header.Set("Content-Length", fmt.Sprintf("%d", len(newBody)))

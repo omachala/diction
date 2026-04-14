@@ -7,11 +7,12 @@ type Backend struct {
 	Aliases         []string
 	DisplayName     string
 	Description     string
-	Provider        string // "whisper" or "parakeet"
+	Provider        string // "whisper", "parakeet", or "canary"
 	NeedsWAV        bool   // if true, gateway converts audio to WAV before proxying
 	ForwardModel    string // model name to inject into forwarded request; empty = don't inject
 	AuthHeader      string // Authorization header value to inject into backend requests; empty = none
 	SkipHealthCheck bool   // if true, skip health polling (custom/external backends)
+	TargetPath      string // HTTP path for the transcription endpoint; empty defaults to /v1/audio/transcriptions
 }
 
 // CustomBackendFromEnv builds a custom backend from environment variables.
@@ -53,7 +54,13 @@ func DefaultBackends() []Backend {
 		{Name: "large-v3-turbo", URL: "http://whisper-large-turbo:8000", Aliases: []string{"large-v3-turbo", "turbo", "deepdml/faster-whisper-large-v3-turbo-ct2"}, DisplayName: "Large", Description: "highest accuracy Whisper model, best for difficult audio", Provider: "whisper"},
 		{Name: "distil-large-v3", URL: "http://whisper-distil-large:8000", Aliases: []string{"distil-large-v3", "Systran/faster-distil-whisper-large-v3"}, DisplayName: "Large", Description: "highest accuracy Whisper model, English only", Provider: "whisper"},
 
-		// Parakeet (NVIDIA, OpenAI-compatible API, WAV only)
+		// Parakeet (NVIDIA, OpenAI-compatible API, WAV only) — available for public/community gateway self-hosters
 		{Name: "parakeet-v3", URL: "http://parakeet:5092", Aliases: []string{"parakeet-v3", "parakeet", "parakeet-tdt-0.6b-v3"}, DisplayName: "Parakeet", Description: "best overall accuracy and speed, 25 European languages", Provider: "parakeet", NeedsWAV: true},
+
+		// Canary (NVIDIA, custom /inference API, WAV only, GPU-accelerated) — default for private cloud gateway
+		{Name: "canary-v2", URL: "http://canary:9000", Aliases: []string{"canary-v2", "canary", "nvidia/canary-1b-v2"}, DisplayName: "Canary", Description: "highest accuracy for 25 European languages, GPU-accelerated", Provider: "canary", NeedsWAV: true, TargetPath: "/inference"},
+
+		// Canary-Qwen (NVIDIA, English-only, SALM architecture, #1 HF ASR leaderboard) — English tier for private cloud gateway
+		{Name: "canary-qwen", URL: "http://canary-qwen:9000", Aliases: []string{"canary-qwen", "nvidia/canary-qwen-2.5b"}, DisplayName: "Canary Qwen", Description: "best-in-class English speech recognition, 5.63% WER", Provider: "canary", NeedsWAV: true, TargetPath: "/inference"},
 	}
 }

@@ -7,6 +7,24 @@ description: What's new in each Diction release. Full changelog for every App St
 
 # Release Notes
 
+## Diction 5.0
+
+*April 2026*
+
+- Your voice can now edit. Place the cursor mid-sentence and say what to change, and AI Companion does it. Select text and say "make this more formal" and it rewrites the selection in place. Long-press the action bar to rewrite the text around your cursor. The bar turns purple when you have a selection so you always know what mode you are in.
+- Diction One is rebuilt. Dedicated speech models per language family, noticeably better accuracy, faster everywhere. If you tried cloud mode before and found it slow, try it now.
+- The mic is always warm. Start-to-speak latency is down to under a blink.
+- Cold start works every time. Kill the app, tap the mic in the keyboard, and it opens and starts recording. No more lost first taps.
+- Your text no longer gets lost if something interrupts mid-transcription. The result lands in your field or shows up in History regardless.
+- Fully localized in 13 languages. Settings, History, Insights, everything. The app defaults to your system language and you can switch the whole UI live from the picker.
+- Redesigned Insights. Your typing speed multiplier is now the hero number, with daily average, words per minute, days used, and time saved all in one view.
+- New mic release options. Choose "After dictation" to release the mic the moment transcription finishes. Ten-second and 30-second options for music and podcast listeners.
+- AirPods stay in stereo while you dictate. Music keeps playing at full quality. Nothing gets ducked.
+- Optional click sounds on recording start and stop. Toggle in Preferences.
+- AI Companion got smarter. Preserves natural speech patterns, writes numbers as digits, and never drops sentences on longer recordings.
+- Audio interruptions recover cleanly. No more stuck orange error state after a call or notification.
+- Self-hosters: bring your own LLM for AI Companion, a one-command setup covering 25 European languages, and smart routing that picks the right speech model per language with a health-checked fallback. All open source at github.com/omachala/diction.
+
 ## Diction 4.0
 
 *April 2026*
