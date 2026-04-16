@@ -43,8 +43,8 @@ features:
     details: Automatic multilingual speech recognition. Speak in your language, or translate to another - Diction handles both.
   - icon:
       src: /icon-chat.svg
-    title: AI Enhancement
-    details: Turns natural speech into polished text. Per-app tone presets, custom dictionary, context-aware grammar and formatting.
+    title: AI Companion
+    details: Polishes your speech into clean text and understands voice commands to rewrite, translate, or edit. Per-app tone presets, custom dictionary, context-aware formatting.
   - icon:
       src: /icon-cloud.svg
     title: Diction One

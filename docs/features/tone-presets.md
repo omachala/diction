@@ -14,7 +14,7 @@ Tone Presets let you set a writing style per app. Diction remembers which tone g
 
 ## How It Works
 
-Open the Diction app, go to Tones, and assign a tone to any app on your phone. When you dictate into that app, AI Enhancement shapes the output to match the tone you picked.
+Open the Diction app, go to Tones, and assign a tone to any app on your phone. When you dictate into that app, AI Companion shapes the output to match the tone you picked.
 
 Four built-in tones:
 
@@ -51,7 +51,7 @@ No toggling. No remembering which mode you are in. Open the app, tap the mic, sp
 
 ## Custom Tones
 
-The four built-in tones cover most situations, but you might need something specific. A custom tone is a plain-language instruction that tells AI Enhancement exactly how to shape the output.
+The four built-in tones cover most situations, but you might need something specific. A custom tone is a plain-language instruction that tells AI Companion exactly how to shape the output.
 
 Examples:
 
@@ -63,6 +63,6 @@ Custom tones work exactly like the built-in ones. Assign them per app, and they 
 
 ## Requirements
 
-Tone Presets require [AI Enhancement](/features/ai-enhancement) to be active. AI Enhancement requires a Diction One subscription and works across all transcription modes.
+Tone Presets require [AI Companion](/features/ai-companion) to be active. AI Companion requires a Diction One subscription and works across all transcription modes.
 
-Without AI Enhancement, Diction still transcribes accurately, but the output is raw text without tone shaping.
+Without AI Companion, Diction still transcribes accurately, but the output is raw text without tone shaping.

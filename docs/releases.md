@@ -11,39 +11,35 @@ description: What's new in each Diction release. Full changelog for every App St
 
 *April 2026*
 
-- Your voice can now edit. Place the cursor mid-sentence and say what to change, and AI Companion does it. Select text and say "make this more formal" and it rewrites the selection in place. Long-press the action bar to rewrite the text around your cursor. The bar turns purple when you have a selection so you always know what mode you are in.
-- Diction One is rebuilt. Dedicated speech models per language family, noticeably better accuracy, faster everywhere. If you tried cloud mode before and found it slow, try it now.
-- The mic is always warm. Start-to-speak latency is down to under a blink.
-- Cold start works every time. Kill the app, tap the mic in the keyboard, and it opens and starts recording. No more lost first taps.
-- Your text no longer gets lost if something interrupts mid-transcription. The result lands in your field or shows up in History regardless.
-- Fully localized in 13 languages. Settings, History, Insights, everything. The app defaults to your system language and you can switch the whole UI live from the picker.
-- Redesigned Insights. Your typing speed multiplier is now the hero number, with daily average, words per minute, days used, and time saved all in one view.
-- New mic release options. Choose "After dictation" to release the mic the moment transcription finishes. Ten-second and 30-second options for music and podcast listeners.
-- AirPods stay in stereo while you dictate. Music keeps playing at full quality. Nothing gets ducked.
-- Optional click sounds on recording start and stop. Toggle in Preferences.
-- AI Companion got smarter. Preserves natural speech patterns, writes numbers as digits, and never drops sentences on longer recordings.
-- Audio interruptions recover cleanly. No more stuck orange error state after a call or notification.
-- Self-hosters: bring your own LLM for AI Companion, a one-command setup covering 25 European languages, and smart routing that picks the right speech model per language with a health-checked fallback. All open source at github.com/omachala/diction.
+- Profile lets you tell Diction who you are and how you write. AI Companion uses it every time, alongside whatever Tone Preset you have set for the app you are in.
+- Diction now figures out what you want from where your cursor is. Cursor in empty space, it dictates. Cursor inside a sentence, it inserts. Text selected, it edits or replaces. No more switching modes.
+- New "After dictation" mic timeout releases the mic the moment your transcription comes back. Plus 10 and 30 second steps for short bursts. If you use Bluetooth headphones, music and podcasts no longer drop into lower-quality voice-call audio while you are holding the mic.
+- Long dictations come back complete. Long messages, long notes, even full meetings work end to end without truncation.
+- AI Companion is tuned to sound more human. Less of the em-dash-everywhere, faintly corporate cadence that gives away machine-cleaned text.
+- Your words come through as you said them, including profanity. No automatic censoring.
+- Redesigned insights dashboard with a daily time-saved card and a words-per-minute card showing how much faster you are than typing.
+- Double-tap space now inserts a period and a space, matching the standard iOS keyboard convention.
+- Smoother onboarding with steadier layout when the keyboard opens, plus a small pulse on the active step.
 
 ## Diction 4.0
 
 *April 2026*
 
 - Speak to Edit. Select any text, say what you want changed, and it's done. Works for simple replacements and editing instructions like "translate to Czech" or "make this shorter."
-- Your custom words now improve transcription accuracy directly. Names and jargon get recognized correctly even without AI Enhancement.
+- Your custom words now improve transcription accuracy directly. Names and jargon get recognized correctly even without AI Companion.
 - Dictate for as long as you need. Improved reliability for long recordings, no more cut-off transcripts.
-- Profile lets you tell Diction who you are and how you write, so AI Enhancement matches your style.
+- Profile lets you tell Diction who you are and how you write, so AI Companion matches your style.
 - New guided onboarding walks you through setup step by step instead of throwing dialogs at you on first launch.
 - Improved on-device model setup. Smoother download, faster preparation, automatically ready when done.
 - The mic no longer activates when you open the app manually. Orange dot only when you're actually dictating.
-- Improved AI Enhancement accuracy across apps.
+- Improved AI Companion accuracy across apps.
 - Various UI polish across the keyboard, history, tones, and settings.
 
 ## Diction 3.0
 
 *March 25, 2026*
 
-- AI Enhancement now understands where you are in your document. Dictate into the middle of a sentence and it inserts correctly. Select text and tell Diction what to do with it, and it rewrites the selection in place.
+- AI Companion now understands where you are in your document. Dictate into the middle of a sentence and it inserts correctly. Select text and tell Diction what to do with it, and it rewrites the selection in place.
 - A small pulse now lights up in the action bar when Diction hears your voice. You always know exactly when it is listening.
 - Added a dominant hand setting. If you prefer left-handed use, flip the keyboard layout so the controls are on your side.
 - Redesigned History with a tabbed view separating recent and all transcriptions. Search works across all of them, and tapping any entry copies it instantly.
@@ -56,7 +52,7 @@ description: What's new in each Diction release. Full changelog for every App St
 
 *March 15, 2026*
 
-- AI Enhancement is now available for cloud mode. After transcription, Diction can optionally clean up your text. It removes filler words, fixes grammar, and polishes the result. Only the transcript is sent for cleanup, never the audio. Off by default, toggle it in Settings.
+- AI Companion is now available for cloud mode. After transcription, Diction can optionally clean up your text. It removes filler words, fixes grammar, and polishes the result. Only the transcript is sent for cleanup, never the audio. Off by default, toggle it in Settings.
 - Added a setup guide that walks you through keyboard installation and permissions before your first dictation. No more guessing why things are not working.
 - Large model downloads now wait for WiFi by default. No surprise data bills from downloading on mobile.
 - The cloud subscription is now Diction One, with a redesigned offer screen that makes pricing and what is included much clearer.

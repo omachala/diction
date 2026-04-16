@@ -28,11 +28,13 @@ Default: on.
 
 ## Timeout
 
-How long the microphone stays active when you stop talking. After this much silence, Diction releases the mic and goes idle.
+How long the microphone stays active after you stop talking. Once this elapses with no speech, Diction releases the mic and goes idle.
 
-The default is five minutes. If you dictate in long sessions with natural pauses, set it higher. If you want the mic released quickly after each recording, set it lower.
+Pick what fits how you dictate:
 
-Set to Never if you want Diction to stay ready indefinitely until you tap to stop yourself.
+- **After dictation**: releases the mic the moment your transcription comes back. Best if you usually dictate one thing at a time. If you use Bluetooth headphones, this also stops music and podcast audio from dropping into lower-quality voice-call mode while the mic is held.
+- **10 seconds, 30 seconds, 1 minute, and up**: keep the mic ready for a quick follow-up, then release it.
+- **Manual**: stays ready indefinitely until you tap to stop. Good for long hands-free sessions where you do not want to think about the mic.
 
 Default: 5 minutes.
 

@@ -43,7 +43,7 @@ With Diction in on-device mode, the question doesn't arise. Audio is processed l
 
 Wispr Flow is $15/month for unlimited dictation on Pro. There's a free tier capped at 2,000 words per week (roughly a few emails a day).
 
-Diction's on-device mode is free with no word limits. The Diction One cloud subscription is required only if you want cloud transcription with AI enhancement. Self-hosting is free if you can run a server.
+Diction's on-device mode is free with no word limits. The Diction One cloud subscription is required only if you want cloud transcription with AI Companion. Self-hosting is free if you can run a server.
 
 ## Why Diction
 

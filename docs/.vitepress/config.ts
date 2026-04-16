@@ -211,10 +211,10 @@ gtag('config', 'G-PCV64Y7GFM');`,
           },
           {
             '@type': 'Question',
-            name: 'What is AI Enhancement?',
+            name: 'What is AI Companion?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'After transcription, Diction can optionally clean up your text — removing filler words like "um" and "uh", fixing grammar, adding punctuation, and polishing the result. Only the text is sent to the AI model, never the audio. AI Enhancement is off by default.',
+              text: 'After transcription, Diction can optionally clean up your text — removing filler words like "um" and "uh", fixing grammar, adding punctuation, and polishing the result. It also understands voice commands to rewrite, translate, or edit text. Only the text is sent to the AI model, never the audio. AI Companion is off by default.',
             },
           },
           {
@@ -298,9 +298,10 @@ gtag('config', 'G-PCV64Y7GFM');`,
             { text: 'Overview', link: '/features/' },
             { text: 'Context-Aware Text Editing', link: '/features/context-aware' },
             {
-              text: 'AI Enhancement',
-              link: '/features/ai-enhancement',
+              text: 'AI Companion',
+              link: '/features/ai-companion',
               items: [
+                { text: 'Profile', link: '/features/ai-companion#profile' },
                 { text: 'Tone Presets', link: '/features/tone-presets' },
                 { text: 'My Words', link: '/features/my-words' },
               ],
