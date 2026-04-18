@@ -52,6 +52,8 @@ Install the app, add the keyboard, and start dictating. On-device transcription 
 
 ### Self-Hosted
 
+> **Step-by-step walkthrough:** [How to set up Diction — the self-hosted speech-to-text alternative to Wispr Flow](https://dev.to/omachala/how-to-set-up-diction-the-self-hosted-speech-to-text-alternative-to-wispr-flow-20km)
+
 Diction speaks the OpenAI transcription API (`POST /v1/audio/transcriptions`) directly. Any server that implements it works. There are three ways to set it up, depending on what you already have running and how much you care about latency.
 
 #### Path 1: Whisper only (simplest)
