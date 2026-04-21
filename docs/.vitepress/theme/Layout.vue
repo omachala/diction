@@ -2,6 +2,7 @@
 import DefaultTheme from 'vitepress/theme';
 import HeroVideo from './HeroVideo.vue';
 import SiteFooter from './SiteFooter.vue';
+import TestimonialsSection from './TestimonialsSection.vue';
 
 const { Layout } = DefaultTheme;
 </script>
@@ -10,6 +11,9 @@ const { Layout } = DefaultTheme;
   <Layout>
     <template #home-hero-image>
       <HeroVideo />
+    </template>
+    <template #home-features-after>
+      <TestimonialsSection />
     </template>
     <template #layout-bottom>
       <SiteFooter />
