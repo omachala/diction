@@ -176,6 +176,47 @@ docker compose --profile parakeet up -d
 
 Set `DEFAULT_MODEL: parakeet-v3` on the gateway to match.
 
+### Compatible with OpenAI speech API clients
+
+The gateway implements the OpenAI audio transcription API. Any client that works against `api.openai.com/v1/audio/transcriptions` works against a Diction gateway — the `openai` Python SDK, `openai` Node SDK, LangChain, and any other OpenAI-compatible library. This also makes Diction a drop-in STT replacement for [Speaches](https://github.com/speaches-ai/speaches).
+
+**Supported:**
+
+- `POST /v1/audio/transcriptions` — `file`, `model`, `language`, `prompt`, `response_format=json|text`
+- `GET /v1/models` — OpenAI list format with HuggingFace-style model IDs
+- HuggingFace model IDs: `Systran/faster-whisper-small`, `nvidia/parakeet-tdt-0.6b-v3`, `nvidia/canary-1b-v2`, etc.
+
+**Not supported:**
+
+- TTS (`/v1/audio/speech`)
+- `response_format=verbose_json|srt|vtt` (no word-level timestamps)
+- SSE streaming on REST (use Diction's WebSocket `/v1/audio/stream` instead)
+- Model download/delete (`POST`/`DELETE /v1/models/{id}`)
+- Realtime API (`/v1/realtime`)
+
+**Authentication is off by default** (`AUTH_ENABLED=false`). Self-hosted deployments accept requests without a token. Pass any non-empty string as the API key from the client — the gateway doesn't check it.
+
+**Known limitation:** error responses use Diction's `{"error":"<message>"}` shape, not OpenAI's nested `{"error":{"message":...,"type":...}}`. Most SDKs surface these as raw `HTTPError` rather than `APIError` — catch both.
+
+Quickstart with the Python SDK:
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="http://your-gateway:8080/v1",
+    api_key="anything",  # not checked when AUTH_ENABLED=false
+)
+
+with open("audio.wav", "rb") as f:
+    result = client.audio.transcriptions.create(
+        file=f,
+        model="Systran/faster-whisper-small",
+        response_format="text",
+    )
+print(result)  # plain string
+```
+
 ## AI Enhancement (BYO LLM)
 
 You say "so um basically the meeting went well and uh they agreed to the timeline." Your server turns that into "The meeting went well. They agreed to the timeline."
