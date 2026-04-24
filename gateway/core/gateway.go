@@ -1,12 +1,18 @@
 package core
 
 import (
+	"context"
 	"net/http"
 	"net/url"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
+
+// defaultStreamIdleTimeout is the fallback inter-frame gap for WebSocket
+// audio streams. 45s is generous: healthy streams send frames every ~100ms.
+const defaultStreamIdleTimeout = 45 * time.Second
 
 // Config holds all gateway configuration.
 type Config struct {
@@ -15,6 +21,11 @@ type Config struct {
 	FallbackModel string
 	EnglishModel  string
 	MaxBodySize   int64
+
+	// StreamIdleTimeout bounds the gap between successive WebSocket frames on
+	// /v1/audio/stream. Zero → falls back to defaultStreamIdleTimeout.
+	// Healthy streams send an audio frame every ~100ms, so 45s is generous.
+	StreamIdleTimeout time.Duration
 }
 
 // Gateway holds runtime state: backends, health, config.
@@ -26,11 +37,16 @@ type Gateway struct {
 	englishModel  string
 	maxBodySize   int64
 
+	// streamIdleTimeout bounds inter-frame gap on /v1/audio/stream. See Config.
+	// Tests override the field directly after construction.
+	streamIdleTimeout time.Duration
+
 	// OnTranscription is an optional hook called after each successful transcription.
-	// model is the backend name, whisperMs is inference latency, chars is transcript length.
+	// model is the backend name, whisperMs is inference latency, chars is transcript length,
+	// durationMs is audio duration parsed from the WAV header (0 if unavailable).
 	// enhance and e2e indicate whether LLM post-processing and E2E encryption were requested.
 	// Leave nil in community builds.
-	OnTranscription func(model string, whisperMs int64, chars int, enhance, e2e bool)
+	OnTranscription func(ctx context.Context, model string, whisperMs int64, chars int, durationMs int64, enhance, e2e bool)
 }
 
 // NewGateway creates a Gateway and starts the background health checker.
@@ -42,13 +58,18 @@ func NewGateway(cfg Config) *Gateway {
 		backends = append([]Backend{*custom}, backends...)
 		defaultModel = "custom"
 	}
+	idle := cfg.StreamIdleTimeout
+	if idle <= 0 {
+		idle = defaultStreamIdleTimeout
+	}
 	g := &Gateway{
-		backends:      backends,
-		health:        newHealthState(),
-		defaultModel:  defaultModel,
-		fallbackModel: cfg.FallbackModel,
-		englishModel:  cfg.EnglishModel,
-		maxBodySize:   cfg.MaxBodySize,
+		backends:          backends,
+		health:            newHealthState(),
+		defaultModel:      defaultModel,
+		fallbackModel:     cfg.FallbackModel,
+		englishModel:      cfg.EnglishModel,
+		maxBodySize:       cfg.MaxBodySize,
+		streamIdleTimeout: idle,
 	}
 	g.startHealthChecker()
 	return g

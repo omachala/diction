@@ -35,3 +35,36 @@ func WriteWAVHeader(w io.Writer, dataSize int) error {
 	_, err := w.Write(header[:])
 	return err
 }
+
+// ParseWAVDurationMs returns the duration of a WAV file in milliseconds.
+// Scans for the "data" subchunk to handle files with extra chunks (e.g. LIST).
+// Returns 0 if data is not valid WAV or duration cannot be determined.
+func ParseWAVDurationMs(data []byte) int64 {
+	if len(data) < 44 {
+		return 0
+	}
+	if string(data[0:4]) != "RIFF" || string(data[8:12]) != "WAVE" {
+		return 0
+	}
+	sampleRate := int64(binary.LittleEndian.Uint32(data[24:28]))
+	channels := int64(binary.LittleEndian.Uint16(data[22:24]))
+	bitsPerSample := int64(binary.LittleEndian.Uint16(data[34:36]))
+	byteRate := sampleRate * channels * bitsPerSample / 8
+	if byteRate == 0 {
+		return 0
+	}
+	// Scan subchunks starting after the fmt chunk (byte 36 in standard WAV).
+	i := 12
+	for i+8 <= len(data) {
+		chunkID := string(data[i : i+4])
+		chunkSize := int64(binary.LittleEndian.Uint32(data[i+4 : i+8]))
+		if chunkID == "data" {
+			return chunkSize * 1000 / byteRate
+		}
+		i += 8 + int(chunkSize)
+		if chunkSize%2 != 0 {
+			i++ // WAV chunks are padded to 2-byte boundary
+		}
+	}
+	return 0
+}

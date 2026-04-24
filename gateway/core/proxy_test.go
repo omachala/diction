@@ -16,7 +16,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 )
 
 // buildMultipart builds a multipart/form-data body with the given fields and an
@@ -71,7 +73,7 @@ func TestRewriteMultipart_StripsModelField(t *testing.T) {
 	body, ct := buildMultipart(t, map[string]string{"model": "medium", "language": "en"}, "audio.m4a", "fake-audio-data")
 	boundary := parseBoundary(ct)
 
-	rewritten, newCT, err := rewriteMultipart(body, boundary, false, "", "")
+	rewritten, newCT, _, err := rewriteMultipart(body, boundary, false, "", "")
 	if err != nil {
 		t.Fatalf("rewriteMultipart error: %v", err)
 	}
@@ -118,7 +120,7 @@ func TestRewriteMultipart_PreservesFileContent(t *testing.T) {
 	body, ct := buildMultipart(t, map[string]string{"model": "small"}, "audio.m4a", audioContent)
 	boundary := parseBoundary(ct)
 
-	rewritten, newCT, err := rewriteMultipart(body, boundary, false, "", "")
+	rewritten, newCT, _, err := rewriteMultipart(body, boundary, false, "", "")
 	if err != nil {
 		t.Fatalf("rewriteMultipart error: %v", err)
 	}
@@ -148,7 +150,7 @@ func TestRewriteMultipart_NoModelField(t *testing.T) {
 	body, ct := buildMultipart(t, map[string]string{}, "audio.m4a", "audio")
 	boundary := parseBoundary(ct)
 
-	_, _, err := rewriteMultipart(body, boundary, false, "", "")
+	_, _, _, err := rewriteMultipart(body, boundary, false, "", "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -161,7 +163,7 @@ func TestRewriteMultipart_ConvertToWAV(t *testing.T) {
 	body, ct := buildMultipart(t, map[string]string{"language": "en"}, "audio.m4a", string(wavData))
 	boundary := parseBoundary(ct)
 
-	rewritten, newCT, err := rewriteMultipart(body, boundary, true, "", "")
+	rewritten, newCT, _, err := rewriteMultipart(body, boundary, true, "", "")
 	if err != nil {
 		t.Fatalf("rewriteMultipart error: %v", err)
 	}
@@ -339,7 +341,7 @@ func TestTranscriptionHandler_OnTranscriptionCallback(t *testing.T) {
 		health:       newHealthState(),
 		defaultModel: "small",
 		maxBodySize:  10 * 1024 * 1024,
-		OnTranscription: func(model string, _ int64, chars int, _, _ bool) {
+		OnTranscription: func(_ context.Context, model string, _ int64, chars int, _ int64, _, _ bool) {
 			gotModel = model
 			gotChars = chars
 		},
@@ -615,7 +617,7 @@ func TestRewriteMultipart_InjectsWhisperPrompt(t *testing.T) {
 	body, ct := buildMultipart(t, map[string]string{"language": "en"}, "audio.m4a", "audio")
 	boundary := parseBoundary(ct)
 
-	rewritten, newCT, err := rewriteMultipart(body, boundary, false, "", "Kubernetes, PostgreSQL")
+	rewritten, newCT, _, err := rewriteMultipart(body, boundary, false, "", "Kubernetes, PostgreSQL")
 	if err != nil {
 		t.Fatalf("rewriteMultipart: %v", err)
 	}
@@ -649,7 +651,7 @@ func TestRewriteMultipart_NoPromptWhenEmpty(t *testing.T) {
 	body, ct := buildMultipart(t, map[string]string{"language": "en"}, "audio.m4a", "audio")
 	boundary := parseBoundary(ct)
 
-	rewritten, newCT, err := rewriteMultipart(body, boundary, false, "", "")
+	rewritten, newCT, _, err := rewriteMultipart(body, boundary, false, "", "")
 	if err != nil {
 		t.Fatalf("rewriteMultipart: %v", err)
 	}
@@ -751,7 +753,7 @@ func TestTranscriptionHandler_NoPromptWhenNoCustomWords(t *testing.T) {
 func TestRewriteMultipart_StripsContextField(t *testing.T) {
 	body, ct := buildMultipart(t, map[string]string{"context": `{"before":"x"}`, "language": "en"}, "audio.wav", "audio")
 	boundary := parseBoundary(ct)
-	rewritten, newCT, err := rewriteMultipart(body, boundary, false, "", "")
+	rewritten, newCT, _, err := rewriteMultipart(body, boundary, false, "", "")
 	if err != nil {
 		t.Fatalf("rewriteMultipart: %v", err)
 	}
@@ -977,6 +979,192 @@ func TestTranscriptionHandler_NonJSONBackendResponse(t *testing.T) {
 	}
 }
 
+// --- response_format (OpenAI compatibility) ---
+
+func TestResponseFormat_Text_ReturnsPlainText(t *testing.T) {
+	// response_format=text: gateway unwraps the backend's {"text":"..."} and returns a plain body.
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"text":"hello plain world"}`)
+	}))
+	defer backend.Close()
+
+	g := &Gateway{
+		backends: []Backend{
+			{Name: "small", URL: backend.URL, Aliases: []string{"small"}},
+		},
+		health:       newHealthState(),
+		defaultModel: "small",
+		maxBodySize:  10 * 1024 * 1024,
+	}
+
+	body, ct := buildMultipart(t, map[string]string{"response_format": "text"}, "audio.m4a", "fake-audio")
+	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions", bytes.NewReader(body))
+	req.Header.Set("Content-Type", ct)
+	rr := httptest.NewRecorder()
+	g.TranscriptionHandler()(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("status: want 200, got %d (body: %s)", rr.Code, rr.Body.String())
+	}
+	if got := rr.Header().Get("Content-Type"); !strings.HasPrefix(got, "text/plain") {
+		t.Errorf("Content-Type: want text/plain, got %q", got)
+	}
+	if got := rr.Body.String(); got != "hello plain world" {
+		t.Errorf("body: want plain transcript, got %q", got)
+	}
+}
+
+func TestResponseFormat_Json_Unchanged(t *testing.T) {
+	// Default (no response_format) keeps the {"text":"..."} JSON shape.
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"text":"still json"}`)
+	}))
+	defer backend.Close()
+
+	g := &Gateway{
+		backends: []Backend{
+			{Name: "small", URL: backend.URL, Aliases: []string{"small"}},
+		},
+		health:       newHealthState(),
+		defaultModel: "small",
+		maxBodySize:  10 * 1024 * 1024,
+	}
+
+	body, ct := buildMultipart(t, map[string]string{}, "audio.m4a", "fake-audio")
+	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions", bytes.NewReader(body))
+	req.Header.Set("Content-Type", ct)
+	rr := httptest.NewRecorder()
+	g.TranscriptionHandler()(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("status: want 200, got %d", rr.Code)
+	}
+	var resp map[string]any
+	if err := json.Unmarshal(rr.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("default response must be JSON, got: %s", rr.Body.String())
+	}
+	if resp["text"] != "still json" {
+		t.Errorf("text: want 'still json', got %v", resp["text"])
+	}
+}
+
+func TestResponseFormat_UnsupportedRejected(t *testing.T) {
+	// verbose_json/srt/vtt require word timestamps we don't produce — reject loud.
+	g := &Gateway{
+		backends: []Backend{
+			{Name: "small", URL: "http://unreachable:0", Aliases: []string{"small"}},
+		},
+		health:       newHealthState(),
+		defaultModel: "small",
+		maxBodySize:  10 * 1024 * 1024,
+	}
+
+	body, ct := buildMultipart(t, map[string]string{"response_format": "verbose_json"}, "audio.m4a", "fake-audio")
+	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions", bytes.NewReader(body))
+	req.Header.Set("Content-Type", ct)
+	rr := httptest.NewRecorder()
+	g.TranscriptionHandler()(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Errorf("status: want 400, got %d (body: %s)", rr.Code, rr.Body.String())
+	}
+	if !strings.Contains(rr.Body.String(), "verbose_json") {
+		t.Errorf("error should name the unsupported format, got: %s", rr.Body.String())
+	}
+}
+
+func TestResponseFormat_E2EConflict(t *testing.T) {
+	// text body + E2E envelope are semantically incompatible — reject rather than silently
+	// downgrade (both sides of the contract get violated otherwise).
+	g := &Gateway{
+		backends: []Backend{
+			{Name: "small", URL: "http://unreachable:0", Aliases: []string{"small"}},
+		},
+		health:       newHealthState(),
+		defaultModel: "small",
+		maxBodySize:  10 * 1024 * 1024,
+	}
+
+	clientPriv, _ := ecdh.X25519().GenerateKey(rand.Reader)
+	clientPubB64 := base64.RawURLEncoding.EncodeToString(clientPriv.PublicKey().Bytes())
+
+	body, ct := buildMultipart(t, map[string]string{"response_format": "text"}, "audio.m4a", "fake-audio")
+	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions", bytes.NewReader(body))
+	req.Header.Set("Content-Type", ct)
+	req.Header.Set("X-Diction-E2E", clientPubB64)
+	rr := httptest.NewRecorder()
+	g.TranscriptionHandler()(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Errorf("status: want 400, got %d (body: %s)", rr.Code, rr.Body.String())
+	}
+}
+
+func TestResponseFormat_BackendError_StaysJSON(t *testing.T) {
+	// Backend 5xx must not get wrapped as plain text just because the client asked
+	// for text output — OpenAI convention is that errors always come back as JSON,
+	// and our writeTranscriptionResponse helper only runs on 2xx.
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, `{"error":"backend down"}`)
+	}))
+	defer backend.Close()
+
+	g := &Gateway{
+		backends: []Backend{
+			{Name: "small", URL: backend.URL, Aliases: []string{"small"}},
+		},
+		health:       newHealthState(),
+		defaultModel: "small",
+		maxBodySize:  10 * 1024 * 1024,
+	}
+
+	body, ct := buildMultipart(t, map[string]string{"response_format": "text"}, "audio.m4a", "fake-audio")
+	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions", bytes.NewReader(body))
+	req.Header.Set("Content-Type", ct)
+	rr := httptest.NewRecorder()
+	g.TranscriptionHandler()(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("status: want 500 (backend passthrough), got %d", rr.Code)
+	}
+	// Error body must remain JSON, not a plain-text rewrite.
+	var errResp map[string]any
+	if err := json.Unmarshal(rr.Body.Bytes(), &errResp); err != nil {
+		t.Errorf("backend error should stay JSON-shaped, got: %s", rr.Body.String())
+	}
+}
+
+func TestRewriteMultipart_StripsResponseFormat(t *testing.T) {
+	// response_format is a gateway-side control field; it must not be forwarded to the backend.
+	body, ct := buildMultipart(t, map[string]string{"response_format": "text", "language": "en"}, "audio.m4a", "audio")
+	boundary := parseBoundary(ct)
+
+	rewritten, newCT, _, err := rewriteMultipart(body, boundary, false, "", "")
+	if err != nil {
+		t.Fatalf("rewriteMultipart: %v", err)
+	}
+
+	_, params, _ := parseMediaType(newCT)
+	reader := multipart.NewReader(bytes.NewReader(rewritten), params["boundary"])
+	for {
+		part, err := reader.NextPart()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			t.Fatalf("read part: %v", err)
+		}
+		if part.FormName() == "response_format" {
+			t.Error("response_format should have been stripped from multipart")
+		}
+		part.Close()
+	}
+}
+
 func TestTranscriptionHandler_TargetPath(t *testing.T) {
 	// Backends with TargetPath (e.g. canary-v2) must use that path instead of /v1/audio/transcriptions.
 	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -1014,5 +1202,115 @@ func TestTranscriptionHandler_TargetPath(t *testing.T) {
 	// Canary's "timestamps":null must be stripped — gateway contract is {"text":"..."}
 	if bytes.Contains(rr.Body.Bytes(), []byte("timestamps")) {
 		t.Errorf("timestamps field leaked into response: %s", rr.Body.String())
+	}
+}
+
+// --- Commit D: proxy-cancel errors point ---
+
+// TestTranscriptionHandler_UpstreamCanceled_EmitsError verifies the proxy
+// ErrorHandler fires an errors point with kind=stt_upstream_canceled and
+// calls OnRequestFailed when the client cancels mid-flight. Without this
+// hook these failures disappear from Influx (confirmed 30d sweep).
+// Not parallel-safe: mutates core.OnError / OnRequestFailed.
+func TestTranscriptionHandler_UpstreamCanceled_EmitsError(t *testing.T) {
+	events, restoreErr := withCapturedOnError(t)
+	defer restoreErr()
+	failures, restoreFail := withCapturedOnRequestFailed(t)
+	defer restoreFail()
+
+	// Backend blocks until the test releases it — the client cancels before
+	// the backend ever responds. We release after asserting so Close() doesn't
+	// deadlock on the still-active handler goroutine.
+	blockStart := make(chan struct{})
+	release := make(chan struct{})
+	var startOnce sync.Once
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		startOnce.Do(func() { close(blockStart) })
+		select {
+		case <-r.Context().Done():
+		case <-release:
+		case <-time.After(5 * time.Second):
+		}
+	}))
+	defer backend.Close()
+	defer close(release)
+
+	g := &Gateway{
+		backends: []Backend{
+			{Name: "small", URL: backend.URL, Aliases: []string{"small"}},
+		},
+		health:       newHealthState(),
+		defaultModel: "small",
+		maxBodySize:  10 * 1024 * 1024,
+	}
+
+	body, ct := buildMultipart(t, map[string]string{"model": "small"}, "audio.m4a", "fake-audio")
+	ctx, cancel := context.WithCancel(context.Background())
+	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions", bytes.NewReader(body)).WithContext(ctx)
+	req.Header.Set("Content-Type", ct)
+	rr := httptest.NewRecorder()
+
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		g.TranscriptionHandler()(rr, req)
+	}()
+
+	// Wait for the proxy to reach the backend, then cancel.
+	<-blockStart
+	cancel()
+	<-done
+
+	if len(*events) == 0 {
+		t.Fatal("no OnError event captured on proxy cancel")
+	}
+	got := (*events)[0]
+	if got.Kind != "stt_upstream_canceled" {
+		t.Errorf("kind: want stt_upstream_canceled, got %q", got.Kind)
+	}
+	if got.Source != "stt" {
+		t.Errorf("source: want stt, got %q", got.Source)
+	}
+	if len(*failures) == 0 {
+		t.Fatal("OnRequestFailed not called on proxy cancel")
+	}
+	if (*failures)[0] != errTypeSTTError {
+		t.Errorf("errorType: want %q, got %q", errTypeSTTError, (*failures)[0])
+	}
+}
+
+// TestTranscriptionHandler_UpstreamUnreachable_EmitsBackendError verifies
+// non-cancel transport errors are classified as stt_backend_error (not
+// stt_upstream_canceled), keeping the closed vocabulary coherent.
+func TestTranscriptionHandler_UpstreamUnreachable_EmitsBackendError(t *testing.T) {
+	events, restoreErr := withCapturedOnError(t)
+	defer restoreErr()
+	failures, restoreFail := withCapturedOnRequestFailed(t)
+	defer restoreFail()
+
+	g := &Gateway{
+		backends: []Backend{
+			// Port 1: guaranteed closed.
+			{Name: "small", URL: "http://127.0.0.1:1", Aliases: []string{"small"}},
+		},
+		health:       newHealthState(),
+		defaultModel: "small",
+		maxBodySize:  10 * 1024 * 1024,
+	}
+
+	body, ct := buildMultipart(t, map[string]string{"model": "small"}, "audio.m4a", "fake-audio")
+	req := httptest.NewRequest(http.MethodPost, "/v1/audio/transcriptions", bytes.NewReader(body))
+	req.Header.Set("Content-Type", ct)
+	rr := httptest.NewRecorder()
+	g.TranscriptionHandler()(rr, req)
+
+	if len(*events) == 0 {
+		t.Fatal("no OnError event captured for unreachable backend")
+	}
+	if (*events)[0].Kind != "stt_backend_error" {
+		t.Errorf("kind: want stt_backend_error, got %q", (*events)[0].Kind)
+	}
+	if len(*failures) == 0 {
+		t.Error("OnRequestFailed not called on transport error")
 	}
 }
