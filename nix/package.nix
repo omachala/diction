@@ -6,7 +6,7 @@
 }:
 buildGoModule {
   pname = "diction-gateway";
-  version = "0-unstable";
+  version = "6.0";
 
   src = lib.cleanSource ../.;
   modRoot = "gateway";

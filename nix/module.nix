@@ -37,9 +37,11 @@ in {
       default = "small";
       example = "large-v3-turbo";
       description = ''
-        Value of the `DEFAULT_MODEL` env var. When `customBackend.url` is
-        set the gateway internally selects the custom backend regardless,
-        but this still appears in `/v1/models` listings.
+        Value of the `DEFAULT_MODEL` env var. Valid built-in values:
+        `small`, `medium`, `large-v3-turbo`, `distil-large-v3`,
+        `parakeet-v3`, `canary-v2`, `canary-qwen`. When
+        `customBackend.url` is set the gateway routes to the custom
+        backend regardless, but this still appears in `/v1/models` listings.
       '';
     };
 
@@ -129,15 +131,25 @@ in {
       example = "/run/secrets/diction-gateway.env";
       description = ''
         Path to an `EnvironmentFile=` for systemd. Use this to inject
-        secrets such as `CUSTOM_BACKEND_AUTH`, `LLM_API_KEY`, or
-        `TRIAL_SECRET` without writing them to the Nix store.
+        secrets such as `CUSTOM_BACKEND_AUTH` or `LLM_API_KEY` without
+        writing them to the Nix store.
+      '';
+    };
+
+    authEnabled = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Enable bearer-token authentication on the gateway (`AUTH_ENABLED`).
+        When true, all API requests must include a valid `Authorization`
+        header. Set the token via `environmentFile`.
       '';
     };
 
     extraEnvironment = mkOption {
       type = types.attrsOf types.str;
       default = {};
-      example = lib.literalExpression ''{ AUTH_ENABLED = "false"; }'';
+      example = lib.literalExpression ''{ SOME_VAR = "value"; }'';
       description = "Extra environment variables passed to the gateway.";
     };
   };
@@ -154,7 +166,9 @@ in {
           GATEWAY_PORT = toString cfg.port;
           DEFAULT_MODEL = cfg.defaultModel;
           MAX_BODY_SIZE = toString cfg.maxBodySize;
-          TRIAL_DB_PATH = "/var/lib/diction-gateway/trials.json";
+        }
+        // optionalAttrs cfg.authEnabled {
+          AUTH_ENABLED = "true";
         }
         // optionalAttrs (cfg.customBackend.url != null) {
           CUSTOM_BACKEND_URL = cfg.customBackend.url;
@@ -189,8 +203,6 @@ in {
           RestartSec = "5s";
 
           DynamicUser = true;
-          StateDirectory = "diction-gateway";
-          StateDirectoryMode = "0750";
 
           NoNewPrivileges = true;
           ProtectSystem = "strict";

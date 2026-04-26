@@ -210,7 +210,7 @@ To run it as a service, import the module and enable it:
 }
 ```
 
-The unit runs under `DynamicUser` with `ProtectSystem=strict`, `NoNewPrivileges`, and a narrow syscall filter. Use `environmentFile` for secrets like `CUSTOM_BACKEND_AUTH`, `LLM_API_KEY`, and `TRIAL_SECRET` so they don't end up in the world-readable Nix store. Full option list: [`nix/module.nix`](nix/module.nix).
+The unit runs under `DynamicUser` with `ProtectSystem=strict`, `NoNewPrivileges`, and a narrow syscall filter. Use `environmentFile` for secrets like `CUSTOM_BACKEND_AUTH` and `LLM_API_KEY` so they don't end up in the world-readable Nix store. Full option list: [`nix/module.nix`](nix/module.nix).
 
 ### Compatible with OpenAI speech API clients
 
