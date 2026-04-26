@@ -176,6 +176,42 @@ docker compose --profile parakeet up -d
 
 Set `DEFAULT_MODEL: parakeet-v3` on the gateway to match.
 
+#### NixOS
+
+If your server runs NixOS, the repo ships a flake with a hardened systemd module — no Docker needed. Try it first without committing to anything:
+
+```bash
+nix run github:omachala/diction#diction-gateway
+```
+
+To run it as a service, import the module and enable it:
+
+```nix
+{
+  inputs.diction.url = "github:omachala/diction";
+
+  outputs = { nixpkgs, diction, ... }: {
+    nixosConfigurations.your-host = nixpkgs.lib.nixosSystem {
+      modules = [
+        diction.nixosModules.default
+        {
+          services.diction-gateway = {
+            enable = true;
+            openFirewall = true;
+            # customBackend.url = "http://127.0.0.1:8000";
+            # llm.baseUrl = "http://127.0.0.1:11434/v1";
+            # llm.model = "gemma2:9b";
+            # environmentFile = "/run/secrets/diction-gateway.env";
+          };
+        }
+      ];
+    };
+  };
+}
+```
+
+The unit runs under `DynamicUser` with `ProtectSystem=strict`, `NoNewPrivileges`, and a narrow syscall filter. Use `environmentFile` for secrets like `CUSTOM_BACKEND_AUTH` and `LLM_API_KEY` so they don't end up in the world-readable Nix store. Full option list: [`nix/module.nix`](nix/module.nix).
+
 ### Compatible with OpenAI speech API clients
 
 The gateway implements the OpenAI audio transcription API. Any client that works against `api.openai.com/v1/audio/transcriptions` works against a Diction gateway — the `openai` Python SDK, `openai` Node SDK, LangChain, and any other OpenAI-compatible library. This also makes Diction a drop-in STT replacement for [Speaches](https://github.com/speaches-ai/speaches).
