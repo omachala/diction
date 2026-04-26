@@ -7,6 +7,21 @@ description: What's new in each Diction release. Full changelog for every App St
 
 # Release Notes
 
+## Diction 6.0
+
+- Customizable keyboard row. Tap any key to change what it does, rename it, resize it. Add new keys, drag to reorder, delete what you don't need. The whole row is yours now.
+- Per-key visibility. Toggle "only show in edit mode" so custom keys stay hidden while you're dictating and appear when you select text. No more layout jumping.
+- Tap-to-fix suggestions. Select a word and three smart alternatives appear above the keyboard: spelling fixes, grammar corrections, or just a better way to say it.
+- Save to My Words. A new key that teaches Diction your names and jargon with one tap. Custom words feed into transcription for better accuracy going forward.
+- Undo and redo. Tap to reverse your last dictation, tap again to bring it back. Works for edits too, not just transcriptions.
+- Diction One now includes both cloud and on-device. Subscribers get the flagship cloud model and the best offline model, so you're covered with or without a connection.
+- More on-device models. Whisper Small and Nvidia Parakeet join the lineup, giving you more choices for different languages and accuracy needs.
+- Redesigned home screen. Three clear tiers: Diction, On-Device, and Self-Hosted, each remembering your selection when you switch between them.
+- Continued improvements to speak-to-replace. Better casing, punctuation matching, and context awareness when editing selected text.
+- Refreshed onboarding with illustrated steps.
+- Self-hosted: the gateway now speaks the OpenAI speech API, so any compatible SDK works as a drop-in.
+- Improved reliability, bug fixes, and various UI polish.
+
 ## Diction 5.0
 
 *April 2026*
