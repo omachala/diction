@@ -26,6 +26,22 @@ Useful if you want to punctuate or fix a word without reaching for another keybo
 
 Default: on.
 
+## Show Keyboard Key
+
+Adds a key to the functional row that shows or hides a full QWERTY keyboard. Tap it once to open the keyboard for quick edits, tap again to dismiss it and return to the dictation view.
+
+If you prefer a different key in that slot (like the globe key for switching keyboards), turn this off and customise the row to your liking.
+
+Default: on.
+
+## Show QWERTY by Default
+
+When this is on, the full keyboard opens automatically every time the Diction keyboard appears. You can still hide it with the keyboard toggle key and bring it back later. On the next appearance it opens again.
+
+Useful if you use Diction as a hybrid keyboard — dictation first, typing for corrections — and don't want to tap the toggle key every time.
+
+Default: off.
+
 ## Timeout
 
 How long the microphone stays active after you stop talking. Once this elapses with no speech, Diction releases the mic and goes idle.
