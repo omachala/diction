@@ -185,6 +185,9 @@ func (g *Gateway) proxyToBackend(ctx context.Context, target *url.URL, pcm []byt
 
 	modelToForward := backend.ForwardModel
 	if modelToForward == "" {
+		// ForwardModel should always be set for backends whose Name is a short alias
+		// not registered by the server (e.g. "large-v3-turbo" vs the full HuggingFace
+		// model ID). Using the Name as fallback will cause a 500 from faster-whisper-server.
 		modelToForward = backend.Name
 	}
 	writer.WriteField("model", modelToForward)
