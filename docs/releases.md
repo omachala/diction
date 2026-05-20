@@ -7,6 +7,18 @@ description: What's new in each Diction release. Full changelog for every App St
 
 # Release Notes
 
+## Diction 7.0
+
+- A built-in QWERTY keyboard. When you can't talk out loud, just type without leaving Diction. Autocorrect, word suggestions, long-press accents, key popups, caps lock, double-space-to-period, backspace acceleration, and the feel of a native keyboard.
+- Diction Live (Beta). Your words now appear as you speak them, in real time, instead of only after you stop.
+- Automatic language detection. Switch between languages a lot? Diction can now work out which one you're speaking. No need to set it each time. Optional, off by default.
+- Smarter capitalization. Dictation now respects the field you're writing in, so email addresses, code, and similar text don't get wrongly capitalized.
+- A cleaner mode switcher. Picking Diction One, Live, an on-device model, or your own server is now a dedicated one-tap screen, with your current plan shown at a glance.
+- Record and transcribe right inside the app. A new mic button on the home screen lets you capture speech without the keyboard, then copy the text or send it straight to any app with the share button.
+- More reliable in the moment. Better retry and fallback when a transcription fails, sturdier live-streaming connections, and a refined suggestion strip that stays out of your way.
+- The keyboard's default key row now includes a period key, and choosing an on-device model starts downloading right away with no extra confirmation step.
+- Fully localized across all 13 languages, with faster recording start, proper light and dark keyboard theming, and lots of smaller polish and stability fixes.
+
 ## Diction 6.0
 
 - Customizable keyboard row. Tap any key to change what it does, rename it, resize it. Add new keys, drag to reorder, delete what you don't need. The whole row is yours now.
