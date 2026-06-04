@@ -245,29 +245,101 @@ func TestIsAutoDetect(t *testing.T) {
 	}
 }
 
-// --- ModelForAutoDetect ---
+// --- ModelForAutoDetect (four-tier history-based routing) ---
 
-func TestModelForAutoDetect_FallbackConfigured(t *testing.T) {
+func testAutoDetectGateway() *Gateway {
 	g := &Gateway{
 		defaultModel:  "canary-v2",
 		fallbackModel: "large-v3-turbo",
+		parakeetModel: "parakeet-v3",
 		health:        newHealthState(),
 	}
+	g.health.set("canary-v2", true)
+	g.health.set("parakeet-v3", true)
 	g.health.set("large-v3-turbo", true)
-	model, strip := g.ModelForAutoDetect()
-	if model != "large-v3-turbo" || !strip {
-		t.Errorf("got (%q,%v), want (large-v3-turbo,true)", model, strip)
-	}
+	return g
 }
 
 func TestModelForAutoDetect_NoFallbackConfigured(t *testing.T) {
+	// Community single-model setup: no fallback → empty result, caller uses ModelForLanguage.
 	g := &Gateway{
 		defaultModel:  "small",
 		fallbackModel: "",
 		health:        newHealthState(),
 	}
-	model, strip := g.ModelForAutoDetect()
-	if model != "" || strip {
-		t.Errorf("no fallback: got (%q,%v), want (\"\",false) (defer to single-lang routing)", model, strip)
+	result := g.ModelForAutoDetect(AutoDetectContext{})
+	if result.Model != "" || result.Tier != "" {
+		t.Errorf("no fallback: got model=%q tier=%q, want empty", result.Model, result.Tier)
+	}
+}
+
+func TestModelForAutoDetect_WhisperSafe_NoHistory(t *testing.T) {
+	// Cold start: no profile → whisper_safe → Whisper, no explicit language.
+	g := testAutoDetectGateway()
+	result := g.ModelForAutoDetect(AutoDetectContext{})
+	if result.Model != "large-v3-turbo" || result.Tier != "whisper_safe" || result.UpstreamLanguage != "" {
+		t.Errorf("got model=%q tier=%q lang=%q, want large-v3-turbo/whisper_safe/\"\"",
+			result.Model, result.Tier, result.UpstreamLanguage)
+	}
+}
+
+func TestModelForAutoDetect_WhisperHistory_NonEU(t *testing.T) {
+	// Non-EU language in history → whisper_history → Whisper.
+	g := testAutoDetectGateway()
+	result := g.ModelForAutoDetect(AutoDetectContext{
+		Profile: []langEntry{{Code: "zh", Count: 3}, {Code: "cs", Count: 2}},
+	})
+	if result.Model != "large-v3-turbo" || result.Tier != "whisper_history" {
+		t.Errorf("got model=%q tier=%q, want large-v3-turbo/whisper_history", result.Model, result.Tier)
+	}
+}
+
+func TestModelForAutoDetect_ParakeetHistory_AllEU(t *testing.T) {
+	// All EU languages, no dominant → parakeet_history → Parakeet.
+	g := testAutoDetectGateway()
+	result := g.ModelForAutoDetect(AutoDetectContext{
+		Profile: []langEntry{{Code: "cs", Count: 3}, {Code: "sk", Count: 2}},
+	})
+	if result.Model != "parakeet-v3" || result.Tier != "parakeet_history" || result.UpstreamLanguage != "" {
+		t.Errorf("got model=%q tier=%q lang=%q, want parakeet-v3/parakeet_history/\"\"",
+			result.Model, result.Tier, result.UpstreamLanguage)
+	}
+}
+
+func TestModelForAutoDetect_CanaryConfident_DominantEU(t *testing.T) {
+	// ≥5 observations, ≥90% one EU language → canary_confident → Canary with explicit lang.
+	g := testAutoDetectGateway()
+	result := g.ModelForAutoDetect(AutoDetectContext{
+		Profile: []langEntry{{Code: "cs", Count: 5}},
+	})
+	if result.Model != "canary-v2" || result.Tier != "canary_confident" || result.UpstreamLanguage != "cs" {
+		t.Errorf("got model=%q tier=%q lang=%q, want canary-v2/canary_confident/cs",
+			result.Model, result.Tier, result.UpstreamLanguage)
+	}
+}
+
+func TestModelForAutoDetect_CanaryDown_FallsToParakeet(t *testing.T) {
+	// canary_confident device: Canary down → parakeet_history.
+	g := testAutoDetectGateway()
+	g.health.set("canary-v2", false)
+	result := g.ModelForAutoDetect(AutoDetectContext{
+		Profile: []langEntry{{Code: "cs", Count: 5}},
+	})
+	if result.Model != "parakeet-v3" || result.Tier != "parakeet_history" {
+		t.Errorf("canary down: got model=%q tier=%q, want parakeet-v3/parakeet_history",
+			result.Model, result.Tier)
+	}
+}
+
+func TestModelForAutoDetect_ParakeetDown_FallsToWhisper(t *testing.T) {
+	// All-EU profile but Parakeet down → whisper_history.
+	g := testAutoDetectGateway()
+	g.health.set("parakeet-v3", false)
+	result := g.ModelForAutoDetect(AutoDetectContext{
+		Profile: []langEntry{{Code: "cs", Count: 3}, {Code: "sk", Count: 2}},
+	})
+	if result.Model != "large-v3-turbo" || result.Tier != "whisper_history" {
+		t.Errorf("parakeet down: got model=%q tier=%q, want large-v3-turbo/whisper_history",
+			result.Model, result.Tier)
 	}
 }

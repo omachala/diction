@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -1088,7 +1090,11 @@ func TestClassifyWSError_Cases(t *testing.T) {
 		{"stream deadline", context.DeadlineExceeded, wsReasonStreamTimeout},
 		{"canceled", context.Canceled, wsReasonStreamTimeout},
 		{"io.EOF", io.EOF, wsReasonEOF},
+		{"io.ErrUnexpectedEOF", io.ErrUnexpectedEOF, wsReasonEOF},
 		{"wrapped EOF message", errors.New("failed to read frame header: EOF"), wsReasonEOF},
+		{"going away string", errors.New("going away from server"), wsReasonGoingAway},
+		{"StatusGoingAway string", errors.New("StatusGoingAway received"), wsReasonGoingAway},
+		{"protocol string", errors.New("bad protocol frame"), wsReasonProtocol},
 		{"unknown", errors.New("something else entirely"), wsReasonUnknown},
 	}
 	for _, tc := range cases {
@@ -1097,5 +1103,73 @@ func TestClassifyWSError_Cases(t *testing.T) {
 				t.Errorf("ClassifyWSError(%v): want %q, got %q", tc.err, tc.want, got)
 			}
 		})
+	}
+}
+
+// --- StreamingHandler auto-detect routing ---
+
+func TestStreamingHandler_AutoDetect_WithDeviceHash(t *testing.T) {
+	// Verify that auto-detect routing wires DeviceHashFromContext and profileStore.
+	whisper := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"text":"auto-detect result"}`)
+	}))
+	defer whisper.Close()
+
+	whisperURL, _ := url.Parse(whisper.URL)
+	_ = whisperURL
+
+	g := &Gateway{
+		backends: []Backend{
+			{Name: "small", URL: whisper.URL, Aliases: []string{"small"}},
+		},
+		health:        newHealthState(),
+		defaultModel:  "small",
+		fallbackModel: "small", // enables ModelForAutoDetect to return non-empty
+		maxBodySize:   10 * 1024 * 1024,
+	}
+	g.health.set("small", true)
+
+	// Wire DeviceHashFromContext so the inner block (lines 139-141) is executed
+	g.DeviceHashFromContext = func(ctx context.Context) string {
+		return "test-device-hash-abc123"
+	}
+	// Wire profileStore (cold start → no profile → whisper_safe tier)
+	var dbPtr atomic.Pointer[sql.DB]
+	g.profileStore = NewProfileStore(&dbPtr)
+
+	srv := httptest.NewServer(g.StreamingHandler())
+	defer srv.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	conn, _, err := websocket.Dial(ctx, wsURL(srv, "language=auto"), nil)
+	if err != nil {
+		t.Fatalf("dial: %v", err)
+	}
+	defer conn.CloseNow()
+
+	pcm := make([]byte, 3200)
+	if err := conn.Write(ctx, websocket.MessageBinary, pcm); err != nil {
+		t.Fatalf("write audio: %v", err)
+	}
+	done, _ := json.Marshal(map[string]string{"action": "done"})
+	if err := conn.Write(ctx, websocket.MessageText, done); err != nil {
+		t.Fatalf("write done: %v", err)
+	}
+
+	_, data, err := conn.Read(ctx)
+	if err != nil {
+		t.Fatalf("read result: %v", err)
+	}
+	var result struct {
+		Text string `json:"text"`
+	}
+	if err := json.Unmarshal(data, &result); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if result.Text != "auto-detect result" {
+		t.Errorf("text: want 'auto-detect result', got %q", result.Text)
 	}
 }

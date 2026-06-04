@@ -10,6 +10,15 @@ import (
 	"time"
 )
 
+func EnvFloatOrDefault(key string, fallback float64) float64 {
+	if v := os.Getenv(key); v != "" {
+		if f, err := strconv.ParseFloat(v, 64); err == nil {
+			return f
+		}
+	}
+	return fallback
+}
+
 // defaultStreamIdleTimeout is the fallback inter-frame gap for WebSocket
 // audio streams. 45s is generous: healthy streams send frames every ~100ms.
 const defaultStreamIdleTimeout = 45 * time.Second
@@ -20,12 +29,17 @@ type Config struct {
 	DefaultModel  string
 	FallbackModel string
 	EnglishModel  string
+	ParakeetModel string
 	MaxBodySize   int64
 
 	// StreamIdleTimeout bounds the gap between successive WebSocket frames on
 	// /v1/audio/stream. Zero → falls back to defaultStreamIdleTimeout.
 	// Healthy streams send an audio frame every ~100ms, so 45s is generous.
 	StreamIdleTimeout time.Duration
+
+	// ProfileStore enables per-device language history for auto-detect routing.
+	// Nil in community builds without MariaDB — auto-detect always falls back to whisper_safe.
+	ProfileStore *ProfileStore
 }
 
 // Gateway holds runtime state: backends, health, config.
@@ -35,7 +49,9 @@ type Gateway struct {
 	defaultModel  string
 	fallbackModel string
 	englishModel  string
+	parakeetModel string
 	maxBodySize   int64
+	profileStore  *ProfileStore
 
 	// streamIdleTimeout bounds inter-frame gap on /v1/audio/stream. See Config.
 	// Tests override the field directly after construction.
@@ -47,6 +63,15 @@ type Gateway struct {
 	// enhance and e2e indicate whether LLM post-processing and E2E encryption were requested.
 	// Leave nil in community builds.
 	OnTranscription func(ctx context.Context, model string, whisperMs int64, chars int, durationMs int64, enhance, e2e bool)
+
+	// DeviceHashFromContext returns the SHA-256 hex device hash for the current request.
+	// Wired by the private gateway main() to read from the request log entry; nil in community builds.
+	DeviceHashFromContext func(ctx context.Context) string
+
+	// OnAutoDetect is called after the auto-detect routing decision (tier) and optionally again
+	// when the detected language arrives from verbose_json. Either tier or lang may be empty.
+	// Wired by the private gateway main() to write fields into the request log entry.
+	OnAutoDetect func(ctx context.Context, tier, lang string)
 }
 
 // NewGateway creates a Gateway and starts the background health checker.
@@ -68,8 +93,10 @@ func NewGateway(cfg Config) *Gateway {
 		defaultModel:      defaultModel,
 		fallbackModel:     cfg.FallbackModel,
 		englishModel:      cfg.EnglishModel,
+		parakeetModel:     cfg.ParakeetModel,
 		maxBodySize:       cfg.MaxBodySize,
 		streamIdleTimeout: idle,
+		profileStore:      cfg.ProfileStore,
 	}
 	g.startHealthChecker()
 	return g

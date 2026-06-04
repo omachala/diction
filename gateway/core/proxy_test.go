@@ -1427,3 +1427,64 @@ func TestTranscriptionHandler_UpstreamUnreachable_EmitsBackendError(t *testing.T
 		t.Error("OnRequestFailed not called on transport error")
 	}
 }
+
+// --- rewriteMultipart LanguageOverride and InjectVerboseJSON ---
+
+// fieldValues returns a map of field name → value for all non-file parts.
+func fieldValues(t *testing.T, body []byte, ct string) map[string]string {
+	t.Helper()
+	_, params, _ := parseMediaType(ct)
+	reader := multipart.NewReader(bytes.NewReader(body), params["boundary"])
+	vals := map[string]string{}
+	for {
+		part, err := reader.NextPart()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			t.Fatalf("fieldValues: read part: %v", err)
+		}
+		if part.FileName() == "" {
+			data, _ := io.ReadAll(part)
+			vals[part.FormName()] = string(data)
+		}
+		part.Close()
+	}
+	return vals
+}
+
+func TestRewriteMultipart_LanguageOverride(t *testing.T) {
+	// LanguageOverride strips the client language and injects the given code.
+	body, ct := buildMultipart(t, map[string]string{"language": "auto"}, "audio.m4a", "audio")
+	boundary := parseBoundary(ct)
+
+	rewritten, newCT, _, err := rewriteMultipart(body, boundary, MultipartRewriteOpts{
+		LanguageOverride: "cs",
+	})
+	if err != nil {
+		t.Fatalf("rewriteMultipart: %v", err)
+	}
+
+	vals := fieldValues(t, rewritten, newCT)
+	if vals["language"] != "cs" {
+		t.Errorf("language: want cs, got %q", vals["language"])
+	}
+}
+
+func TestRewriteMultipart_InjectVerboseJSON(t *testing.T) {
+	// InjectVerboseJSON adds response_format=verbose_json after stripping any client value.
+	body, ct := buildMultipart(t, map[string]string{"language": "en"}, "audio.m4a", "audio")
+	boundary := parseBoundary(ct)
+
+	rewritten, newCT, _, err := rewriteMultipart(body, boundary, MultipartRewriteOpts{
+		InjectVerboseJSON: true,
+	})
+	if err != nil {
+		t.Fatalf("rewriteMultipart: %v", err)
+	}
+
+	vals := fieldValues(t, rewritten, newCT)
+	if vals["response_format"] != "verbose_json" {
+		t.Errorf("response_format: want verbose_json, got %q", vals["response_format"])
+	}
+}

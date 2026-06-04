@@ -54,7 +54,17 @@ type MultipartRewriteOpts struct {
 	ConvertToWAV  bool
 	ForwardModel  string
 	WhisperPrompt string
-	StripLanguage bool // when true, drop the upstream `language` field too (auto-detect mode)
+	StripLanguage bool // when true, drop the upstream `language` field (auto-detect / parakeet tiers)
+
+	// LanguageOverride, when non-empty, replaces the upstream language field with this code.
+	// Used for canary_confident tier: strip the client's "auto" and inject the known language code.
+	// Mutually exclusive with StripLanguage — LanguageOverride takes precedence.
+	LanguageOverride string
+
+	// InjectVerboseJSON, when true, appends response_format=verbose_json to the forwarded
+	// request so Whisper returns the detected language code in its response.
+	// Only set for Whisper-tier auto-detect paths; Parakeet and Canary must not receive it.
+	InjectVerboseJSON bool
 }
 
 // rewriteMultipart rewrites the multipart body:
@@ -80,13 +90,13 @@ func rewriteMultipart(body []byte, boundary string, opts MultipartRewriteOpts) (
 		}
 
 		// Strip gateway-owned fields. Always: model, context, response_format.
-		// Conditionally: language (only when auto-detect routing is active).
+		// Conditionally: language (auto-detect strip or override — both remove the client value).
 		name := part.FormName()
 		if name == "model" || name == "context" || name == "response_format" {
 			part.Close()
 			continue
 		}
-		if name == "language" && opts.StripLanguage {
+		if name == "language" && (opts.StripLanguage || opts.LanguageOverride != "") {
 			part.Close()
 			continue
 		}
@@ -143,6 +153,18 @@ func rewriteMultipart(body []byte, boundary string, opts MultipartRewriteOpts) (
 	if opts.WhisperPrompt != "" {
 		if err := writer.WriteField("prompt", opts.WhisperPrompt); err != nil {
 			return nil, "", 0, fmt.Errorf("write prompt field: %w", err)
+		}
+	}
+
+	if opts.LanguageOverride != "" {
+		if err := writer.WriteField("language", opts.LanguageOverride); err != nil {
+			return nil, "", 0, fmt.Errorf("write language override field: %w", err)
+		}
+	}
+
+	if opts.InjectVerboseJSON {
+		if err := writer.WriteField("response_format", "verbose_json"); err != nil {
+			return nil, "", 0, fmt.Errorf("write response_format field: %w", err)
 		}
 	}
 
@@ -352,19 +374,26 @@ func (g *Gateway) TranscriptionHandlerWithPostProcess(postProcess func(context.C
 			http.Error(w, `{"error":"response_format=text is incompatible with X-Diction-E2E (E2E requires JSON envelope)"}`, http.StatusBadRequest)
 			return
 		}
-		// Auto-detect routing: when the client sent `language=auto`, route to a
-		// detect-capable model and strip the field upstream so the model performs
-		// native LID. Old clients with single-language `language=` fall through
-		// to existing routing, so back-compat is automatic.
+		// Auto-detect routing: when the client sent `language=auto`, route using per-device
+		// language history. Cold start → whisper_safe; EU history → parakeet_history;
+		// dominant EU → canary_confident. Old clients with a concrete language code fall
+		// through to existing ModelForLanguage routing unchanged.
 		var (
-			model                 string
-			stripUpstreamLanguage bool
-			detectActive          = IsAutoDetect(language)
+			model        string
+			detectActive = IsAutoDetect(language)
+			adCtx        AutoDetectContext
+			adResult     AutoDetectResult
 		)
 		if detectActive {
-			if detectModel, strip := g.ModelForAutoDetect(); detectModel != "" {
-				model = detectModel
-				stripUpstreamLanguage = strip
+			if g.DeviceHashFromContext != nil {
+				adCtx.DeviceHash = g.DeviceHashFromContext(r.Context())
+			}
+			if adCtx.DeviceHash != "" && g.profileStore != nil {
+				adCtx.Profile = g.profileStore.GetProfile(r.Context(), adCtx.DeviceHash)
+			}
+			adResult = g.ModelForAutoDetect(adCtx)
+			if adResult.Model != "" {
+				model = adResult.Model
 			}
 		}
 		if model == "" {
@@ -376,8 +405,11 @@ func (g *Gateway) TranscriptionHandlerWithPostProcess(postProcess func(context.C
 			return
 		}
 		if g.fallbackModel != "" {
-			log.Printf("Route: language=%s detect=%v → model=%s",
-				language, detectActive, model)
+			log.Printf("Route: language=%s detect=%v tier=%s → model=%s",
+				language, detectActive, adResult.Tier, model)
+		}
+		if detectActive && adResult.Tier != "" && g.OnAutoDetect != nil {
+			g.OnAutoDetect(r.Context(), adResult.Tier, "")
 		}
 		w.Header().Set("X-Diction-Route-Lang", language)
 		w.Header().Set("X-Diction-Route-Model", model)
@@ -397,12 +429,15 @@ func (g *Gateway) TranscriptionHandlerWithPostProcess(postProcess func(context.C
 		proxyBody := body
 		proxyContentType := contentType
 		var audioDurationMs int64
+		isWhisperTier := strings.HasPrefix(adResult.Tier, "whisper")
 		if boundary != "" {
 			converted, newCT, durationMs, err := rewriteMultipart(body, boundary, MultipartRewriteOpts{
-				ConvertToWAV:  backend.NeedsWAV,
-				ForwardModel:  backend.ForwardModel,
-				WhisperPrompt: whisperPrompt,
-				StripLanguage: stripUpstreamLanguage,
+				ConvertToWAV:      backend.NeedsWAV,
+				ForwardModel:      backend.ForwardModel,
+				WhisperPrompt:     whisperPrompt,
+				StripLanguage:     detectActive && adResult.UpstreamLanguage == "",
+				LanguageOverride:  adResult.UpstreamLanguage,
+				InjectVerboseJSON: detectActive && isWhisperTier,
 			})
 			if err != nil {
 				log.Printf("Multipart rewrite failed for %s: %v", backend.Name, err)
@@ -464,13 +499,30 @@ func (g *Gateway) TranscriptionHandlerWithPostProcess(postProcess func(context.C
 					return nil
 				}
 
-				// Parse {"text": "..."}
+				// Parse {"text": "..."} — permissive: also succeeds on verbose_json
+				// because Go's json.Unmarshal ignores extra fields.
 				var transcription struct {
-					Text string `json:"text"`
+					Text     string `json:"text"`
+					Language string `json:"language"`
 				}
 				if err := json.Unmarshal(respBody, &transcription); err != nil || transcription.Text == "" {
 					resp.Body = io.NopCloser(bytes.NewReader(respBody))
 					return nil
+				}
+
+				// Whisper verbose_json path: re-wrap as {"text":"..."} before any
+				// further processing so the client never sees verbose_json. Also
+				// record the detected language into the device profile.
+				if detectActive && isWhisperTier && transcription.Language != "" {
+					if wrapped, marshalErr := json.Marshal(map[string]string{"text": transcription.Text}); marshalErr == nil {
+						respBody = wrapped
+					}
+					if adCtx.DeviceHash != "" && g.profileStore != nil {
+						go g.profileStore.RecordLanguage(adCtx.DeviceHash, transcription.Language)
+					}
+					if g.OnAutoDetect != nil {
+						g.OnAutoDetect(resp.Request.Context(), "", transcription.Language)
+					}
 				}
 
 				transcript := transcription.Text

@@ -132,11 +132,20 @@ func (g *Gateway) StreamingHandlerWithPostProcess(postProcess func(context.Conte
 			model                 string
 			stripUpstreamLanguage bool
 			detectActive          = IsAutoDetect(language)
+			adResult              AutoDetectResult
 		)
 		if detectActive {
-			if detectModel, strip := g.ModelForAutoDetect(); detectModel != "" {
-				model = detectModel
-				stripUpstreamLanguage = strip
+			var adCtx AutoDetectContext
+			if g.DeviceHashFromContext != nil {
+				adCtx.DeviceHash = g.DeviceHashFromContext(r.Context())
+			}
+			if adCtx.DeviceHash != "" && g.profileStore != nil {
+				adCtx.Profile = g.profileStore.GetProfile(r.Context(), adCtx.DeviceHash)
+			}
+			adResult = g.ModelForAutoDetect(adCtx)
+			if adResult.Model != "" {
+				model = adResult.Model
+				stripUpstreamLanguage = adResult.UpstreamLanguage == ""
 			}
 		}
 		if model == "" {
@@ -284,10 +293,9 @@ func (g *Gateway) StreamingHandlerWithPostProcess(postProcess func(context.Conte
 				if action.Action == "done" {
 					// Mid-stream language override is a re-routing hint for single-language
 					// clients. When auto-detect is active on this connection we've already
-					// committed to a detect-capable model and stripped `language` upstream,
-					// so honouring the hint here would either re-introduce a wrong code or
-					// re-route to a non-detect model. Ignore it.
-					if action.Language != "" && !stripUpstreamLanguage {
+					// committed to a detect-capable model, so honouring the hint would either
+					// re-introduce a wrong code or re-route to a non-detect model. Ignore it.
+					if action.Language != "" && !detectActive {
 						language = action.Language
 					}
 					break
@@ -309,10 +317,14 @@ func (g *Gateway) StreamingHandlerWithPostProcess(postProcess func(context.Conte
 			return
 		}
 
-		// Wrap PCM in WAV header and POST to backend. When auto-detect routing is
-		// active, omit the language upstream so the model runs native auto-LID.
+		// Wrap PCM in WAV header and POST to backend.
+		// canary_confident: inject known language code (e.g. "cs") for best accuracy.
+		// Other detect tiers: strip language so the model runs native auto-LID.
+		// Non-detect: pass through the client's language unchanged.
 		upstreamLanguage := language
-		if stripUpstreamLanguage {
+		if adResult.UpstreamLanguage != "" {
+			upstreamLanguage = adResult.UpstreamLanguage
+		} else if stripUpstreamLanguage {
 			upstreamLanguage = ""
 		}
 		text, err := g.proxyToBackend(ctx, target, pcmBuf.Bytes(), backend, upstreamLanguage)
@@ -352,9 +364,7 @@ func (g *Gateway) StreamingHandlerWithPostProcess(postProcess func(context.Conte
 						Hint:       "streaming post-process failed; returning raw",
 					})
 				}
-				if OnRequestFailed != nil {
-					OnRequestFailed(ctx, errTypeSTTError)
-				}
+				// Do not call OnRequestFailed — raw transcript is still returned below.
 			}
 		}
 

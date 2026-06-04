@@ -14,6 +14,7 @@ type Backend struct {
 	AuthHeader      string // Authorization header value to inject into backend requests; empty = none
 	SkipHealthCheck bool   // if true, skip health polling (custom/external backends)
 	TargetPath      string // HTTP path for the transcription endpoint; empty defaults to /v1/audio/transcriptions
+	Disabled        bool   // if true, backend is registered (aliases/models reference) but not deployed — skip warmup + health polling
 }
 
 // CustomBackendFromEnv builds a custom backend from environment variables.
@@ -71,7 +72,9 @@ func DefaultBackends() []Backend {
 		// Canary (NVIDIA, custom /inference API, WAV only, GPU-accelerated) — default for private cloud gateway
 		{Name: "canary-v2", URL: "http://canary:9000", Aliases: []string{"canary-v2", "canary", "nvidia/canary-1b-v2"}, CanonicalID: "nvidia/canary-1b-v2", DisplayName: "Canary", Description: "highest accuracy for 25 European languages, GPU-accelerated", Provider: "canary", NeedsWAV: true, TargetPath: "/inference"},
 
-		// Canary-Qwen (NVIDIA, English-only, SALM architecture, #1 HF ASR leaderboard) — English tier for private cloud gateway
-		{Name: "canary-qwen", URL: "http://canary-qwen:9000", Aliases: []string{"canary-qwen", "nvidia/canary-qwen-2.5b"}, CanonicalID: "nvidia/canary-qwen-2.5b", DisplayName: "Canary Qwen", Description: "best-in-class English speech recognition, 5.63% WER", Provider: "canary", NeedsWAV: true, TargetPath: "/inference"},
+		// Canary-Qwen (NVIDIA, English-only, SALM architecture, #1 HF ASR leaderboard) — English tier for private cloud gateway.
+		// Disabled: 9.86 GiB VRAM doesn't fit alongside canary-v2 + whisper on the 16GB GPU (see server/docker-compose.yml).
+		// English routing uses canary-v2; this entry stays for alias/models reference but is skipped for warmup + health polling.
+		{Name: "canary-qwen", URL: "http://canary-qwen:9000", Aliases: []string{"canary-qwen", "nvidia/canary-qwen-2.5b"}, CanonicalID: "nvidia/canary-qwen-2.5b", DisplayName: "Canary Qwen", Description: "best-in-class English speech recognition, 5.63% WER", Provider: "canary", NeedsWAV: true, TargetPath: "/inference", Disabled: true},
 	}
 }

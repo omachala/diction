@@ -1,6 +1,8 @@
 package core
 
-import "strings"
+import (
+	"strings"
+)
 
 // AutoDetectSentinel is the `language` field value clients send when the user has
 // opted into auto-detect. The gateway routes these requests to a detect-capable
@@ -78,19 +80,90 @@ func (g *Gateway) ModelForLanguage(lang string) string {
 	return g.fallbackModel
 }
 
-// ModelForAutoDetect picks the upstream model when the client sent
-// `language=auto`. Always returns the fallback (Whisper large-v3-turbo) today —
-// it auto-LIDs natively across 99 languages. Future routing (e.g. Parakeet-v3
-// for an EU-only fast path) plugs in here without touching the call sites.
-//
-// Returns (model, stripUpstreamLanguage):
-//   - stripUpstreamLanguage is always true: the caller must omit `language`
-//     when forwarding so the model performs native LID.
-//   - If no fallback is configured (single-model dev setup), returns ("", false)
-//     and the caller falls back to `ModelForLanguage`.
-func (g *Gateway) ModelForAutoDetect() (string, bool) {
+// AutoDetectContext carries per-request signals for routing auto-detect requests.
+type AutoDetectContext struct {
+	DeviceHash string      // sha256, from log entry — may be ""
+	Profile    []langEntry // from ProfileStore.GetProfile — nil = no history
+}
+
+// AutoDetectResult is the routing decision for language=auto requests.
+type AutoDetectResult struct {
+	Model            string // upstream model name; "" = no fallback configured
+	UpstreamLanguage string // "" = strip language (native auto-LID); non-empty = pass this code (Canary)
+	// Tier is the granular routing branch — 4 values for rollout observability:
+	//   whisper_safe     — no history (cold start or DB unavailable)
+	//   whisper_history  — history shows any non-EU language
+	//   parakeet_history — history shows EU-only languages
+	//   canary_confident — dominant EU lang ≥ minCount obs and ≥ minPct of history
+	Tier string
+}
+
+// ModelForAutoDetect picks the upstream model using per-device language history.
+// Cold start always goes to Whisper (safe, learns the real language); once enough
+// EU observations accumulate the device graduates to Parakeet then Canary.
+// Returns an empty AutoDetectResult if no fallback is configured (community single-model setup).
+func (g *Gateway) ModelForAutoDetect(ctx AutoDetectContext) AutoDetectResult {
 	if g.fallbackModel == "" {
-		return "", false
+		return AutoDetectResult{}
 	}
-	return g.fallbackModel, true
+
+	minCount := EnvIntOrDefault("DETECT_MIN_COUNT", 5)
+	minPct := EnvFloatOrDefault("DETECT_MIN_PCT", 0.90)
+
+	// canary_confident: dominant EU language in history, Canary healthy
+	if g.defaultModel != "" && g.health.get(g.defaultModel) {
+		if dom := dominantLang(ctx.Profile, minCount, minPct); dom != "" && IsEULanguage(dom) {
+			return AutoDetectResult{Model: g.defaultModel, UpstreamLanguage: dom, Tier: "canary_confident"}
+		}
+	}
+
+	// parakeet_history / whisper_history: decide from what we actually know
+	allEU, hasHistory := euProfile(ctx.Profile)
+	if hasHistory {
+		if allEU && g.parakeetModel != "" && g.health.get(g.parakeetModel) {
+			return AutoDetectResult{Model: g.parakeetModel, Tier: "parakeet_history"}
+		}
+		// Non-EU in history, or Parakeet down
+		return AutoDetectResult{Model: g.fallbackModel, Tier: "whisper_history"}
+	}
+
+	// whisper_safe: no history — cold start
+	return AutoDetectResult{Model: g.fallbackModel, Tier: "whisper_safe"}
+}
+
+// euProfile reports whether all entries in a non-empty profile are EU languages.
+// Returns (allEU, hasEntries).
+func euProfile(entries []langEntry) (allEU bool, hasEntries bool) {
+	if len(entries) == 0 {
+		return false, false
+	}
+	for _, e := range entries {
+		if !IsEULanguage(e.Code) {
+			return false, true
+		}
+	}
+	return true, true
+}
+
+// dominantLang returns the top language code if it has ≥ minCount observations
+// and accounts for ≥ minPct of all observations. Returns "" otherwise.
+func dominantLang(entries []langEntry, minCount int, minPct float64) string {
+	if len(entries) == 0 {
+		return ""
+	}
+	top := entries[0]
+	if top.Count < minCount {
+		return ""
+	}
+	total := 0
+	for _, e := range entries {
+		total += e.Count
+	}
+	if total == 0 {
+		return ""
+	}
+	if float64(top.Count)/float64(total) < minPct {
+		return ""
+	}
+	return top.Code
 }

@@ -45,6 +45,9 @@ func (g *Gateway) startHealthChecker() {
 	check := func() {
 		client := &http.Client{Timeout: 5 * time.Second}
 		for _, b := range g.backends {
+			if b.Disabled {
+				continue // not deployed — don't waste a request on a dead host
+			}
 			resp, err := client.Get(b.URL + "/health")
 			ok := err == nil && resp != nil && resp.StatusCode == http.StatusOK
 			if resp != nil {
