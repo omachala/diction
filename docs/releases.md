@@ -7,6 +7,15 @@ description: What's new in each Diction release. Full changelog for every App St
 
 # Release Notes
 
+## Diction 8.0
+
+- Brand-new autocorrect engine, the first real one in Diction. It quietly fixes common mistakes as you type, with no setup required.
+- The QWERTY keyboard layout has been updated: more compact, more responsive, and easier to use. Suggestion chips now sit inline next to the mic button, and the dismiss key lives in the keyboard row itself.
+- Suggestions are significantly more reliable. They now track context correctly after backspace and edits, and tapping them works consistently wherever you are.
+- When you have text selected and speak an edit instruction, the live streaming preview no longer overwrites your selection mid-way. The replacement arrives as a single, clean swap.
+- Tap the mic inside any transcript to record more and insert it at the cursor. In Live mode, the detail view opens right away so text streams in as you speak.
+- Added a numpad for number fields. Tap into a phone number, PIN, or numeric field and the keyboard adapts automatically.
+
 ## Diction 7.0
 
 - A built-in QWERTY keyboard. When you can't talk out loud, just type without leaving Diction. Autocorrect, word suggestions, long-press accents, key popups, caps lock, double-space-to-period, backspace acceleration, and the feel of a native keyboard.
