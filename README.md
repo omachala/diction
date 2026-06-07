@@ -196,15 +196,7 @@ To dictate: open any app, tap a text field, long-press the globe icon (bottom-le
 
 **Tailscale (recommended)**
 
-[Tailscale](https://tailscale.com/) creates a private WireGuard mesh between your devices. Install it on the server and on the iPhone, sign in to the same account.
-
-```bash
-curl -fsSL https://tailscale.com/install.sh | sh
-sudo tailscale up
-tailscale ip -4   # use this address in the Diction app
-```
-
-Install the Tailscale app on iPhone, sign in. Update Diction's endpoint to `http://100.x.x.x:8080`. Works on cellular, café WiFi, anywhere. Free for personal use.
+[Tailscale](https://tailscale.com/) creates a private WireGuard mesh between your devices. Install it on the server and iPhone, sign in to the same account, and use the `100.x.x.x` Tailscale IP as your Diction endpoint. Works on cellular, café WiFi, anywhere. Free for personal use.
 
 **Cloudflare Tunnel (public URL, no port forwarding)**
 
