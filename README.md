@@ -221,7 +221,7 @@ sudo tailscale up
 tailscale ip -4   # use this address in the Diction app
 ```
 
-Update Diction's endpoint to `http://100.x.x.x:8080`. Works on cellular, café WiFi, anywhere. Free for personal use.
+Install the Tailscale app on iPhone, sign in. Update Diction's endpoint to `http://100.x.x.x:8080`. Works on cellular, café WiFi, anywhere. Free for personal use.
 
 **Cloudflare Tunnel (public URL, no port forwarding)**
 
@@ -284,6 +284,8 @@ Install the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-
 | Languages | 99 | 25 European |
 
 **Supported languages:** English, Bulgarian, Croatian, Czech, Danish, Dutch, Estonian, Finnish, French, German, Greek, Hungarian, Italian, Latvian, Lithuanian, Maltese, Polish, Portuguese, Romanian, Slovak, Slovenian, Spanish, Swedish, Russian, Ukrainian.
+
+For languages outside this list, use Option B.
 
 ```yaml
 services:
@@ -355,6 +357,8 @@ services:
 volumes:
   whisper-models:
 ```
+
+First boot downloads ~1.6 GB of model weights into the volume. Subsequent starts are instant.
 
 ---
 
@@ -559,7 +563,7 @@ Works with the Node SDK, LangChain, Flowise, n8n, or any tool that expects OpenA
 - Model download/delete (`POST`/`DELETE /v1/models/{id}`)
 - OpenAI Realtime API (`/v1/realtime`)
 
-**Authentication** is off by default (`AUTH_ENABLED=false`). To lock down a public-facing deployment, set `AUTH_ENABLED=true` and configure tokens in the gateway env.
+**Authentication** is off by default (`AUTH_ENABLED=false`). Pass any non-empty string as the API key from the client — the gateway doesn't check it. To lock down a public-facing deployment, set `AUTH_ENABLED=true` and configure tokens in the gateway env.
 
 **Error shape:** errors return `{"error":"<message>"}`, not OpenAI's nested `{"error":{"message":"...","type":"..."}}`. Most SDKs surface these as `HTTPError` rather than `APIError`.
 
