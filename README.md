@@ -55,25 +55,7 @@ The Diction app streams audio over a WebSocket connection, so you need the Dicti
 - Any machine that can run Docker: Mac, Linux box, NUC, home server, VPS. Apple Silicon works (via Rosetta).
 - iPhone running iOS 17.0 or later.
 
-### Step 1 - Install Docker
-
-Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) on macOS or Windows. On Linux:
-
-```bash
-# Ubuntu / Debian
-sudo apt update && sudo apt install docker.io docker-compose-plugin
-sudo usermod -aG docker "$USER"   # log out and back in after
-```
-
-```bash
-docker --version && docker compose version
-```
-
-**Apple Silicon:** Open Docker Desktop → Settings → General → enable "Use Rosetta for x86/amd64 emulation". The gateway image is amd64-only.
-
-**Memory:** The default Docker Desktop VM is 2 GB. Bump to 4 GB (Settings → Resources → Memory) if you plan to run `medium` (~2.1 GB) or larger.
-
-### Step 2 - Write the Compose File
+### Step 1 - Write the Compose File
 
 Create a folder for the stack and save this as `docker-compose.yml`:
 
@@ -107,7 +89,7 @@ volumes:
 
 The `whisper-models` volume persists the model weights (~500 MB for `small`) so they survive container rebuilds. `DEFAULT_MODEL: small` maps to the service named `whisper-small` - see [Swap the Speech Model](#swap-the-speech-model) if you change the model.
 
-### Step 3 - Start the Stack
+### Step 2 - Start the Stack
 
 ```bash
 docker compose up -d
@@ -135,7 +117,7 @@ diction-whisper-small    Up 2 minutes (healthy)
 | `health: starting` for > 3 minutes | Model still downloading - `docker compose logs -f whisper-small` |
 | Gateway exits immediately | Whisper container failed - check its logs |
 
-### Step 4 - Test the Server
+### Step 3 - Test the Server
 
 Generate a test audio file (macOS):
 
@@ -171,7 +153,7 @@ curl -sS -D - -o /dev/null \
 | 404 Not Found | URL typo - path must be exactly `/v1/audio/transcriptions` |
 | OOM / container crash | Model too large for available RAM |
 
-### Step 5 - Find Your Server's IP
+### Step 4 - Find Your Server's IP
 
 **macOS:**
 ```bash
@@ -194,7 +176,7 @@ Pick the `192.168.x.x` or `10.x.x.x` address. Ignore anything starting with `100
 
 Set a DHCP reservation in your router so the IP doesn't change on reboot. Or use [Tailscale](#reach-from-anywhere) for a stable address that follows the machine anywhere.
 
-### Step 6 - Connect the App
+### Step 5 - Connect the App
 
 Install [Diction](https://apps.apple.com/app/id6759807364) on your iPhone. On first launch:
 
@@ -205,7 +187,7 @@ Install [Diction](https://apps.apple.com/app/id6759807364) on your iPhone. On fi
 Point it at your server:
 
 1. Open Diction → **Preferences** → **Mode** → **Self-Hosted**
-2. Enter your endpoint: `http://192.168.1.42:8080` (your IP from Step 5)
+2. Enter your endpoint: `http://192.168.1.42:8080` (your IP from Step 4)
 3. Tap **Test connection** - you should get a green check within a second
 
 To dictate: open any app, tap a text field, long-press the globe icon (bottom-left of the iOS keyboard), pick **Diction**, tap the mic, speak, release.
