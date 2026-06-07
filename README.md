@@ -5,7 +5,7 @@
     <img src="assets/logo-dark.png" alt="Diction" height="50">
   </picture>
   <br><br>
-  <strong>You talk. We type.</strong>
+  <strong>Speak to Type and Edit</strong>
   <br><br>
   Voice keyboard for iOS. Works in every app.<br>On-device, cloud, or self-hosted - no limits.
 </p>
@@ -21,7 +21,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/omachala/diction/blob/main/LICENSE"><img src="https://img.shields.io/github/license/omachala/diction?style=for-the-badge" alt="License"></a>
+  <a href="https://github.com/omachala/diction/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge" alt="License: MIT"></a>
+  <a href="https://codecov.io/gh/omachala/diction"><img src="https://img.shields.io/codecov/c/github/omachala/diction?style=for-the-badge&label=coverage" alt="Coverage"></a>
 </p>
 
 ---
