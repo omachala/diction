@@ -282,6 +282,7 @@ gtag('config', 'G-PCV64Y7GFM');`,
     },
 
     nav: [
+      { text: 'Why Diction', link: '/why-diction' },
       { text: 'Docs', link: '/features/' },
       { text: 'Support', link: '/support' },
       {
@@ -293,19 +294,23 @@ gtag('config', 'G-PCV64Y7GFM');`,
     sidebar: {
       '/': [
         {
+          text: 'Introduction',
+          items: [
+            { text: 'Why Diction', link: '/why-diction' },
+            { text: 'The Keyboard Problem', link: '/keyboard' },
+            { text: 'Focus Over Spread', link: '/focus' },
+            { text: 'How Diction Is Built', link: '/engineering' },
+            { text: 'About the Author', link: '/about' },
+          ],
+        },
+        {
           text: 'Features',
           items: [
             { text: 'Overview', link: '/features/' },
-            { text: 'Context-Aware Text Editing', link: '/features/context-aware' },
-            {
-              text: 'AI Companion',
-              link: '/features/ai-companion',
-              items: [
-                { text: 'Profile', link: '/features/ai-companion#profile' },
-                { text: 'Tone Presets', link: '/features/tone-presets' },
-                { text: 'My Words', link: '/features/my-words' },
-              ],
-            },
+            { text: 'Context-Aware Editing', link: '/features/context-aware' },
+            { text: 'AI Companion', link: '/features/ai-companion' },
+            { text: 'Tone Presets', link: '/features/tone-presets' },
+            { text: 'My Words', link: '/features/my-words' },
             { text: 'Transcription History', link: '/features/history' },
           ],
         },
@@ -318,13 +323,6 @@ gtag('config', 'G-PCV64Y7GFM');`,
           ],
         },
         {
-          text: 'Security',
-          items: [
-            { text: 'Privacy First', link: '/privacy-first' },
-            { text: 'Encryption', link: '/encryption' },
-          ],
-        },
-        {
           text: 'Guides',
           items: [
             { text: 'Keyboard Preferences', link: '/features/preferences' },
@@ -333,10 +331,17 @@ gtag('config', 'G-PCV64Y7GFM');`,
           ],
         },
         {
+          text: 'Security & Privacy',
+          items: [
+            { text: 'Privacy First', link: '/privacy-first' },
+            { text: 'Encryption', link: '/encryption' },
+          ],
+        },
+        {
           text: 'Compare',
           items: [
-            { text: 'vs Wispr Flow', link: '/vs/wispr-flow' },
             { text: 'vs Apple Dictation', link: '/vs/apple-dictation' },
+            { text: 'vs Wispr Flow', link: '/vs/wispr-flow' },
             { text: 'vs Willow', link: '/vs/willow' },
             { text: 'vs Superwhisper', link: '/vs/superwhisper' },
           ],
@@ -346,6 +351,13 @@ gtag('config', 'G-PCV64Y7GFM');`,
           items: [
             { text: 'Support', link: '/support' },
             { text: 'Release Notes', link: '/releases' },
+          ],
+        },
+        {
+          text: 'Legal',
+          items: [
+            { text: 'Privacy Policy', link: '/privacy' },
+            { text: 'Terms of Service', link: '/terms' },
           ],
         },
       ],

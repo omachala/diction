@@ -1,14 +1,14 @@
 ---
-title: "About Diction"
+title: "About the Author"
 description: Diction is built by a hands-on engineering lead who works daily on critical banking infrastructure. Privacy and reliability are not product values. They are engineering constraints he lives by.
-keywords: "about diction, who built diction, diction developer, voice keyboard engineer"
+keywords: "about diction, who built diction, diction developer, voice keyboard engineer, ondrej machala"
 ---
 
 <img src="/illustration-about.svg" alt="Engineer managing a project" class="illustration" style="max-width: 480px; margin: 0 auto 2rem; display: block;" />
 
-# About
+# About the Author
 
-Diction is an engineering project.
+Diction is an engineering project, built by one person.
 
 I'm a hands-on engineering lead at a major financial institution. The kind of environment where the reliability and privacy bar is set by regulators, not product managers. Systems don't go down. Data doesn't leak. Those aren't goals, they're the baseline.
 
@@ -19,6 +19,8 @@ So I built it properly. Diction is under 15 MB. I wanted it lean and focused, on
 The same instincts I bring to banking systems are in Diction. No unnecessary data retention. No assumptions about the happy path. Defence in depth. Audio is processed and immediately discarded. The server is open source. You can read every line.
 
 On-device and self-hosted are free. If you don't want to run a server, there's Diction One. It runs on my own infrastructure with fine-tuned speech models and low-latency processing. Transcription text is encrypted with AES-256-GCM before it leaves the server. Context awareness carries terminology and names across your session. AI polishing cleans up the raw transcript before it hits your text field. The result is clean, ready-to-send text with no setup on your end. Priced like a developer built it, not like someone raised a round.
+
+For the engineering side in more detail, read [How Diction Is Built](/engineering). For the thesis behind the project, read [Why Diction](/why-diction).
 
 ---
 
