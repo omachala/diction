@@ -36,11 +36,7 @@ That is why Diction stays a keyboard. The replacement for QWERTY is not a separa
 
 ## Focused on one job
 
-Most dictation tools spread thin. Mac, Windows, Android, iOS, a browser extension, a desktop overlay, a CLI. Each platform gets a fraction of the engineering attention, and it shows. The iOS app is usually the worst of the bunch because iOS is the hardest surface to build for.
-
-Diction picks one job. iOS keyboard. That's it. Everything in the codebase serves that single surface. Memory ceilings, custom audio filters, mic warmup, app-switching survival, text-field quirks across hundreds of apps. The depth shows up where it counts — in the moment you tap the mic and expect text.
-
-You can read more about why we don't spread on [Focus Over Spread](/focus). The short version: focused tools beat broad ones, every time.
+iOS keyboard. That's it. No Mac app, no Android, no browser extension. Focused tools beat broad ones on the surface they focus on, every time. The case for that is on [Focus Over Spread](/focus).
 
 ## What you actually get
 

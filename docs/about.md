@@ -14,13 +14,11 @@ I'm a hands-on engineering lead at a major financial institution. The kind of en
 
 I use speech to text constantly. Commuting. On a walk with my son. Apple's built-in dictation is well known for being unreliable, and I needed something that works in any app. And I mean any app. I use terminal apps, SSH clients, things where the standard iOS keyboard already struggles. I was just missing something that solves the problem properly. A keyboard you tap, speak into, and it works. Every time, everywhere.
 
-So I built it properly. Diction is under 15 MB. I wanted it lean and focused, one thing that works rather than ten things that mostly work. A lot of the core audio and processing modules are custom built because the available libraries either pulled in too many dependencies or weren't precise enough for what I needed. iOS keyboard extensions have tight memory limits and no tolerance for slowness. I've spent a lot of time on memory usage, battery draw, and making sure the keyboard is ready the moment you need it.
+So I built it properly. The same instincts I bring to banking systems are in Diction. No unnecessary data retention. No assumptions about the happy path. Defence in depth. Open code on the server side, so claims about privacy are verifiable, not promises.
 
-The same instincts I bring to banking systems are in Diction. No unnecessary data retention. No assumptions about the happy path. Defence in depth. Audio is processed and immediately discarded. The server is open source. You can read every line.
+You don't have to take any of that on faith. You can read the server. You can self-host. You can stay on-device. The architecture is built so that trust is optional.
 
-On-device and self-hosted are free. If you don't want to run a server, there's Diction One. It runs on my own infrastructure with fine-tuned speech models and low-latency processing. Transcription text is encrypted with AES-256-GCM before it leaves the server. Context awareness carries terminology and names across your session. AI polishing cleans up the raw transcript before it hits your text field. The result is clean, ready-to-send text with no setup on your end. Priced like a developer built it, not like someone raised a round.
-
-For the engineering side in more detail, read [How Diction Is Built](/engineering). For the thesis behind the project, read [Why Diction](/why-diction).
+For the engineering side in detail, read [How Diction Is Built](/engineering). For the thesis behind the project, read [Why Diction](/why-diction).
 
 ---
 

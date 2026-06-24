@@ -1,6 +1,6 @@
 ---
 title: "How Diction Is Built"
-description: Engineering principles behind Diction. Under 15 MB. Custom audio modules. No analytics. Defence in depth. The same instincts that ship banking infrastructure, applied to an iOS keyboard.
+description: Engineering principles behind Diction. Under 15 MB. Custom audio modules. No analytics. Defence in depth. What the keyboard is made of and what we won't put in it.
 keywords: "diction engineering, keyboard size, custom audio modules, no analytics, ios keyboard memory, banking engineering"
 ---
 
@@ -56,14 +56,6 @@ A short list of things we are deliberately not building.
 - **A second product on the side.** The keyboard is the product. Not a notes app, not a journaling app, not an AI assistant. Voice input that feeds whatever app you're already in.
 
 The list grows when we say no to something. It is the longest list in the project.
-
-## Why this matters
-
-I work on banking infrastructure for a living. The kind of environment where the reliability and privacy bar is set by regulators, not product managers. Systems don't go down. Data doesn't leak. Those aren't goals, they're the baseline.
-
-Diction inherits the same instincts. No unnecessary data retention. No assumptions about the happy path. Defence in depth. Audio processed and immediately discarded. Open code on the server side so claims about privacy are verifiable, not promises.
-
-You don't need to take the privacy claims on faith. You can read the server. You can self-host. You can stay on-device. The architecture is built so that trust is optional.
 
 ---
 

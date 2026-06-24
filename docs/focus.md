@@ -50,15 +50,15 @@ Diction is for the user who already wants voice on their phone and is tired of t
 
 ## What focus buys you
 
-A few concrete things, all of which are the result of one team building one product for one surface.
+Things the user actually feels, not engineering specs.
 
-- **The keyboard fits in 15 MB.** It loads instantly. It doesn't lag when you open a text field. Most apps in this category are an order of magnitude bigger because they ship with code for surfaces they don't need on iOS.
-- **The keyboard survives app switches.** You can dictate, hit home, swap apps, come back. The recording is intact. This works because we spent the engineering hours on the iOS lifecycle instead of the Windows audio driver.
-- **The keyboard works in apps no other tool touches.** Terminal apps. SSH clients. Bank chat. The kind of fields the standard iOS keyboard already struggles with. Diction works in them because we tested them.
-- **The audio pipeline is custom.** Background noise, mic warmup, clipping, silence handling, voice isolation. Each one tuned for the iPhone microphone and the iOS audio session, not a generic cross-platform abstraction.
-- **The keyboard polish keeps going.** Long-press behavior, haptics, key sizing, dark mode, accessibility. Small things that compound. None of it would happen if half the engineering budget went to the Mac version.
+- **The keyboard shows up the moment you tap a text field.** No spinner, no delay, no missed first word.
+- **It works in apps no other tool touches.** Terminal apps, SSH clients, bank chat, niche notes apps. Anywhere you type, voice works.
+- **You can dictate, switch apps to check something, and come back.** The recording survives the trip.
+- **The audio sounds right.** Background noise filtered, mic warmup handled, voice isolation managed. Tuned for the iPhone, not a generic cross-platform abstraction.
+- **The small things keep getting fixed.** Haptics, long-press, dark mode, accessibility. Polish that compounds because nobody is splitting attention across five platforms.
 
-The list is not exhaustive. It's the surface of a longer one. The point is the same: focus turns into things the user actually feels.
+For the engineering side that makes these possible, read [How Diction Is Built](/engineering).
 
 ---
 
