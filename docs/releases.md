@@ -7,6 +7,25 @@ description: What's new in each Diction release. Full changelog for every App St
 
 # Release Notes
 
+## Diction 10.0
+
+- Diction One runs on a brand new cloud model. English, Spanish, German, French, Italian, Portuguese, and Dutch are now up to six times faster, and just as accurate or better.
+- Polish transcription quality has been fixed.
+- Fewer failed dictations. Cloud retries properly and falls back faster when something does go wrong.
+- Autocorrect on the QWERTY keyboard fixes typos as you type, splits run-together words, and completes contractions.
+- Word suggestions above the keys. Tap one to accept.
+- The keyboard learns the words you correct back, and stops changing them.
+- Much better corrections and accents when typing in Spanish, Portuguese, French, and German.
+- Typing feels smoother. No more key-callout blinking or jitter.
+- The keyboard no longer freezes, and a stuck dictation can be cancelled instead of spinning on retry.
+- You land back in the app you were typing in after you dictate, on the latest iOS.
+- AI Companion now formats what you say into paragraphs and lists instead of one long block.
+- Real iPad support. Wider layouts, a globe key, and right-sized emoji.
+- Bigger, clearer emoji on iPhone too.
+- Your music stays on the car speakers when you dictate over CarPlay.
+- Your music app gets its playback controls back the moment dictation ends.
+- On-device dictation is reliable on the latest iOS, and fast on every launch after the first.
+
 ## Diction 9.0
 
 - Cloud transcription is about twice as fast end to end, so text lands in your app almost as soon as you stop speaking.
