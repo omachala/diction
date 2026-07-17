@@ -13,7 +13,7 @@ const OG_IMAGE = `${SITE_URL}/og-image.png`;
 function getBreadcrumbList(relativePath: string, title: string): string {
   const cleanPath = relativePath.replace(/\.md$/, '').replace(/\/index$/, '');
   const parts = cleanPath.split('/').filter(Boolean);
-  const sectionLabels: Record<string, string> = { vs: 'Compare', features: 'Features' };
+  const sectionLabels: Record<string, string> = { features: 'Features' };
   const items: object[] = [{ '@type': 'ListItem', position: 1, name: 'Diction', item: SITE_URL }];
   if (parts.length === 1) {
     items.push({ '@type': 'ListItem', position: 2, name: title, item: `${SITE_URL}/${parts[0]}` });
@@ -330,15 +330,6 @@ gtag('config', 'G-PCV64Y7GFM');`,
             { text: 'Keyboard Preferences', link: '/features/preferences' },
             { text: 'Self-Hosting Setup', link: '/features/self-hosting-setup' },
             { text: 'Use Your Own Model', link: '/features/custom-model' },
-          ],
-        },
-        {
-          text: 'Compare',
-          items: [
-            { text: 'vs Wispr Flow', link: '/vs/wispr-flow' },
-            { text: 'vs Apple Dictation', link: '/vs/apple-dictation' },
-            { text: 'vs Willow', link: '/vs/willow' },
-            { text: 'vs Superwhisper', link: '/vs/superwhisper' },
           ],
         },
         {
