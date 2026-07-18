@@ -376,6 +376,7 @@ Enable the **AI Companion** toggle in the app. The gateway forwards the transcri
 | `LLM_MODEL` | Yes | Model identifier, e.g. `gpt-4o-mini` |
 | `LLM_API_KEY` | No | Bearer token. Not needed for local Ollama. |
 | `LLM_PROMPT` | No | System prompt string, or a file path starting with `/` (mount via volume) |
+| `LLM_REASONING_EFFORT` | No | OpenAI-compatible reasoning effort such as `none`, `low`, `medium`, or `high`. Omitted by default. |
 
 Both `LLM_BASE_URL` and `LLM_MODEL` must be set or the feature stays off.
 
