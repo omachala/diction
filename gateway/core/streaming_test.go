@@ -410,6 +410,47 @@ func TestStreamingHandler_BackendTranscriptionFails(t *testing.T) {
 	}
 }
 
+func TestStreamingHandler_DegenerateRepetition_ClosesAndReportsHallucination(t *testing.T) {
+	// Not parallel-safe: mutates core.OnError.
+	events, restore := withCapturedOnError(t)
+	defer restore()
+
+	repeated := strings.Repeat("tamb ", 20)
+	srv, _ := startStreamingServer(t, repeated, http.StatusOK)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	conn, _, err := websocket.Dial(ctx, wsURL(srv, "model=small"), nil)
+	if err != nil {
+		t.Fatalf("dial: %v", err)
+	}
+	defer conn.CloseNow()
+
+	conn.Write(ctx, websocket.MessageBinary, make([]byte, 3200))
+	done, _ := json.Marshal(map[string]string{"action": "done"})
+	conn.Write(ctx, websocket.MessageText, done)
+
+	// Server should close the connection rather than deliver the
+	// hallucinated transcript — same treatment as a genuine backend failure.
+	_, _, err = conn.Read(ctx)
+	if err == nil {
+		t.Fatal("expected connection closed due to degenerate repetition")
+	}
+
+	deadline := time.Now().Add(2 * time.Second)
+	for time.Now().Before(deadline) && len(*events) == 0 {
+		time.Sleep(20 * time.Millisecond)
+	}
+	if len(*events) == 0 {
+		t.Fatal("no OnError event captured")
+	}
+	got := (*events)[0]
+	if got.Kind != "stt_hallucination" {
+		t.Errorf("kind: want stt_hallucination, got %q", got.Kind)
+	}
+}
+
 func TestStreamingHandler_NonDoneTextMessage(t *testing.T) {
 	// Non-"done" text messages are ignored; server keeps waiting.
 	// We send a non-done message then a done to confirm normal flow still works.

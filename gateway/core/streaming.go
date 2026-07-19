@@ -328,15 +328,24 @@ func (g *Gateway) StreamingHandlerWithPostProcess(postProcess func(context.Conte
 			upstreamLanguage = ""
 		}
 		text, err := g.proxyToBackend(ctx, target, pcmBuf.Bytes(), backend, upstreamLanguage)
+		if err == nil && hasDegenerateRepetition(text) {
+			err = errSTTHallucination
+		}
 		if err != nil {
 			log.Printf("ws proxy: %v", err)
+			kind := "stt_backend_error"
+			hint := "backend transcription failed"
+			if errors.Is(err, errSTTHallucination) {
+				kind = "stt_hallucination"
+				hint = "backend returned repeated-token hallucination"
+			}
 			if OnError != nil {
 				OnError(ctx, ErrorEvent{
 					Source:   "stt",
-					Kind:     "stt_backend_error",
+					Kind:     kind,
 					Endpoint: "/v1/audio/stream",
 					Provider: backend.Name,
-					Hint:     "backend transcription failed",
+					Hint:     hint,
 				})
 			}
 			if OnRequestFailed != nil {

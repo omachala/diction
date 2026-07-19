@@ -532,6 +532,10 @@ func (g *Gateway) TranscriptionHandlerWithPostProcess(postProcess func(context.C
 					}
 
 					transcript := transcription.Text
+					if hasDegenerateRepetition(transcript) {
+						resp.Body = io.NopCloser(bytes.NewReader(respBody))
+						return errSTTHallucination
+					}
 					if g.OnTranscription != nil {
 						g.OnTranscription(resp.Request.Context(), proxyBackend.Name, whisperMs, len(transcript), audioDurationMs, enhanceEnabled, e2eClientKey != "")
 					}
@@ -584,6 +588,9 @@ func (g *Gateway) TranscriptionHandlerWithPostProcess(postProcess func(context.C
 					if errors.Is(err, context.Canceled) {
 						kind = "stt_upstream_canceled"
 						hint = "upstream canceled (client disconnect or new request)"
+					} else if errors.Is(err, errSTTHallucination) {
+						kind = "stt_hallucination"
+						hint = "backend returned repeated-token hallucination"
 					}
 					log.Printf("http: proxy error: %v", err)
 					if OnError != nil {
