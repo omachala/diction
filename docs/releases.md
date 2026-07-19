@@ -7,6 +7,12 @@ description: What's new in each Diction release. Full changelog for every App St
 
 # Release Notes
 
+## Diction 10.1
+
+- Themes. Pick a color palette and make the keyboard yours. Six themes at launch, with a live preview as you browse.
+- Self-hosted users running a direct Whisper server without the Diction Gateway no longer get stuck in a silent retry loop. Diction falls back to the batch endpoint correctly.
+- Free trial extended for everyone, so you can try the new fine-tuned cloud models across all three Diction Cloud tiers.
+
 ## Diction 10.0
 
 - Diction One runs on a brand new cloud model. English, Spanish, German, French, Italian, Portuguese, and Dutch are now up to six times faster, and just as accurate or better.
