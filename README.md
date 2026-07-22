@@ -31,11 +31,28 @@
   <a href="https://codecov.io/gh/omachala/diction"><img src="https://img.shields.io/codecov/c/github/omachala/diction?style=for-the-badge&label=coverage" alt="Coverage"></a>
 </p>
 
-<p align="center">
-  <a href="https://github.com/omachala/diction/graphs/contributors">
-    <img src="https://contrib.rocks/image?repo=omachala/diction" alt="Contributors" />
-  </a>
-</p>
+<p align="center"><strong>Contributors</strong></p>
+
+<table align="center"><tr>
+  <td align="center">
+    <a href="https://github.com/omachala">
+      <img src="https://github.com/omachala.png?size=80" width="60" alt="omachala"><br>
+      <sub><b>omachala</b></sub>
+    </a>
+  </td>
+  <td align="center">
+    <a href="https://github.com/jeprecated">
+      <img src="https://github.com/jeprecated.png?size=80" width="60" alt="jeprecated"><br>
+      <sub><b>jeprecated</b></sub>
+    </a>
+  </td>
+  <td align="center">
+    <a href="https://github.com/ankitson">
+      <img src="https://github.com/ankitson.png?size=80" width="60" alt="ankitson"><br>
+      <sub><b>ankitson</b></sub>
+    </a>
+  </td>
+</tr></table>
 
 ---
 
