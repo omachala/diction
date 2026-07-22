@@ -58,12 +58,12 @@
 
 ## What is Diction?
 
-**Diction** is an iOS keyboard that transcribes speech to text directly in any app — tap the mic, speak, text lands in the field. No switching apps, no copy-paste.
+**Diction** is an iOS keyboard that transcribes speech to text directly in any app. Tap the mic, speak, text lands in the field. No switching apps, no copy-paste.
 
-**This repo is the open-source gateway** — a Go service that sits between the app and your speech model. It handles the WebSocket streaming protocol, AES-256-GCM end-to-end encryption, model routing, and optional LLM cleanup. The iOS app is on the App Store; the gateway is what you self-host.
+**This repo is the open-source gateway**: a Go service that sits between the app and your speech model. It handles the WebSocket streaming protocol, AES-256-GCM end-to-end encryption, model routing, and optional LLM cleanup. The iOS app is on the App Store; the gateway is what you self-host.
 
 - **Self-hosted in one command.** `docker compose up` and paste the URL into the app. Your server, your models, your data.
-- **Works with any Whisper server.** Speaks the OpenAI transcription API — point it at whisper.cpp, faster-whisper, Speaches, or anything that implements the spec.
+- **Works with any Whisper server.** Speaks the OpenAI transcription API. Point it at whisper.cpp, faster-whisper, Speaches, or anything that implements the spec.
 - **On-device option.** Whisper and Parakeet run locally on the iPhone. No gateway needed for that mode.
 - **Encrypted in transit.** AES-256-GCM with X25519 key exchange. Same primitives used by Signal and WireGuard.
 - **Zero tracking.** No analytics, no telemetry, no data collection. Audit the source yourself.
