@@ -56,16 +56,18 @@
 
 ---
 
-## Why Diction?
+## What is Diction?
 
-- **Voice and AI, built into the keyboard.** Tap to dictate. Tap again, AI writes the message for you. Tap again, AI edits the whole field. Custom modes let you add your own AI prompts, URL schemes, and Shortcuts.
-- **Full keyboard, not just a mic button.** QWERTY when you need it, voice when you want it. The keyboard you never need to switch away from.
-- **Self-hosted in one command.** `docker compose up` and paste the URL. Your server, your models, your data.
-- **Works with any Whisper server.** Diction speaks the OpenAI transcription API directly. Point it at any endpoint that implements it, with or without our gateway.
-- **On-device.** Whisper and Parakeet run locally on your iPhone. No network, no server, nothing leaves the device.
-- **Encrypted in transit.** AES-256-GCM with X25519 key exchange between the app and the gateway. Same primitives used by Signal and WireGuard.
+**Diction** is an iOS keyboard that transcribes speech to text directly in any app — tap the mic, speak, text lands in the field. No switching apps, no copy-paste.
+
+**This repo is the open-source gateway** — a Go service that sits between the app and your speech model. It handles the WebSocket streaming protocol, AES-256-GCM end-to-end encryption, model routing, and optional LLM cleanup. The iOS app is on the App Store; the gateway is what you self-host.
+
+- **Self-hosted in one command.** `docker compose up` and paste the URL into the app. Your server, your models, your data.
+- **Works with any Whisper server.** Speaks the OpenAI transcription API — point it at whisper.cpp, faster-whisper, Speaches, or anything that implements the spec.
+- **On-device option.** Whisper and Parakeet run locally on the iPhone. No gateway needed for that mode.
+- **Encrypted in transit.** AES-256-GCM with X25519 key exchange. Same primitives used by Signal and WireGuard.
 - **Zero tracking.** No analytics, no telemetry, no data collection. Audit the source yourself.
-- **Free and unlimited.** On-device and self-hosted have no caps, no restrictions, no expiry.
+- **Free and unlimited.** Self-hosted and on-device modes have no caps, no rate limits, no expiry.
 
 ## Self-Hosting
 
