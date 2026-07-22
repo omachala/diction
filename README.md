@@ -10,13 +10,11 @@
   Dictate, compose, and edit - by voice, in any app.<br>On-device, cloud, or self-hosted. Open-source gateway.
 </p>
 
-<p align="center">
-  <img src="assets/1.png" width="220">
-  &nbsp;&nbsp;
-  <img src="assets/2.png" width="220">
-  &nbsp;&nbsp;
-  <img src="assets/3.png" width="220">
-</p>
+<table align="center"><tr>
+  <td><img src="assets/1.png" width="220"></td>
+  <td><img src="assets/2.png" width="220"></td>
+  <td><img src="assets/3.png" width="220"></td>
+</tr></table>
 
 <p align="center">
   <a href="https://apps.apple.com/app/id6759807364"><img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store" height="40"></a>
