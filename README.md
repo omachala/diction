@@ -63,7 +63,7 @@
 **This repo is the open-source gateway**: a Go service that sits between the app and your speech model. It handles the WebSocket streaming protocol, AES-256-GCM end-to-end encryption, model routing, and optional LLM cleanup. The iOS app is on the App Store; the gateway is what you self-host.
 
 - **Self-hosted in one command.** `docker compose up` and paste the URL into the app. Your server, your models, your data.
-- **Model-agnostic.** The gateway speaks the OpenAI transcription API spec. Point it at any speech-to-text backend that implements it — your model, your stack.
+- **Model-agnostic.** The gateway speaks the OpenAI transcription API spec. Point it at any speech-to-text backend that implements it. Your model, your stack.
 - **On-device option.** On-device models run locally on the iPhone. No gateway needed for that mode.
 - **Encrypted in transit.** AES-256-GCM with X25519 key exchange. Same primitives used by Signal and WireGuard.
 - **Zero tracking.** No analytics, no telemetry, no data collection. Audit the source yourself.
