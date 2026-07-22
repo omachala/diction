@@ -60,7 +60,7 @@
 
 **Diction** is an iOS keyboard that transcribes speech to text directly in any app. Tap the mic, speak, text lands in the field. No switching apps, no copy-paste.
 
-**This repo is the open-source gateway**: a Go service that sits between the app and your speech model. It handles the WebSocket streaming protocol, AES-256-GCM end-to-end encryption, model routing, and optional LLM cleanup. The iOS app is on the App Store; the gateway is what you self-host.
+**This repo is the open-source gateway**: a Go service that sits between the iOS keyboard and your speech-to-text backend. It handles the WebSocket streaming protocol, AES-256-GCM end-to-end encryption, and optional LLM cleanup. The iOS app is on the App Store; the gateway is what you self-host.
 
 - **Self-hosted in one command.** `docker compose up` and paste the URL into the app. Your server, your models, your data.
 - **Model-agnostic.** The gateway speaks the OpenAI transcription API spec. Point it at any speech-to-text backend that implements it. Your model, your stack.
