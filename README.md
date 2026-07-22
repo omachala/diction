@@ -33,6 +33,12 @@
   <a href="https://codecov.io/gh/omachala/diction"><img src="https://img.shields.io/codecov/c/github/omachala/diction?style=for-the-badge&label=coverage" alt="Coverage"></a>
 </p>
 
+<p align="center">
+  <a href="https://github.com/omachala/diction/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=omachala/diction" alt="Contributors" />
+  </a>
+</p>
+
 ---
 
 ## Why Diction?
