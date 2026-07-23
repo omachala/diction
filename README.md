@@ -71,7 +71,7 @@
 
 ## Self-Hosting
 
-The Diction app streams audio over a WebSocket connection, so you need the Diction Gateway in front of whatever speech model you run. The gateway handles the WebSocket protocol, end-to-end encryption, optional LLM cleanup, and model routing.
+Diction speaks the OpenAI transcription API (`POST /v1/audio/transcriptions`) directly, so any compatible Whisper server works without the gateway. The gateway adds a WebSocket layer for live streaming — audio is transcribed as you speak, so by the time you tap stop the result is already back. For longer dictations the difference is noticeable; for short phrases it barely matters. The gateway also handles end-to-end encryption and optional LLM cleanup.
 
 > **Full walkthrough with screenshots:** [How to Set Up Diction - the self-hosted speech-to-text alternative to Wispr Flow](https://dev.to/omachala/how-to-set-up-diction-the-self-hosted-speech-to-text-alternative-to-wispr-flow-20km)
 
